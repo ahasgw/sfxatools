@@ -1,5 +1,5 @@
 /***********************************************************************
- * $Id: range.h,v 1.1 2005/02/02 10:39:29 aki Exp $
+ * $Id: range.h,v 1.2 2005/03/22 13:12:48 aki Exp $
  *
  * range header file
  * Copyright (C) 2005 RIKEN. All rights reserved.
@@ -28,7 +28,10 @@
 # include <config.h>
 #endif
 
-#include <stdint.h>
+#ifndef STDINT_H_INCLUDED
+# define STDINT_H_INCLUDED 1
+# include <stdint.h>
+#endif
 
 /*======================================================================
  * type definitions

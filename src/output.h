@@ -1,5 +1,5 @@
 /***********************************************************************
- * $Id: output.h,v 1.3 2005/03/17 12:50:14 aki Exp $
+ * $Id: output.h,v 1.4 2005/03/22 13:12:48 aki Exp $
  *
  * output header file
  * Copyright (C) 2005 RIKEN. All rights reserved.
@@ -26,6 +26,11 @@
 #ifndef CONFIG_H_INCLUDED
 # define CONFIG_H_INCLUDED 1
 # include <config.h>
+#endif
+
+#ifndef STDINT_H_INCLUDED
+# define STDINT_H_INCLUDED 1
+# include <stdint.h>
 #endif
 
 #ifndef CMAP_H_INCLUDED
