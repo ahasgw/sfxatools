@@ -1,5 +1,5 @@
 /***********************************************************************
- * $Id: mklcpa.c,v 1.3 2005/03/22 13:12:47 aki Exp $
+ * $Id: mklcpa.c,v 1.4 2005/03/23 08:49:14 aki Exp $
  *
  * mklcpa
  * Copyright (C) 2005 RIKEN. All rights reserved.
@@ -300,11 +300,11 @@ int main(int argc, char **argv)
 
     /* check arguments */
     if (argc < optind + 1) {
-	msg(MSGLVL_ERR, "No index file specified.");
+	msg(MSGLVL_ERR, "Neither text nor index file specified.");
 	exit(EXIT_FAILURE);
     }
     if (argc < optind + 2) {
-	msg(MSGLVL_ERR, "Neither text nor index file specified.");
+	msg(MSGLVL_ERR, "No index file specified.");
 	exit(EXIT_FAILURE);
     }
 
