@@ -1,5 +1,5 @@
 /***********************************************************************
- * $Id: output.c,v 1.2 2005/02/02 12:14:13 aki Exp $
+ * $Id: output.c,v 1.3 2005/02/18 08:38:49 aki Exp $
  *
  * output
  * Copyright (C) 2005 RIKEN. All rights reserved.
@@ -72,8 +72,8 @@
  *======================================================================*/
 
 typedef struct outputXX_arg_type {
-    const char *restrict    txt;
-    const intXX_t *restrict idx;
+    const char		    *txt;
+    const intXX_t	    *idx;
     intXX_t		    len;
 
     const output_param_t    *param;
@@ -93,9 +93,8 @@ static void print_suffix(const outputXX_arg_t *arg, const intXX_t x);
  *======================================================================*/
 
 /* outputXX */
-int outputXX(const char *restrict txt, const intXX_t *restrict idx,
-	const intXX_t len, const intXX_t beg, const intXX_t end,
-	const output_param_t *param)
+int outputXX(const char *txt, const intXX_t *idx, const intXX_t len,
+	const intXX_t beg, const intXX_t end, const output_param_t *param)
 {
     intXX_t x;
     outputXX_arg_t arg;

@@ -1,5 +1,5 @@
 /***********************************************************************
- * $Id: search.c,v 1.2 2005/02/02 12:14:13 aki Exp $
+ * $Id: search.c,v 1.3 2005/02/18 08:38:49 aki Exp $
  *
  * search
  * Copyright (C) 2005 RIKEN. All rights reserved.
@@ -78,12 +78,12 @@
  *======================================================================*/
 
 typedef struct searchXX_arg_type {
-    const char *restrict    txt;
-    const intXX_t *restrict idx;
-    intXX_t		    len;
+    const char	    *txt;
+    const intXX_t   *idx;
+    intXX_t	    len;
 
-    const char		    *pattern;
-    intXX_t		    pat_len;
+    const char	    *pattern;
+    intXX_t	    pat_len;
 } searchXX_arg_t;
 
 /*======================================================================
@@ -99,8 +99,8 @@ static intXX_t bsearch_end(searchXX_arg_t *arg);
  *======================================================================*/
 
 /* searchXX */
-int searchXX(const char *restrict txt, const intXX_t *restrict idx,
-	const intXX_t len, const char *pattern, rangeXX_t *result)
+int searchXX(const char *txt, const intXX_t *idx, const intXX_t len,
+	const char *pattern, rangeXX_t *result)
 {
     searchXX_arg_t arg;
     arg.txt = txt;
