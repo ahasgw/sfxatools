@@ -1,3 +1,7 @@
+2005-02-18  Aki Hasegawa  <aki@gsc.riken.go.jp>
+
+	* sfxatools: added mklcpa command.
+
 2005-01-24  Aki Hasegawa  <aki@gsc.riken.go.jp>
 
 	* sfxatools: initial version.
