@@ -1,5 +1,5 @@
 /***********************************************************************
- * $Id: output.h,v 1.1 2005/02/02 10:39:29 aki Exp $
+ * $Id: output.h,v 1.2 2005/02/18 08:38:49 aki Exp $
  *
  * output header file
  * Copyright (C) 2005 RIKEN. All rights reserved.
@@ -44,14 +44,12 @@ typedef struct output_param_type {
  * function declarations
  *======================================================================*/
 
-int output32(const char *restrict txt, const int32_t *restrict idx,
-	const int32_t len, const int32_t beg, const int32_t end,
-	const output_param_t *param);
+int output32(const char *txt, const int32_t *idx, const int32_t len,
+	const int32_t beg, const int32_t end, const output_param_t *param);
 
 #if SIZEOF_OFF_T >= 8
-int output64(const char *restrict txt, const int64_t *restrict idx,
-	const int64_t len, const int64_t beg, const int64_t end,
-	const output_param_t *param);
+int output64(const char *txt, const int64_t *idx, const int64_t len,
+	const int64_t beg, const int64_t end, const output_param_t *param);
 #endif
 
 #endif /* OUTPUT_H */

@@ -1,5 +1,5 @@
 /***********************************************************************
- * $Id: sort.c,v 1.2 2005/02/03 06:49:53 aki Exp $
+ * $Id: sort.c,v 1.3 2005/02/18 08:38:49 aki Exp $
  *
  * sort
  * Copyright (C) 2005 RIKEN. All rights reserved.
@@ -98,20 +98,20 @@
  *======================================================================*/
 
 typedef struct sortXX_arg_type {
-    const char *restrict    txt;
-    intXX_t *restrict	    idx;
-    intXX_t		    len;
+    const char	*txt;
+    intXX_t	*idx;
+    intXX_t	len;
 
-    intXX_t *restrict	    count_sum;
-    intXX_t *restrict	    start2;
-    intXX_t *restrict	    work_table;
+    intXX_t	*count_sum;
+    intXX_t	*start2;
+    intXX_t	*work_table;
 } sortXX_arg_t;
 
 /*======================================================================
  * prototypes
  *======================================================================*/
 
-inline static int get_code(const char *idx, const intXX_t x);
+inline static int get_code(const char *txt, const intXX_t idx);
 static void sort_type_C(const sortXX_arg_t *arg);
 static void copy_type_AB(const sortXX_arg_t *arg);
 static void sort_type_A(const sortXX_arg_t *arg);
@@ -124,9 +124,9 @@ static void isort(const sortXX_arg_t *arg, intXX_t low, intXX_t high, intXX_t de
  * inline function definitions
  *======================================================================*/
 
-inline static int get_code(const char *idx, const intXX_t x)
+inline static int get_code(const char *txt, const intXX_t idx)
 {
-    return (((int)(idx[x]) << CHAR_BIT) + idx[x + 1]);
+    return (((int)(txt[idx]) << CHAR_BIT) + txt[idx + 1]);
 }
 
 /*======================================================================
@@ -134,7 +134,7 @@ inline static int get_code(const char *idx, const intXX_t x)
  *======================================================================*/
 
 /* sortXX */
-int sortXX(const char *restrict txt, intXX_t *restrict idx, const intXX_t len)
+int sortXX(const char *txt, intXX_t *idx, const intXX_t len)
 {
     intXX_t i, nA, nC, max;
     intXX_t count[ALPH_SIZE * ALPH_SIZE];
