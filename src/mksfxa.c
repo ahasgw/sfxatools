@@ -1,5 +1,5 @@
 /***********************************************************************
- * $Id: mksfxa.c,v 1.1 2005/02/02 10:39:29 aki Exp $
+ * $Id: mksfxa.c,v 1.2 2005/02/18 08:39:19 aki Exp $
  *
  * mksfxa
  * Copyright (C) 2005 RIKEN. All rights reserved.
@@ -254,17 +254,17 @@ static void show_help(void)
 	"GNU General Public License.\n"
 	"For more information about these matters, see the file named COPYING.\n"
 	"\n"
-	"Usage: %s [options] <file> ...\n"
+	"Usage: %s [options] <text_file> ...\n"
 	"Options:\n"
 #ifdef HAVE_GETOPT_LONG
 	"  -h, --help           display this message\n"
-	"  -V, --version        prints version number, and exit\n"
+	"  -V, --version        print version number, and exit\n"
 	"  -v, --verbose        verbose output\n"
 	"  -x, --ext=<.ext>     set index file extention to <.ext> (default: .idx)\n"
 	"  -X, --remove-ext     remove last extention before adding <.ext>\n"
 #else
 	"  -h           display this message\n"
-	"  -V           prints version number, and exit\n"
+	"  -V           print version number, and exit\n"
 	"  -v           verbose output\n"
 	"  -x <.ext>    set index file extention to <.ext> (default: .idx)\n"
 	"  -X           remove last extention before adding <.ext>\n"
