@@ -1,5 +1,5 @@
 /***********************************************************************
- * $Id: mklcpa.c,v 1.1 2005/02/18 14:00:11 aki Exp $
+ * $Id: mklcpa.c,v 1.2 2005/03/17 12:39:59 aki Exp $
  *
  * mklcpa
  * Copyright (C) 2005 RIKEN. All rights reserved.
@@ -319,9 +319,12 @@ int main(int argc, char **argv)
 		    txtpath, idxpath);
 
 	ret = process_file(txtpath, idxpath);
+	if (ret != 0) {
+	    msg(MSGLVL_ERR, "failed:");
+	    exit(EXIT_FAILURE);
+	}
 
-	if (opts.opt_v && ret != 0) msg(MSGLVL_NOTICE, "failed:");
-	if (opts.opt_v && ret == 0) msg(MSGLVL_INFO, "...done.");
+	if (opts.opt_v) msg(MSGLVL_INFO, "...done.");
     }
 
     /* finalize */
