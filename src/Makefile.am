@@ -1,0 +1,61 @@
+## $Id: Makefile.am,v 1.1 2005/02/02 10:39:29 aki Exp $
+##
+## Makefile for the src directory of sfxatools.
+## Copyright (C) 2004 RIKEN. All rights reserved.
+## Written by Aki Hasegawa <aki@gsc.riken.jp>.
+##
+## This program is free software; you can redistribute it and/or modify
+## it under the terms of the GNU General Public License as published by
+## the Free Software Foundation; either version 2 of the License, or
+## (at your option) any later version.
+##
+## This program is distributed in the hope that it will be useful,
+## but WITHOUT ANY WARRANTY; without even the implied warranty of
+## MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+## GNU General Public License for more details.
+##
+## You should have received a copy of the GNU General Public License
+## along with this program; if not, write to the Free Software
+## Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
+
+## Process this file with automake to produce Makefile.in
+
+MAINTAINERCLEANFILES = Makefile.in
+
+## suffix rule for building 64bit version (compile with -DSIZE_OF_INITXX_T=8)
+SUFFIXES = .o64
+.c.o64:
+@am__fastdepCC_TRUE@	if $(COMPILE) -DSIZEOF_INTXX_T=8 -MT $@ -MD -MP -MF "$(DEPDIR)/$*.Tpo" -c -o $@ $<; \
+@am__fastdepCC_TRUE@	then mv -f "$(DEPDIR)/$*.Tpo" "$(DEPDIR)/$*.Po"; else rm -f "$(DEPDIR)/$*.Tpo"; exit 1; fi
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='$<' object='$@' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(COMPILE) -DSIZEOF_INTXX_T=8 -c -o $@ $<
+
+
+bin_PROGRAMS = 
+
+AM_CPPFLAGS = -I$(top_srcdir)/util -I$(top_srcdir)/libgnu
+AM_CFLAGS = -DNDEBUG
+
+## mksfxa
+bin_PROGRAMS += mksfxa
+mksfxa_SOURCES = mksfxa.c sort.c sort.h
+mksfxa_LDADD = 
+if IS_SIZEOF_OFF_T_EQ_8
+mksfxa_LDADD += sort.o64
+endif
+mksfxa_LDADD += $(top_builddir)/util/libutil.a $(top_builddir)/libgnu/libgnu.a
+
+## sfxa
+bin_PROGRAMS += sfxa
+sfxa_SOURCES = sfxa.c search.c search.h output.c output.h range.h
+sfxa_LDADD = 
+if IS_SIZEOF_OFF_T_EQ_8
+sfxa_LDADD += search.o64 output.o64
+endif
+sfxa_LDADD += $(top_builddir)/util/libutil.a $(top_builddir)/libgnu/libgnu.a
+
+if IS_SIZEOF_OFF_T_EQ_8
+clean-local:
+	-rm -f *.o64
+endif

@@ -1,0 +1,67 @@
+\input texinfo @c -*-texinfo-*-
+@c $Id: sfxatools.texi,v 1.1 2005/02/02 10:39:23 aki Exp $
+@c %**start of header
+@setfilename sfxatools.info
+@settitle SfxaTools - suffix array manipulation tools
+@setchapternewpage odd
+@c %**end of header
+
+@include version.texi
+
+@dircategory Application software
+
+@direntry
+* sfxatools: (sfxatools).  Suffix array manipulation tools
+@end direntry
+
+@ifinfo
+Suffix array manipulation tools
+This file documents the programs of sfxatools package.
+
+Copyright @copyright{} 2005 Aki Hasegawa, RIKEN.
+@end ifinfo
+
+@titlepage
+@title SfxaTools
+@subtitle Suffix array manipulation tools
+@subtitle Edition @value{EDITION}, for SfxaTools Version @value{VERSION}
+@subtitle $Id: sfxatools.texi,v 1.1 2005/02/02 10:39:23 aki Exp $
+@subtitle @value{UPDATED}
+@author by Aki Hasegawa
+@author @email{aki@@gsc.riken.jp}
+
+@page
+@vskip 0pt plus 1filll
+Copyright @copyright{} 2005 Aki Hasegawa, RIKEN.
+@end titlepage
+
+@node Top, Introduction, , (dir)
+@menu
+* Introduction::       Introduction.
+* Copying::            How you can copy and share @code{sfxatools}.
+* Overview::           Preliminary information.
+* Sample::             Sample output from @code{sfxatools}.
+* Invoking sfxatools:: How to run @code{sfxatools}.
+* Problems::           Reporting bugs.
+* Concept Index::      Index of concepts.
+@end menu
+
+@node Introduction, Copying, Top, Top
+@chapter Introduction
+
+@node Copying, Overview, Introduction, Top
+
+@node Overview, Sample, Copying, Top
+
+@node Sample, Invoking sfxatools, Overview, Top
+
+@node Invoking sfxatools, Problems, Sample, Top
+
+@node Problems, Concept Index, Invoking sfxatools, Top
+
+@node Concept Index, , Problems, Top
+
+@printindex cp
+@contents
+@bye
+@c sfxatools.texi ends here
