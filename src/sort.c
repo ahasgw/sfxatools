@@ -1,5 +1,5 @@
 /***********************************************************************
- * $Id: sort.c,v 1.1 2005/02/02 10:39:29 aki Exp $
+ * $Id: sort.c,v 1.2 2005/02/03 06:49:53 aki Exp $
  *
  * sort
  * Copyright (C) 2005 RIKEN. All rights reserved.
@@ -345,7 +345,7 @@ static void copy_type_BC(const sortXX_arg_t *arg)
 	while (wp > 0) {
 	    intXX_t x = arg->work_table[--wp];
 	    arg->idx[
-		arg->start2[arg->txt[x << CHAR_BIT] + arg->txt[x + 1]]--
+		arg->start2[(arg->txt[x] << CHAR_BIT) + arg->txt[x + 1]]--
 		] = x;
 	}
     }
