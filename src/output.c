@@ -1,5 +1,5 @@
 /***********************************************************************
- * $Id: output.c,v 1.1 2005/02/02 10:39:29 aki Exp $
+ * $Id: output.c,v 1.2 2005/02/02 12:14:13 aki Exp $
  *
  * output
  * Copyright (C) 2005 RIKEN. All rights reserved.
@@ -74,10 +74,10 @@
 typedef struct outputXX_arg_type {
     const char *restrict    txt;
     const intXX_t *restrict idx;
-    const intXX_t	    len;
+    intXX_t		    len;
 
     const output_param_t    *param;
-    const int		    max_digit;
+    int			    max_digit;
 } outputXX_arg_t;
 
 /*======================================================================
@@ -97,11 +97,17 @@ int outputXX(const char *restrict txt, const intXX_t *restrict idx,
 	const intXX_t len, const intXX_t beg, const intXX_t end,
 	const output_param_t *param)
 {
-    outputXX_arg_t arg = {txt, idx, len, param, get_max_digit(len)};
     intXX_t x;
+    outputXX_arg_t arg;
 
     if (beg < 0 || end < 0)
 	return (errno = EINVAL);
+
+    arg.txt = txt;
+    arg.idx = idx;
+    arg.len = len;
+    arg.param = param;
+    arg.max_digit = get_max_digit(len);
 
     for (x = beg; x <= end; ++x) {
 	print_line(&arg, x);
