@@ -1,5 +1,5 @@
 /***********************************************************************
- * $Id: sfxa.c,v 1.3 2005/02/18 08:39:19 aki Exp $
+ * $Id: sfxa.c,v 1.4 2005/02/23 05:32:45 aki Exp $
  *
  * sfxa
  * Copyright (C) 2005 RIKEN. All rights reserved.
@@ -138,6 +138,8 @@ static int search_pattern(const sfxa_t *sfxa, const char *pattern)
 	range32_t result;
 	search32(mmfile_ptr(&sfxa->ftxt), mmfile_ptr(&sfxa->fidx),
 		(int32_t)len, pattern, &result);
+	output32(mmfile_ptr(&sfxa->ftxt), mmfile_ptr(&sfxa->fidx),
+		(int32_t)len, result.beg, result.end, &opts.opt_F);
     } else {
 	msg(MSGLVL_WARNING, "Cannot search. File too large");
 	ret = errno = EFBIG;
@@ -147,12 +149,14 @@ static int search_pattern(const sfxa_t *sfxa, const char *pattern)
 	range32_t result;
 	search32(mmfile_ptr(&sfxa->ftxt), mmfile_ptr(&sfxa->fidx),
 		(int32_t)len, pattern, &result);
-output32(mmfile_ptr(&sfxa->ftxt), mmfile_ptr(&sfxa->fidx),
-	(int32_t)len, result.beg, result.end, &opts.opt_F);
+	output32(mmfile_ptr(&sfxa->ftxt), mmfile_ptr(&sfxa->fidx),
+		(int32_t)len, result.beg, result.end, &opts.opt_F);
     } else if (len <= (INT64_MAX / sizeof(int64_t))) {
 	range64_t result;
 	search64(mmfile_ptr(&sfxa->ftxt), mmfile_ptr(&sfxa->fidx),
 		(int64_t)len, pattern, &result);
+	output64(mmfile_ptr(&sfxa->ftxt), mmfile_ptr(&sfxa->fidx),
+		(int64_t)len, result.beg, result.end, &opts.opt_F);
     } else {
 	msg(MSGLVL_WARNING, "Cannot search. File too large");
 	ret = errno = EFBIG;
