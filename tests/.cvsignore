@@ -1,0 +1,8 @@
+*.deps
+*.swp
+*.Po
+*.log
+*.spec
+*.cache
+*~
+00*

@@ -1,0 +1,41 @@
+# $Id: sfxatools.spec.in,v 1.1 2005/02/02 10:39:22 aki Exp $
+%define today	%(echo 'LC_ALL="C" date +"%a %b %d %Y"')
+
+Summary:		@PACKAGE_NAME@
+Name:			@PACKAGE_TARNAME@
+Version:		@PACKAGE_VERSION@
+Release:		1
+Copyright:		GPL
+Group:			Applications/Text
+Source:			%{name}-%{version}.tar.gz
+Vendor:			Aki Hasegawa <aki@gsc.riken.jp>
+Packager:		Aki Hasegawa <aki@gsc.riken.jp>
+BuildRoot:		%{_tmppath}/%{name}-%{version}-root
+
+%description
+The suffix array manipulation tools.
+
+%prep
+%setup
+
+%build
+%configure
+make
+
+%install
+rm -rf ${RPM_BUILD_ROOT}
+%makeinstall
+
+%clean
+rm -rf ${RPM_BUILD_ROOT}
+
+%files
+%defattr(-,root,root)
+%doc AUTHORS BUGS COPYING ChangeLog INSTALL* NEWS README THANKS TODO
+%attr(755,root,root) %{_bindir}/*
+%{_mandir}/man1/*
+%{_infodir}/*
+
+%changelog
+* Mon Jan 24 2005 Aki Hasegawa <aki@gsc.riken.jp>
+- first build
