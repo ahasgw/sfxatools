@@ -1,5 +1,5 @@
 /***********************************************************************
- * $Id: search.c,v 1.3 2005/02/18 08:38:49 aki Exp $
+ * $Id: search.c,v 1.4 2005/03/17 12:50:14 aki Exp $
  *
  * search
  * Copyright (C) 2005 RIKEN. All rights reserved.
@@ -83,14 +83,13 @@ typedef struct searchXX_arg_type {
     intXX_t	    len;
 
     const char	    *pattern;
-    intXX_t	    pat_len;
+    size_t	    patlen;
 } searchXX_arg_t;
 
 /*======================================================================
  * prototypes
  *======================================================================*/
 
-inline static intXX_t lcp_len(const char *txt, const char *end, const char *pat);
 static intXX_t bsearch_beg(searchXX_arg_t *arg);
 static intXX_t bsearch_end(searchXX_arg_t *arg);
 
@@ -100,14 +99,14 @@ static intXX_t bsearch_end(searchXX_arg_t *arg);
 
 /* searchXX */
 int searchXX(const char *txt, const intXX_t *idx, const intXX_t len,
-	const char *pattern, rangeXX_t *result)
+	const char *pattern, size_t patlen, rangeXX_t *result)
 {
     searchXX_arg_t arg;
     arg.txt = txt;
     arg.idx = idx;
     arg.len = len;
     arg.pattern = pattern;
-    arg.pat_len = strlen(pattern);
+    arg.patlen = patlen;
 
     assert(result != NULL);
     result->beg = bsearch_beg(&arg);
@@ -119,16 +118,6 @@ int searchXX(const char *txt, const intXX_t *idx, const intXX_t len,
  * private function definitions
  *======================================================================*/
 
-inline static intXX_t lcp_len(const char *txt, const char *end, const char *pat)
-{
-    intXX_t len;
-    for (len = 0; *pat && txt < end && *pat == *txt; ++len) {
-	++pat;
-	++txt;
-    }
-    return len;
-}
-
 /* to accelerate, see Gusfield pp.152-153 */
 
 static intXX_t bsearch_beg(searchXX_arg_t *arg)
@@ -136,7 +125,7 @@ static intXX_t bsearch_beg(searchXX_arg_t *arg)
     const char *txt = arg->txt;
     const intXX_t *idx = arg->idx;
     const char *pat = arg->pattern;
-    const size_t pat_len = arg->pat_len;
+    const size_t patlen = arg->patlen;
     const char *txt_end = txt + arg->len;
     const char *cp;
 
@@ -145,14 +134,14 @@ static intXX_t bsearch_beg(searchXX_arg_t *arg)
     while (beg < end) {
 	intXX_t mid = (beg + end) / 2;
 	cp = txt + idx[mid];
-	if (strncmp(cp, pat, MIN((size_t)(txt_end - cp), pat_len)) < 0) {
+	if (strncmp(cp, pat, MIN((size_t)(txt_end - cp), patlen)) < 0) {
 	    beg = mid + 1;
 	} else {
 	    end = mid;
 	}
     }
     cp = txt + idx[beg];
-    return (strncmp(cp, pat, MIN((size_t)(txt_end - cp), pat_len)) == 0)
+    return (strncmp(cp, pat, MIN((size_t)(txt_end - cp), patlen)) == 0)
 	? beg : -1;
 }
 
@@ -161,7 +150,7 @@ static intXX_t bsearch_end(searchXX_arg_t *arg)
     const char *txt = arg->txt;
     const intXX_t *idx = arg->idx;
     const char *pat = arg->pattern;
-    const size_t pat_len = arg->pat_len;
+    const size_t patlen = arg->patlen;
     const char *txt_end = txt + arg->len;
     const char *cp;
 
@@ -170,13 +159,13 @@ static intXX_t bsearch_end(searchXX_arg_t *arg)
     while (beg < end) {
 	intXX_t mid = (beg + end + 1) / 2;
 	cp = txt + idx[mid];
-	if (strncmp(cp, pat, MIN((size_t)(txt_end - cp), pat_len)) > 0) {
+	if (strncmp(cp, pat, MIN((size_t)(txt_end - cp), patlen)) > 0) {
 	    end = mid - 1;
 	} else {
 	    beg = mid;
 	}
     }
     cp = txt + idx[beg];
-    return (strncmp(cp, pat, MIN((size_t)(txt_end - cp), pat_len)) == 0)
+    return (strncmp(cp, pat, MIN((size_t)(txt_end - cp), patlen)) == 0)
 	? beg : -1;
 }

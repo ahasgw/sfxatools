@@ -1,5 +1,5 @@
 /***********************************************************************
- * $Id: output.c,v 1.3 2005/02/18 08:38:49 aki Exp $
+ * $Id: output.c,v 1.4 2005/03/17 12:50:13 aki Exp $
  *
  * output
  * Copyright (C) 2005 RIKEN. All rights reserved.
@@ -171,23 +171,61 @@ static void print_suffix(const outputXX_arg_t *arg, const intXX_t x)
     if (arg->param->sfx < 0)
 	return;
 
-    for (; cp < end; ++cp) {
-	if (*cp == '\0') {
-	    putchar('\\'); putchar('0');
-	    if (arg->param->chop) {
-		++cp; break;
+    if (arg->param->cmap == NULL) {
+	/* without cmap */
+	for (; cp < end; ++cp) {
+	    char c = *cp;
+	    if (c == '\0') {
+		putchar('\\'); putchar('0');
+		if (arg->param->chop) {
+		    ++cp; break;
+		}
 	    }
+	    else if (c == '\a') { putchar('\\'); putchar('a'); }
+	    else if (c == '\b') { putchar('\\'); putchar('b'); }
+	    else if (c == '\t') { putchar('\\'); putchar('t'); }
+	    else if (c == '\n') { putchar('\\'); putchar('n'); }
+	    else if (c == '\v') { putchar('\\'); putchar('v'); }
+	    else if (c == '\f') { putchar('\\'); putchar('f'); }
+	    else if (c == '\r') { putchar('\\'); putchar('r'); }
+	    else if (c == '\\') { putchar('\\'); putchar('\\'); }
+	    else if (isgraph(c)) { putchar(c); }
+	    else { putchar('\\'); putchar('?'); }
 	}
-	else if (*cp == '\a') { putchar('\\'); putchar('a'); }
-	else if (*cp == '\b') { putchar('\\'); putchar('b'); }
-	else if (*cp == '\t') { putchar('\\'); putchar('t'); }
-	else if (*cp == '\n') { putchar('\\'); putchar('n'); }
-	else if (*cp == '\v') { putchar('\\'); putchar('v'); }
-	else if (*cp == '\f') { putchar('\\'); putchar('f'); }
-	else if (*cp == '\r') { putchar('\\'); putchar('r'); }
-	else if (*cp == '\\') { putchar('\\'); putchar('\\'); }
-	else if (isgraph(*cp)) { putchar(*cp); }
-	else { putchar('\\'); putchar('?'); }
+    } else {
+	/* with cmap */
+	for (; cp < end; ++cp) {
+	    char c = cmap_num2char(arg->param->cmap, *cp);
+#if 0
+	    if (c == '\0') {
+		putchar('\\'); putchar('0');
+		if (arg->param->chop) {
+		    ++cp; break;
+		}
+	    }
+#else
+	    if (*cp == '\0') {
+		if (isgraph(c))
+		    putchar(c);
+		else {
+		    putchar('\\'); putchar('0');
+		}
+		if (arg->param->chop) {
+		    ++cp; break;
+		}
+	    }
+#endif
+	    else if (c == '\a') { putchar('\\'); putchar('a'); }
+	    else if (c == '\b') { putchar('\\'); putchar('b'); }
+	    else if (c == '\t') { putchar('\\'); putchar('t'); }
+	    else if (c == '\n') { putchar('\\'); putchar('n'); }
+	    else if (c == '\v') { putchar('\\'); putchar('v'); }
+	    else if (c == '\f') { putchar('\\'); putchar('f'); }
+	    else if (c == '\r') { putchar('\\'); putchar('r'); }
+	    else if (c == '\\') { putchar('\\'); putchar('\\'); }
+	    else if (isgraph(c)) { putchar(c); }
+	    else { putchar('\\'); putchar('?'); }
+	}
     }
 
     if (cp < arg->txt + arg->len)
