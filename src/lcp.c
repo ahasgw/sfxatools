@@ -1,5 +1,5 @@
 /***********************************************************************
- * $Id: lcp.c,v 1.1 2005/02/18 14:00:10 aki Exp $
+ * $Id: lcp.c,v 1.2 2005/03/22 13:12:47 aki Exp $
  *
  * lcp
  * Copyright (C) 2005 RIKEN. All rights reserved.
@@ -48,7 +48,6 @@
 //#include <assert.h>
 
 #include <errno.h>
-#include <stdint.h>
 
 /*======================================================================
  * macro definitions

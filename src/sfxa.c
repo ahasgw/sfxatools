@@ -1,5 +1,5 @@
 /***********************************************************************
- * $Id: sfxa.c,v 1.5 2005/03/17 12:50:14 aki Exp $
+ * $Id: sfxa.c,v 1.6 2005/03/22 13:12:48 aki Exp $
  *
  * sfxa
  * Copyright (C) 2005 RIKEN. All rights reserved.
@@ -56,7 +56,6 @@
 #include <getopt.h>
 #include <progname.h>
 #include <string.h>
-#include <stdint.h>
 #include <xalloc.h>
 
 /*======================================================================

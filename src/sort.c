@@ -1,5 +1,5 @@
 /***********************************************************************
- * $Id: sort.c,v 1.3 2005/02/18 08:38:49 aki Exp $
+ * $Id: sort.c,v 1.4 2005/03/22 13:12:48 aki Exp $
  *
  * sort
  * Copyright (C) 2005 RIKEN. All rights reserved.
@@ -67,7 +67,6 @@
 #include <errno.h>
 #include <minmax.h>
 #include <string.h>
-#include <stdint.h>
 #include <xalloc.h>
 
 /*======================================================================

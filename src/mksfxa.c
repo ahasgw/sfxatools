@@ -1,5 +1,5 @@
 /***********************************************************************
- * $Id: mksfxa.c,v 1.3 2005/03/17 12:40:26 aki Exp $
+ * $Id: mksfxa.c,v 1.4 2005/03/22 13:12:47 aki Exp $
  *
  * mksfxa
  * Copyright (C) 2005 RIKEN. All rights reserved.
@@ -53,7 +53,6 @@
 #include <getopt.h>
 #include <minmax.h>
 #include <progname.h>
-#include <stdint.h>
 #include <string.h>
 #include <xalloc.h>
 

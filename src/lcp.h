@@ -1,5 +1,5 @@
 /***********************************************************************
- * $Id: lcp.h,v 1.1 2005/02/18 14:00:11 aki Exp $
+ * $Id: lcp.h,v 1.2 2005/03/22 13:12:47 aki Exp $
  *
  * lcp header file
  * Copyright (C) 2005 RIKEN. All rights reserved.
@@ -26,6 +26,11 @@
 #ifndef CONFIG_H_INCLUDED
 # define CONFIG_H_INCLUDED 1
 # include <config.h>
+#endif
+
+#ifndef STDINT_H_INCLUDED
+# define STDINT_H_INCLUDED 1
+# include <stdint.h>
 #endif
 
 /*======================================================================

@@ -1,5 +1,5 @@
 /***********************************************************************
- * $Id: search.h,v 1.3 2005/03/17 12:50:14 aki Exp $
+ * $Id: search.h,v 1.4 2005/03/22 13:12:48 aki Exp $
  *
  * search header file
  * Copyright (C) 2005 RIKEN. All rights reserved.
@@ -28,7 +28,13 @@
 # include <config.h>
 #endif
 
-#ifndef RANGE_H
+#ifndef STDINT_H_INCLUDED
+# define STDINT_H_INCLUDED 1
+# include <stdint.h>
+#endif
+
+#ifndef RANGE_H_INCLUDED
+# define RANGE_H_INCLUDED 1
 # include "range.h"
 #endif
 
