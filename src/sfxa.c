@@ -1,5 +1,5 @@
 /***********************************************************************
- * $Id: sfxa.c,v 1.1 2005/02/02 10:39:29 aki Exp $
+ * $Id: sfxa.c,v 1.2 2005/02/11 16:11:50 aki Exp $
  *
  * sfxa
  * Copyright (C) 2005 RIKEN. All rights reserved.
@@ -342,24 +342,7 @@ int main(int argc, char **argv)
 	    case 'v': ++opts.opt_v; break;
 	    case 'o': opts.opt_o = xstrdup(optarg); break;
 	    case 'd': opts.opt_d = 1; break;
-#if 0
-	    case 'F': {
-			  char *val;
-			  int op;
-			  enum {PRE = 0, POST, CHOP};
-			  static char *subop[] = {"pre", "post", "chop", NULL};
-			  while ((op = getsubopt(&optarg, subop, &val)) != -1) {
-			      switch (op) {
-				  case PRE: opts.opt_F.pre = atoi(val); break;
-				  case POST: opts.opt_F.post = atoi(val); break;
-				  case CHOP: opts.opt_F.chop = 1; break;
-			      }
-			  }
-		      }
-		      break;
-#else
 	    case 'F': parse_subopt_F(&optarg); break;
-#endif
 	    default: show_help(); exit(EXIT_FAILURE);
 	}
     }
