@@ -1,5 +1,5 @@
 /***********************************************************************
- * $Id: msg.c,v 1.1 2005/02/02 10:39:31 aki Exp $
+ * $Id: msg.c,v 1.1.1.1 2005/02/02 10:39:31 aki Exp $
  *
  * messaging function
  * Copyright (C) 2004 RIKEN. All rights reserved.

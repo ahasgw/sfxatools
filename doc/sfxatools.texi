@@ -1,5 +1,5 @@
 \input texinfo @c -*-texinfo-*-
-@c $Id: sfxatools.texi,v 1.1 2005/02/02 10:39:23 aki Exp $
+@c $Id: sfxatools.texi,v 1.1.1.1 2005/02/02 10:39:23 aki Exp $
 @c %**start of header
 @setfilename sfxatools.info
 @settitle SfxaTools - suffix array manipulation tools
@@ -25,7 +25,7 @@ Copyright @copyright{} 2005 Aki Hasegawa, RIKEN.
 @title SfxaTools
 @subtitle Suffix array manipulation tools
 @subtitle Edition @value{EDITION}, for SfxaTools Version @value{VERSION}
-@subtitle $Id: sfxatools.texi,v 1.1 2005/02/02 10:39:23 aki Exp $
+@subtitle $Id: sfxatools.texi,v 1.1.1.1 2005/02/02 10:39:23 aki Exp $
 @subtitle @value{UPDATED}
 @author by Aki Hasegawa
 @author @email{aki@@gsc.riken.jp}

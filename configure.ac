@@ -1,4 +1,4 @@
-# $Id: configure.ac,v 1.1 2005/02/02 10:39:22 aki Exp $
+# $Id: configure.ac,v 1.1.1.1 2005/02/02 10:39:22 aki Exp $
 # vi: set tabstop=8 shiftwidth=8 noexpandtab:
 #
 # Makefile for the toplevel directory of sfxatools.

@@ -1,5 +1,5 @@
 /***********************************************************************
- * $Id: mmfile.h,v 1.1 2005/02/02 10:39:30 aki Exp $
+ * $Id: mmfile.h,v 1.1.1.1 2005/02/02 10:39:30 aki Exp $
  *
  * Header file for mmfile functions
  * Copyright (C) 2005 RIKEN. All rights reserved.

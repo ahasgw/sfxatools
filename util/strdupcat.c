@@ -1,5 +1,5 @@
 /***********************************************************************
- * $Id: strdupcat.c,v 1.1 2005/02/02 10:39:30 aki Exp $
+ * $Id: strdupcat.c,v 1.1.1.1 2005/02/02 10:39:30 aki Exp $
  *
  * string utility
  * Copyright (C) 2004 RIKEN. All rights reserved.

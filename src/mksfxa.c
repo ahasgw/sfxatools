@@ -1,5 +1,5 @@
 /***********************************************************************
- * $Id: mksfxa.c,v 1.1 2005/02/02 10:39:29 aki Exp $
+ * $Id: mksfxa.c,v 1.1.1.1 2005/02/02 10:39:29 aki Exp $
  *
  * mksfxa
  * Copyright (C) 2005 RIKEN. All rights reserved.

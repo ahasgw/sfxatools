@@ -1,6 +1,6 @@
 #! /bin/sh
 #
-# $Id: bootstrap.sh,v 1.1 2005/02/02 10:39:22 aki Exp $
+# $Id: bootstrap.sh,v 1.1.1.1 2005/02/02 10:39:22 aki Exp $
 #
 # Bootstrapping
 # Copyright (C) 2005 RIKEN. All rights reserved.

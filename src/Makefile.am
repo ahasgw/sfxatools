@@ -1,4 +1,4 @@
-## $Id: Makefile.am,v 1.1 2005/02/02 10:39:29 aki Exp $
+## $Id: Makefile.am,v 1.1.1.1 2005/02/02 10:39:29 aki Exp $
 ##
 ## Makefile for the src directory of sfxatools.
 ## Copyright (C) 2004 RIKEN. All rights reserved.

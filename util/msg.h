@@ -1,5 +1,5 @@
 /***********************************************************************
- * $Id: msg.h,v 1.1 2005/02/02 10:39:30 aki Exp $
+ * $Id: msg.h,v 1.1.1.1 2005/02/02 10:39:30 aki Exp $
  *
  * Header file for messaging functions
  * Copyright (C) 2004 RIKEN. All rights reserved.

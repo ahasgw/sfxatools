@@ -1,5 +1,5 @@
 /***********************************************************************
- * $Id: sort.h,v 1.1 2005/02/02 10:39:30 aki Exp $
+ * $Id: sort.h,v 1.1.1.1 2005/02/02 10:39:30 aki Exp $
  *
  * sort header file
  * Copyright (C) 2005 RIKEN. All rights reserved.

@@ -1,5 +1,5 @@
 /***********************************************************************
- * $Id: search.c,v 1.1 2005/02/02 10:39:30 aki Exp $
+ * $Id: search.c,v 1.1.1.1 2005/02/02 10:39:30 aki Exp $
  *
  * search
  * Copyright (C) 2005 RIKEN. All rights reserved.
