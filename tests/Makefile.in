@@ -38,7 +38,7 @@ host_triplet = @host@
 target_triplet = @target@
 subdir = tests
 DIST_COMMON = $(srcdir)/Makefile.am $(srcdir)/Makefile.in \
-	$(srcdir)/mksfxa.in $(srcdir)/sfxa.in
+	$(srcdir)/mklcpa.in $(srcdir)/mksfxa.in $(srcdir)/sfxa.in
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/libgnu/m4/alloca.m4 \
 	$(top_srcdir)/libgnu/m4/assert.m4 \
@@ -111,7 +111,7 @@ am__configure_deps = $(am__aclocal_m4_deps) $(CONFIGURE_DEPENDENCIES) \
 	$(ACLOCAL_M4)
 mkinstalldirs = $(install_sh) -d
 CONFIG_HEADER = $(top_builddir)/config.h
-CONFIG_CLEAN_FILES = mksfxa sfxa
+CONFIG_CLEAN_FILES = mksfxa mklcpa sfxa
 SOURCES =
 DIST_SOURCES =
 DISTFILES = $(DIST_COMMON) $(DIST_SOURCES) $(TEXINFOS) $(EXTRA_DIST)
@@ -222,8 +222,8 @@ DISTCLEANFILES = atconfig $(check_SCRIPTS)
 EXTRA_DIST = $(TESTSUITE_AT) $(TESTSUITE) package.m4
 TESTSUITE = $(srcdir)/testsuite
 AUTOTEST = $(AUTOM4TE) --language=autotest
-TESTSUITE_AT = testsuite.at mksfxa.at sfxa.at
-check_SCRIPTS = mksfxa sfxa
+TESTSUITE_AT = testsuite.at mksfxa.at mklcpa.at sfxa.at
+check_SCRIPTS = mksfxa mklcpa sfxa
 all: all-am
 
 .SUFFIXES:
@@ -257,6 +257,8 @@ $(top_srcdir)/configure:  $(am__configure_deps)
 $(ACLOCAL_M4):  $(am__aclocal_m4_deps)
 	cd $(top_builddir) && $(MAKE) $(AM_MAKEFLAGS) am--refresh
 mksfxa: $(top_builddir)/config.status $(srcdir)/mksfxa.in
+	cd $(top_builddir) && $(SHELL) ./config.status $(subdir)/$@
+mklcpa: $(top_builddir)/config.status $(srcdir)/mklcpa.in
 	cd $(top_builddir) && $(SHELL) ./config.status $(subdir)/$@
 sfxa: $(top_builddir)/config.status $(srcdir)/sfxa.in
 	cd $(top_builddir) && $(SHELL) ./config.status $(subdir)/$@

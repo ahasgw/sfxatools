@@ -1,4 +1,4 @@
-## $Id: Makefile.am,v 1.1 2005/02/02 10:39:29 aki Exp $
+## $Id: Makefile.am,v 1.2 2005/02/18 08:39:53 aki Exp $
 ##
 ## Makefile for the src directory of sfxatools.
 ## Copyright (C) 2004 RIKEN. All rights reserved.
@@ -45,6 +45,15 @@ if IS_SIZEOF_OFF_T_EQ_8
 mksfxa_LDADD += sort.o64
 endif
 mksfxa_LDADD += $(top_builddir)/util/libutil.a $(top_builddir)/libgnu/libgnu.a
+
+## mklcpa
+bin_PROGRAMS += mklcpa
+mklcpa_SOURCES = mklcpa.c lcp.c lcp.h
+mklcpa_LDADD = 
+if IS_SIZEOF_OFF_T_EQ_8
+mklcpa_LDADD += lcp.o64
+endif
+mklcpa_LDADD += $(top_builddir)/util/libutil.a $(top_builddir)/libgnu/libgnu.a
 
 ## sfxa
 bin_PROGRAMS += sfxa

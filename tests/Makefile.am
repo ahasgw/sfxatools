@@ -1,4 +1,4 @@
-## $Id: Makefile.am,v 1.1 2005/02/02 10:39:30 aki Exp $
+## $Id: Makefile.am,v 1.2 2005/02/18 08:39:54 aki Exp $
 ##
 ## Makefile for the tests directory of sfxatools.
 ## Copyright (C) 2005 RIKEN. All rights reserved.
@@ -40,9 +40,9 @@ $(srcdir)/package.m4: $(top_srcdir)/configure.ac
 
 ## Test suite.
 TESTSUITE_AT = testsuite.at
-TESTSUITE_AT += mksfxa.at sfxa.at
+TESTSUITE_AT += mksfxa.at mklcpa.at sfxa.at
 
-check_SCRIPTS = mksfxa sfxa
+check_SCRIPTS = mksfxa mklcpa sfxa
 
 
 $(TESTSUITE): package.m4 $(TESTSUITE_AT)

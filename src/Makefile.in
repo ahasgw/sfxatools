@@ -14,7 +14,7 @@
 
 @SET_MAKE@
 
-SOURCES = $(mksfxa_SOURCES) $(sfxa_SOURCES)
+SOURCES = $(mklcpa_SOURCES) $(mksfxa_SOURCES) $(sfxa_SOURCES)
 
 srcdir = @srcdir@
 top_srcdir = @top_srcdir@
@@ -39,9 +39,10 @@ POST_UNINSTALL = :
 build_triplet = @build@
 host_triplet = @host@
 target_triplet = @target@
-bin_PROGRAMS = mksfxa$(EXEEXT) sfxa$(EXEEXT)
+bin_PROGRAMS = mksfxa$(EXEEXT) mklcpa$(EXEEXT) sfxa$(EXEEXT)
 @IS_SIZEOF_OFF_T_EQ_8_TRUE@am__append_1 = sort.o64
-@IS_SIZEOF_OFF_T_EQ_8_TRUE@am__append_2 = search.o64 output.o64
+@IS_SIZEOF_OFF_T_EQ_8_TRUE@am__append_2 = lcp.o64
+@IS_SIZEOF_OFF_T_EQ_8_TRUE@am__append_3 = search.o64 output.o64
 subdir = src
 DIST_COMMON = $(srcdir)/Makefile.am $(srcdir)/Makefile.in
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
@@ -120,15 +121,20 @@ CONFIG_CLEAN_FILES =
 am__installdirs = "$(DESTDIR)$(bindir)"
 binPROGRAMS_INSTALL = $(INSTALL_PROGRAM)
 PROGRAMS = $(bin_PROGRAMS)
+am_mklcpa_OBJECTS = mklcpa.$(OBJEXT) lcp.$(OBJEXT)
+mklcpa_OBJECTS = $(am_mklcpa_OBJECTS)
+@IS_SIZEOF_OFF_T_EQ_8_TRUE@am__DEPENDENCIES_1 = lcp.o64
+mklcpa_DEPENDENCIES = $(am__DEPENDENCIES_1) \
+	$(top_builddir)/util/libutil.a $(top_builddir)/libgnu/libgnu.a
 am_mksfxa_OBJECTS = mksfxa.$(OBJEXT) sort.$(OBJEXT)
 mksfxa_OBJECTS = $(am_mksfxa_OBJECTS)
-@IS_SIZEOF_OFF_T_EQ_8_TRUE@am__DEPENDENCIES_1 = sort.o64
-mksfxa_DEPENDENCIES = $(am__DEPENDENCIES_1) \
+@IS_SIZEOF_OFF_T_EQ_8_TRUE@am__DEPENDENCIES_2 = sort.o64
+mksfxa_DEPENDENCIES = $(am__DEPENDENCIES_2) \
 	$(top_builddir)/util/libutil.a $(top_builddir)/libgnu/libgnu.a
 am_sfxa_OBJECTS = sfxa.$(OBJEXT) search.$(OBJEXT) output.$(OBJEXT)
 sfxa_OBJECTS = $(am_sfxa_OBJECTS)
-@IS_SIZEOF_OFF_T_EQ_8_TRUE@am__DEPENDENCIES_2 = search.o64 output.o64
-sfxa_DEPENDENCIES = $(am__DEPENDENCIES_2) \
+@IS_SIZEOF_OFF_T_EQ_8_TRUE@am__DEPENDENCIES_3 = search.o64 output.o64
+sfxa_DEPENDENCIES = $(am__DEPENDENCIES_3) \
 	$(top_builddir)/util/libutil.a $(top_builddir)/libgnu/libgnu.a
 DEFAULT_INCLUDES = -I. -I$(srcdir) -I$(top_builddir)
 depcomp = $(SHELL) $(top_srcdir)/config/depcomp
@@ -137,8 +143,8 @@ COMPILE = $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) \
 	$(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS)
 CCLD = $(CC)
 LINK = $(CCLD) $(AM_CFLAGS) $(CFLAGS) $(AM_LDFLAGS) $(LDFLAGS) -o $@
-SOURCES = $(mksfxa_SOURCES) $(sfxa_SOURCES)
-DIST_SOURCES = $(mksfxa_SOURCES) $(sfxa_SOURCES)
+SOURCES = $(mklcpa_SOURCES) $(mksfxa_SOURCES) $(sfxa_SOURCES)
+DIST_SOURCES = $(mklcpa_SOURCES) $(mksfxa_SOURCES) $(sfxa_SOURCES)
 ETAGS = etags
 CTAGS = ctags
 DISTFILES = $(DIST_COMMON) $(DIST_SOURCES) $(TEXINFOS) $(EXTRA_DIST)
@@ -251,8 +257,11 @@ AM_CFLAGS = -DNDEBUG
 mksfxa_SOURCES = mksfxa.c sort.c sort.h
 mksfxa_LDADD = $(am__append_1) $(top_builddir)/util/libutil.a \
 	$(top_builddir)/libgnu/libgnu.a
+mklcpa_SOURCES = mklcpa.c lcp.c lcp.h
+mklcpa_LDADD = $(am__append_2) $(top_builddir)/util/libutil.a \
+	$(top_builddir)/libgnu/libgnu.a
 sfxa_SOURCES = sfxa.c search.c search.h output.c output.h range.h
-sfxa_LDADD = $(am__append_2) $(top_builddir)/util/libutil.a \
+sfxa_LDADD = $(am__append_3) $(top_builddir)/util/libutil.a \
 	$(top_builddir)/libgnu/libgnu.a
 all: all-am
 
@@ -310,6 +319,9 @@ uninstall-binPROGRAMS:
 
 clean-binPROGRAMS:
 	-test -z "$(bin_PROGRAMS)" || rm -f $(bin_PROGRAMS)
+mklcpa$(EXEEXT): $(mklcpa_OBJECTS) $(mklcpa_DEPENDENCIES) 
+	@rm -f mklcpa$(EXEEXT)
+	$(LINK) $(mklcpa_LDFLAGS) $(mklcpa_OBJECTS) $(mklcpa_LDADD) $(LIBS)
 mksfxa$(EXEEXT): $(mksfxa_OBJECTS) $(mksfxa_DEPENDENCIES) 
 	@rm -f mksfxa$(EXEEXT)
 	$(LINK) $(mksfxa_LDFLAGS) $(mksfxa_OBJECTS) $(mksfxa_LDADD) $(LIBS)
@@ -323,6 +335,8 @@ mostlyclean-compile:
 distclean-compile:
 	-rm -f *.tab.c
 
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/lcp.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/mklcpa.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/mksfxa.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/output.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/search.Po@am__quote@

@@ -1,4 +1,4 @@
-# $Id: configure.ac,v 1.1 2005/02/02 10:39:22 aki Exp $
+# $Id: configure.ac,v 1.2 2005/02/18 08:39:53 aki Exp $
 # vi: set tabstop=8 shiftwidth=8 noexpandtab:
 #
 # Makefile for the toplevel directory of sfxatools.
@@ -20,7 +20,7 @@
 # Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
 
 AC_PREREQ(2.59)
-AC_INIT([SfxaTools], [0.0.1], [aki@gsc.riken.jp], [sfxatools])
+AC_INIT([SfxaTools], [0.0.2], [aki@gsc.riken.jp], [sfxatools])
 AC_CONFIG_AUX_DIR(config)
 AC_CONFIG_SRCDIR([config.h.in])
 #AC_CONFIG_MACRO_DIR(m4)
@@ -90,18 +90,18 @@ AC_CHECK_HEADERS(wchar.h)
 AC_CHECK_HEADERS(sys/mman.h)
 
 # Checks for typedefs, structures, and compiler characteristics.
+AC_C_BIGENDIAN
+AC_C_CHAR_UNSIGNED
 AC_C_CONST
 AC_C_INLINE
-AC_TYPE_OFF_T
-AC_TYPE_SIZE_T
-AC_C_VOLATILE
-AC_CHECK_TYPES([ptrdiff_t])
-#AC_C_BIGENDIAN
-#AC_C_CHAR_UNSIGNED
 #AC_C_LONG_DOUBLE
 #AC_C_PROTOTYPES
-#AC_C_RESTRICT
-#AC_C_STRINGIZE
+AC_C_RESTRICT
+AC_C_STRINGIZE
+AC_C_VOLATILE
+AC_TYPE_OFF_T
+AC_TYPE_SIZE_T
+AC_CHECK_TYPES([ptrdiff_t])
 #AC_CHECK_SIZEOF(int)
 #AC_CHECK_SIZEOF(long)
 #AC_CHECK_SIZEOF(void*)
@@ -163,6 +163,7 @@ AC_CONFIG_FILES(util/Makefile)
 AC_CONFIG_FILES(src/Makefile)
 AC_CONFIG_FILES(tests/Makefile)
 AC_CONFIG_FILES(tests/mksfxa, [chmod +x tests/mksfxa])
+AC_CONFIG_FILES(tests/mklcpa, [chmod +x tests/mklcpa])
 AC_CONFIG_FILES(tests/sfxa, [chmod +x tests/sfxa])
 AC_CONFIG_FILES(doc/Makefile)
 AC_CONFIG_FILES(sfxatools.spec)

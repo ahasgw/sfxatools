@@ -1,4 +1,4 @@
-# $Id: testsuite.at,v 1.1 2005/02/02 10:39:30 aki Exp $
+# $Id: testsuite.at,v 1.2 2005/02/18 08:39:54 aki Exp $
 #
 # Test suite for sfxatools.
 # Copyright (C) 2004 RIKEN. All rights reserved.
@@ -19,7 +19,8 @@
 # Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
 
 AT_INIT
-AT_TESTED([mksfxa sfxa])
+AT_TESTED([mksfxa mklcpa sfxa])
 
 m4_include(mksfxa.at)
+m4_include(mklcpa.at)
 m4_include(sfxa.at)

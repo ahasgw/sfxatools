@@ -301,16 +301,17 @@ at_stderr=$at_suite_dir/at-stderr
 at_times_file=$at_suite_dir/at-times
 
 # List of the tested programs.
-at_tested='mksfxa sfxa'
+at_tested='mksfxa mklcpa sfxa'
 # List of the all the test groups.
-at_groups_all=' banner-1 1 banner-2 2'
+at_groups_all=' banner-1 1 banner-2 2 banner-3 3'
 # As many dots as there are digits in the last test group number.
 # Used to normalize the test group numbers so that `ls' lists them in
 # numerical order.
 at_format='.'
 # Description of all the test groups.
 at_help_all='1;mksfxa.at:23;The file not existing.;non-existent-file;
-2;sfxa.at:23;The file not existing.;non-existent-file;
+2;mklcpa.at:23;The file not existing.;non-existent-file;
+3;sfxa.at:23;The file not existing.;non-existent-file;
 '
 
 at_keywords=
@@ -337,7 +338,7 @@ do
 	;;
 
     --version | -V )
-	echo "$as_me (SfxaTools 0.0.1)"
+	echo "$as_me (SfxaTools 0.0.2)"
 	exit 0
 	;;
 
@@ -493,7 +494,7 @@ fi
 # List of tests.
 if $at_list_p; then
   cat <<_ATEOF
-SfxaTools 0.0.1 test suite test groups:
+SfxaTools 0.0.2 test suite test groups:
 
  NUM: FILENAME:LINE      TEST-GROUP-NAME
       KEYWORDS
@@ -575,13 +576,13 @@ exec 5>$at_suite_log
 # Banners and logs.
 cat <<\_ASBOX
 ## --------------------------- ##
-## SfxaTools 0.0.1 test suite. ##
+## SfxaTools 0.0.2 test suite. ##
 ## --------------------------- ##
 _ASBOX
 {
   cat <<\_ASBOX
 ## --------------------------- ##
-## SfxaTools 0.0.1 test suite. ##
+## SfxaTools 0.0.2 test suite. ##
 ## --------------------------- ##
 _ASBOX
   echo
@@ -846,7 +847,78 @@ $at_traceon
     ;;
 
 
-  banner-2 ) # Banner 2. sfxa.at:21
+  banner-2 ) # Banner 2. mklcpa.at:21
+    cat <<\_ATEOF
+
+Tests for mklcpa.
+
+_ATEOF
+    ;;
+
+  2 ) # 2. mklcpa.at:23: The file not existing.
+    at_setup_line='mklcpa.at:23'
+    at_desc='The file not existing.'
+    $at_quiet $ECHO_N "  2: The file not existing.                       $ECHO_C"
+    at_xfail=no
+    (
+      echo "2. mklcpa.at:23: testing ..."
+      $at_traceon
+
+
+$at_traceoff
+echo "mklcpa.at:25: rm deleteme"
+echo mklcpa.at:25 >$at_check_line_file
+( $at_traceon; rm deleteme ) >$at_stdout 2>$at_stder1
+at_status=$?
+grep '^ *+' $at_stder1 >&2
+grep -v '^ *+' $at_stder1 >$at_stderr
+at_failed=false
+echo stderr:; cat $at_stderr
+echo stdout:; cat $at_stdout
+case $at_status in
+   77) echo 77 > $at_status_file
+            exit 77;;
+   *);;
+esac
+if $at_failed; then
+
+  echo 1 > $at_status_file
+  exit 1
+fi
+
+$at_traceon
+
+$at_traceoff
+echo "mklcpa.at:26: mklcpa deleteme deleteme"
+echo mklcpa.at:26 >$at_check_line_file
+( $at_traceon; mklcpa deleteme deleteme ) >$at_stdout 2>$at_stder1
+at_status=$?
+grep '^ *+' $at_stder1 >&2
+grep -v '^ *+' $at_stder1 >$at_stderr
+at_failed=false
+echo stderr:; cat $at_stderr
+echo stdout:; cat $at_stdout
+case $at_status in
+   77) echo 77 > $at_status_file
+            exit 77;;
+   *);;
+esac
+if $at_failed; then
+
+  echo 1 > $at_status_file
+  exit 1
+fi
+
+$at_traceon
+
+      $at_traceoff
+      $at_times_p && times >$at_times_file
+    ) 5>&1 2>&1 | eval $at_tee_pipe
+    at_status=`cat $at_status_file`
+    ;;
+
+
+  banner-3 ) # Banner 3. sfxa.at:21
     cat <<\_ATEOF
 
 Tests for sfxa.
@@ -854,13 +926,13 @@ Tests for sfxa.
 _ATEOF
     ;;
 
-  2 ) # 2. sfxa.at:23: The file not existing.
+  3 ) # 3. sfxa.at:23: The file not existing.
     at_setup_line='sfxa.at:23'
     at_desc='The file not existing.'
-    $at_quiet $ECHO_N "  2: The file not existing.                       $ECHO_C"
+    $at_quiet $ECHO_N "  3: The file not existing.                       $ECHO_C"
     at_xfail=no
     (
-      echo "2. sfxa.at:23: testing ..."
+      echo "3. sfxa.at:23: testing ..."
       $at_traceon
 
 
@@ -1184,7 +1256,7 @@ _ASBOX
   echo "Please send \`$as_me.log' and all information you think might help:"
   echo
   echo "   To: <aki@gsc.riken.jp>"
-  echo "   Subject: [SfxaTools 0.0.1] $as_me:$at_fail_list${at_fail_list:+ failed${at_xpass_list:+,}}$at_xpass_list${at_xpass_list:+ passed unexpectedly}"
+  echo "   Subject: [SfxaTools 0.0.2] $as_me:$at_fail_list${at_fail_list:+ failed${at_xpass_list:+,}}$at_xpass_list${at_xpass_list:+ passed unexpectedly}"
   echo
   if test $at_debug_p = false; then
     echo
