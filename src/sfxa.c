@@ -1,5 +1,5 @@
 /***********************************************************************
- * $Id: sfxa.c,v 1.2 2005/02/11 16:11:50 aki Exp $
+ * $Id: sfxa.c,v 1.3 2005/02/18 08:39:19 aki Exp $
  *
  * sfxa
  * Copyright (C) 2005 RIKEN. All rights reserved.
@@ -87,6 +87,7 @@ typedef struct sfxa_type {
 
 typedef struct opts_type {
     char	    *opt_o;	/* output file path */
+    char	    *opt_M;	/* mapping file path */
     int		    opt_v;	/* verbose level */
     unsigned int    opt_h: 1;	/* help flag */
     unsigned int    opt_V: 1;	/* version flag */
@@ -101,6 +102,7 @@ typedef struct opts_type {
 static opts_t opts = {
     /* pointers */
     NULL,		/* o: output file path */
+    NULL,		/* M: mapping file path */
     /* numerals */
     0,			/* v: verbose level */
     /* binary flags */
@@ -274,11 +276,12 @@ static void show_help(void)
 	"Options:\n"
 #ifdef HAVE_GETOPT_LONG
 	"  -h, --help           display this message\n"
-	"  -V, --version        prints version number, and exit\n"
+	"  -V, --version        print version number, and exit\n"
 	"  -v, --verbose        verbose output\n"
 	"  -o, --output=<file>  file to output\n"
 	"  -d, --dump           dump suffix array\n"
-	"  -F, --format=<comma separated subopts>  formatting parameters\n"
+	"  -M, --map=<file>     character mapping file\n"
+	"  -F, --format=<comma_separated_subopts>  formatting parameters\n"
 	"        [no]pos        [do not] print array position column\n"
 	"        [no]idx        [do not] print index column\n"
 	"        [no]sfx=<n>    [do not] print suffix at most length <n>\n"
@@ -288,11 +291,12 @@ static void show_help(void)
 	"        [no]chop       [do not] chop suffix beyond character '\\0'\n"
 #else
 	"  -h           display this message\n"
-	"  -V           prints version number, and exit\n"
+	"  -V           print version number, and exit\n"
 	"  -v           verbose output\n"
 	"  -o <file>    file to output\n"
 	"  -d           dump suffix array\n"
-	"  -F <comma separated subopts>  formatting parameters\n"
+	"  -M <file>    character mapping file\n"
+	"  -F <comma_separated_subopts>  formatting parameters\n"
 	"     [no]pos        [do not] print array position column\n"
 	"     [no]idx        [do not] print index column\n"
 	"     [no]sfx=<n>    [do not] print suffix at most length <n>\n"
@@ -325,13 +329,14 @@ int main(int argc, char **argv)
 	    {"verbose",	    no_argument,	NULL, 'v'},
 	    {"output",      required_argument,	NULL, 'o'},
 	    {"dump",	    no_argument,	NULL, 'd'},
+	    {"map",	    required_argument,	NULL, 'M'},
 	    {"format",      required_argument,	NULL, 'F'},
 	    {0, 0, 0, 0}
 	};
 
-	opt = getopt_long(argc, argv, "hVvo:dF:", long_opts, &opt_index);
+	opt = getopt_long(argc, argv, "hVvo:dM:F:", long_opts, &opt_index);
 #else
-	opt = getopt(argc, argv, "hVvo:dF:");
+	opt = getopt(argc, argv, "hVvo:dM:F:");
 #endif
 	if (opt == -1)
 	    break;
@@ -342,6 +347,7 @@ int main(int argc, char **argv)
 	    case 'v': ++opts.opt_v; break;
 	    case 'o': opts.opt_o = xstrdup(optarg); break;
 	    case 'd': opts.opt_d = 1; break;
+	    case 'M': opts.opt_M = xstrdup(optarg); break;
 	    case 'F': parse_subopt_F(&optarg); break;
 	    default: show_help(); exit(EXIT_FAILURE);
 	}
@@ -401,6 +407,7 @@ int main(int argc, char **argv)
     }
 
     /* finalize */
+    if (opts.opt_M) { free(opts.opt_M), opts.opt_M = NULL; }
     if (opts.opt_o) { free(opts.opt_o), opts.opt_o = NULL; }
 
     exit(EXIT_SUCCESS);
