@@ -1,5 +1,5 @@
 /***********************************************************************
- * $Id: sfxa.c,v 1.4 2005/02/23 05:32:45 aki Exp $
+ * $Id: sfxa.c,v 1.5 2005/03/17 12:50:14 aki Exp $
  *
  * sfxa
  * Copyright (C) 2005 RIKEN. All rights reserved.
@@ -43,6 +43,7 @@
 #endif
 
 #include "search.h"
+#include "cmap.h"
 #include "output.h"
 
 #include <mmfile.h>
@@ -110,14 +111,21 @@ static opts_t opts = {
     0,			/* V: version flag */
     0,			/* d: dump suffix array */
     /* others */
-    {DEFAULT_F_POS, DEFAULT_F_IDX, DEFAULT_F_SFX, DEFAULT_F_PRE, DEFAULT_F_CHOP}
+    {
+	NULL,
+	DEFAULT_F_POS,
+	DEFAULT_F_IDX,
+	DEFAULT_F_SFX,
+	DEFAULT_F_PRE,
+	DEFAULT_F_CHOP
+    }
 };
 
 /*======================================================================
  * prototypes
  *======================================================================*/
 
-static int search_pattern(const sfxa_t *sfxa, const char *pattern);
+static int search_pattern(const sfxa_t *sfxa, const char *pattern, int patlen);
 static int dump_suffix_array(const sfxa_t *sfxa);
 static int open_suffix_array(sfxa_t *sfxa, const char *ftxt, const char *fidx);
 static int close_suffix_array(sfxa_t *sfxa);
@@ -129,7 +137,7 @@ static void show_help(void);
  *======================================================================*/
 
 /* search pattern using suffix array */
-static int search_pattern(const sfxa_t *sfxa, const char *pattern)
+static int search_pattern(const sfxa_t *sfxa, const char *pattern, int patlen)
 {
     int ret = 0;
     off_t len = mmfile_len(&sfxa->ftxt);
@@ -137,7 +145,7 @@ static int search_pattern(const sfxa_t *sfxa, const char *pattern)
     if (len <= (INT32_MAX / sizeof(int32_t))) {
 	range32_t result;
 	search32(mmfile_ptr(&sfxa->ftxt), mmfile_ptr(&sfxa->fidx),
-		(int32_t)len, pattern, &result);
+		(int32_t)len, pattern, patlen, &result);
 	output32(mmfile_ptr(&sfxa->ftxt), mmfile_ptr(&sfxa->fidx),
 		(int32_t)len, result.beg, result.end, &opts.opt_F);
     } else {
@@ -148,13 +156,13 @@ static int search_pattern(const sfxa_t *sfxa, const char *pattern)
     if (len <= INT32_MAX) {
 	range32_t result;
 	search32(mmfile_ptr(&sfxa->ftxt), mmfile_ptr(&sfxa->fidx),
-		(int32_t)len, pattern, &result);
+		(int32_t)len, pattern, patlen, &result);
 	output32(mmfile_ptr(&sfxa->ftxt), mmfile_ptr(&sfxa->fidx),
 		(int32_t)len, result.beg, result.end, &opts.opt_F);
     } else if (len <= (INT64_MAX / sizeof(int64_t))) {
 	range64_t result;
 	search64(mmfile_ptr(&sfxa->ftxt), mmfile_ptr(&sfxa->fidx),
-		(int64_t)len, pattern, &result);
+		(int64_t)len, pattern, patlen, &result);
 	output64(mmfile_ptr(&sfxa->ftxt), mmfile_ptr(&sfxa->fidx),
 		(int64_t)len, result.beg, result.end, &opts.opt_F);
     } else {
@@ -244,16 +252,31 @@ static void parse_subopt_F(char **optionp)
 	"pos", "nopos", "idx", "noidx", "sfx", "nosfx", "pre", "nopre", "chop", "nochop", NULL};
     while ((op = getsubopt(optionp, subop, &val)) != -1) {
 	switch (op) {
-	    case POS: opts.opt_F.pos = 1; break;
-	    case NOPOS: opts.opt_F.pos = 0; break;
-	    case IDX: opts.opt_F.idx = 1; break;
-	    case NOIDX: opts.opt_F.idx = 0; break;
-	    case SFX: opts.opt_F.sfx = atoi(val); break;
-	    case NOSFX: opts.opt_F.sfx = 0; break;
-	    case PRE: opts.opt_F.pre = atoi(val); break;
-	    case NOPRE: opts.opt_F.pre = 0; break;
-	    case CHOP: opts.opt_F.chop = 1; break;
-	    case NOCHOP: opts.opt_F.chop = 0; break;
+	    case POS:	opts.opt_F.pos = 1; break;
+	    case NOPOS:	opts.opt_F.pos = 0; break;
+
+	    case IDX:	opts.opt_F.idx = 1; break;
+	    case NOIDX:	opts.opt_F.idx = 0; break;
+
+	    case SFX:	if (val == NULL) {
+			    msg(MSGLVL_ERR, "Illegal suboption for %s", subop[op]);
+			    exit(EXIT_FAILURE);
+			}
+			opts.opt_F.sfx = atoi(val);
+			break;
+	    case NOSFX:	opts.opt_F.sfx = 0; break;
+
+	    case PRE:	if (val == NULL) {
+			    msg(MSGLVL_ERR, "Illegal suboption for %s", subop[op]);
+			    exit(EXIT_FAILURE);
+			}
+			opts.opt_F.pre = atoi(val);
+			break;
+	    case NOPRE:	opts.opt_F.pre = 0; break;
+
+	    case CHOP:	opts.opt_F.chop = 1; break;
+	    case NOCHOP:    opts.opt_F.chop = 0; break;
+
 	    default: break;
 	}
     }
@@ -292,7 +315,7 @@ static void show_help(void)
 #if 0
 	"        [no]pre=<n>    [do not] print <n> characters ahead of the suffix\n"
 #endif
-	"        [no]chop       [do not] chop suffix beyond character '\\0'\n"
+	"        [no]chop       [do not] chop suffix beyond delimiter character\n"
 #else
 	"  -h           display this message\n"
 	"  -V           print version number, and exit\n"
@@ -307,7 +330,7 @@ static void show_help(void)
 #if 0
 	"     [no]pre=<n>    [do not] print <n> characters ahead of the suffix\n"
 #endif
-	"     [no]chop       [do not] chop suffix beyond character '\\0'\n"
+	"     [no]chop       [do not] chop suffix beyond delimiter character\n"
 #endif
 	"Report bugs to %s.\n"
 	;
@@ -318,6 +341,7 @@ static void show_help(void)
 int main(int argc, char **argv)
 {
     sfxa_t sa;
+    cmap_t cm;
 
     /* preserve program name */
     set_program_name(argv[0]);
@@ -369,6 +393,15 @@ int main(int argc, char **argv)
 	exit(EXIT_FAILURE);
     }
 
+    /* prepare cmap */
+    if (opts.opt_M) {
+	if (cmap_load(&cm, opts.opt_M) != 0) {
+	    msg(MSGLVL_ERR, "Cannot open map file '%s':", opts.opt_M);
+	    exit(EXIT_FAILURE);
+	}
+	opts.opt_F.cmap = &cm;
+    }
+
     /* open suffix array */
     {
 	char *ftxt = argv[optind++];
@@ -392,15 +425,30 @@ int main(int argc, char **argv)
 	dump_suffix_array(&sa);
     } else {
 	for (; optind < argc; ++optind) {
-	    const char *pattern = argv[optind];
 	    int ret = 0;
 	    if (opts.opt_v)
-		msg(MSGLVL_INFO, "searching pattern '%s'...", pattern);
+		msg(MSGLVL_INFO, "searching pattern '%s'...", argv[optind]);
 
-	    ret = search_pattern(&sa, pattern);
+	    if (opts.opt_M) {
+		unsigned char *pattern;
+		int patlen;
+		ret = cmap_translate(&cm, argv[optind], &pattern, &patlen);
+		if (ret != 0) {
+		    msg(MSGLVL_ERR, "Cannot map the query:");
+		    exit(EXIT_FAILURE);
+		}
+		ret = search_pattern(&sa, (char *)pattern, patlen);
+		free(pattern);
+	    } else {
+		ret = search_pattern(&sa, argv[optind], strlen(argv[optind]));
+	    }
 
-	    if (opts.opt_v && ret != 0) msg(MSGLVL_NOTICE, "failed:");
-	    if (opts.opt_v && ret == 0) msg(MSGLVL_INFO, "...done.");
+	    if (ret != 0) {
+		msg(MSGLVL_ERR, "failed:");
+		exit(EXIT_FAILURE);
+	    }
+
+	    if (opts.opt_v) msg(MSGLVL_INFO, "...done.");
 	}
     }
 
@@ -411,7 +459,7 @@ int main(int argc, char **argv)
     }
 
     /* finalize */
-    if (opts.opt_M) { free(opts.opt_M), opts.opt_M = NULL; }
+    if (opts.opt_M) { cmap_free(&cm); free(opts.opt_M), opts.opt_M = NULL; }
     if (opts.opt_o) { free(opts.opt_o), opts.opt_o = NULL; }
 
     exit(EXIT_SUCCESS);

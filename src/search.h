@@ -1,5 +1,5 @@
 /***********************************************************************
- * $Id: search.h,v 1.2 2005/02/18 08:38:49 aki Exp $
+ * $Id: search.h,v 1.3 2005/03/17 12:50:14 aki Exp $
  *
  * search header file
  * Copyright (C) 2005 RIKEN. All rights reserved.
@@ -37,11 +37,11 @@
  *======================================================================*/
 
 int search32(const char *txt, const int32_t *idx, const int32_t len,
-	const char *pattern, range32_t *result);
+	const char *pattern, size_t patlen, range32_t *result);
 
 #if SIZEOF_OFF_T >= 8
 int search64(const char *txt, const int64_t *idx, const int64_t len,
-	const char *pattern, range64_t *result);
+	const char *pattern, size_t patlen, range64_t *result);
 #endif
 
 #endif /* SEARCH_H */

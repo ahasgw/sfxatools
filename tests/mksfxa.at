@@ -1,4 +1,4 @@
-# $Id: mksfxa.at,v 1.1 2005/02/02 10:39:30 aki Exp $
+# $Id: mksfxa.at,v 1.2 2005/03/17 12:50:14 aki Exp $
 #
 # Test for mksfxa.
 # Copyright (C) 2004 RIKEN. All rights reserved.
@@ -23,33 +23,11 @@ AT_BANNER([[Tests for mksfxa.]])
 AT_SETUP([The file not existing.])
 AT_KEYWORDS([non-existent-file])
 AT_CHECK([rm deleteme], ignore, ignore, ignore)
-AT_CHECK([mksfxa deleteme], ignore, ignore, ignore)
+AT_CHECK([mksfxa deleteme], 1, ignore, ignore)
 AT_CLEANUP
 
-#AT_SETUP([The file of length zero.])
-#AT_KEYWORDS([zero-length-file])
-#AT_DATA([data.fa], [[]])
-#AT_CHECK([mksfxa data.fa], ignore, ignore ignore)
-#AT_CLEANUP
-#
-#AT_SETUP([Badly formatted file 1.])
-#AT_DATA([data.txt],
-#[[This is a sample text file.
-#]])
-#AT_CHECK([mksfxa data.txt], ignore, ignore ignore)
-#AT_CLEANUP
-#
-#AT_SETUP([Badly formatted file 2.])
-#AT_DATA([data.txt],
-#[[This is a sample text file
-#that have two lines.
-#]])
-#AT_CHECK([mksfxa data.txt], ignore, ignore ignore)
-#AT_CLEANUP
-#
-#AT_SETUP([Defiline only file.])
-#AT_DATA([data.txt],
-#[[>def abc
-#]])
-#AT_CHECK([mksfxa data.txt], ignore, ignore ignore)
-#AT_CLEANUP
+AT_SETUP([The file of length zero.])
+AT_KEYWORDS([zero-length-file])
+AT_DATA([zero], [[]])
+AT_CHECK([mksfxa zero], 1, ignore, ignore)
+AT_CLEANUP
