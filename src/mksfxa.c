@@ -1,5 +1,5 @@
 /***********************************************************************
- * $Id: mksfxa.c,v 1.2 2005/02/18 08:39:19 aki Exp $
+ * $Id: mksfxa.c,v 1.3 2005/03/17 12:40:26 aki Exp $
  *
  * mksfxa
  * Copyright (C) 2005 RIKEN. All rights reserved.
@@ -330,9 +330,12 @@ int main(int argc, char **argv)
 	if (opts.opt_v) msg(MSGLVL_INFO, "processing file '%s'...", path);
 
 	ret = process_file(path);
+	if (ret != 0) {
+	    msg(MSGLVL_ERR, "failed:");
+	    exit(EXIT_FAILURE);
+	}
 
-	if (opts.opt_v && ret != 0) msg(MSGLVL_NOTICE, "failed:");
-	if (opts.opt_v && ret == 0) msg(MSGLVL_INFO, "...done.");
+	if (opts.opt_v) msg(MSGLVL_INFO, "...done.");
     }
 
     /* finalize */
