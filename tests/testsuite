@@ -301,20 +301,20 @@ at_stderr=$at_suite_dir/at-stderr
 at_times_file=$at_suite_dir/at-times
 
 # List of the tested programs.
-at_tested='fa2hdsq bl2dump mksfxa mklcpa sfxa'
+at_tested='mksfxa mklcpa sfxa fa2hdsq annotidx bl2dump'
 # List of the all the test groups.
-at_groups_all=' banner-1 1 2 banner-2 banner-3 3 4 banner-4 5 banner-5 6'
+at_groups_all=' banner-1 1 2 banner-2 3 banner-3 4 banner-4 5 6 banner-5 banner-6'
 # As many dots as there are digits in the last test group number.
 # Used to normalize the test group numbers so that `ls' lists them in
 # numerical order.
 at_format='.'
 # Description of all the test groups.
-at_help_all='1;fa2hdsq.at:23;The file not existing.;non-existent-file;
-2;fa2hdsq.at:29;The file of length zero.;zero-length-file;
-3;mksfxa.at:23;The file not existing.;non-existent-file;
-4;mksfxa.at:29;The file of length zero.;zero-length-file;
-5;mklcpa.at:23;The file not existing.;non-existent-file;
-6;sfxa.at:23;The file not existing.;non-existent-file;
+at_help_all='1;mksfxa.at:23;The file not existing.;non-existent-file;
+2;mksfxa.at:29;The file of length zero.;zero-length-file;
+3;mklcpa.at:23;The file not existing.;non-existent-file;
+4;sfxa.at:23;The file not existing.;non-existent-file;
+5;fa2hdsq.at:23;The file not existing.;non-existent-file;
+6;fa2hdsq.at:29;The file of length zero.;zero-length-file;
 '
 
 at_keywords=
@@ -779,133 +779,7 @@ echo "$as_me: error: cannot create $at_group_dir" >&2;}
 
   case $at_group in
 
-  banner-1 ) # Banner 1. fa2hdsq.at:21
-    cat <<\_ATEOF
-
-Tests for fa2hdsq.
-
-_ATEOF
-    ;;
-
-  1 ) # 1. fa2hdsq.at:23: The file not existing.
-    at_setup_line='fa2hdsq.at:23'
-    at_desc='The file not existing.'
-    $at_quiet $ECHO_N "  1: The file not existing.                       $ECHO_C"
-    at_xfail=no
-    (
-      echo "1. fa2hdsq.at:23: testing ..."
-      $at_traceon
-
-
-$at_traceoff
-echo "fa2hdsq.at:25: rm deleteme"
-echo fa2hdsq.at:25 >$at_check_line_file
-( $at_traceon; rm deleteme ) >$at_stdout 2>$at_stder1
-at_status=$?
-grep '^ *+' $at_stder1 >&2
-grep -v '^ *+' $at_stder1 >$at_stderr
-at_failed=false
-echo stderr:; cat $at_stderr
-echo stdout:; cat $at_stdout
-case $at_status in
-   77) echo 77 > $at_status_file
-            exit 77;;
-   *);;
-esac
-if $at_failed; then
-
-  echo 1 > $at_status_file
-  exit 1
-fi
-
-$at_traceon
-
-$at_traceoff
-echo "fa2hdsq.at:26: fa2hdsq deleteme"
-echo fa2hdsq.at:26 >$at_check_line_file
-( $at_traceon; fa2hdsq deleteme ) >$at_stdout 2>$at_stder1
-at_status=$?
-grep '^ *+' $at_stder1 >&2
-grep -v '^ *+' $at_stder1 >$at_stderr
-at_failed=false
-echo stderr:; cat $at_stderr
-echo stdout:; cat $at_stdout
-case $at_status in
-   77) echo 77 > $at_status_file
-            exit 77;;
-   1) ;;
-   *) echo "fa2hdsq.at:26: exit code was $at_status, expected 1"
-      at_failed=:;;
-esac
-if $at_failed; then
-
-  echo 1 > $at_status_file
-  exit 1
-fi
-
-$at_traceon
-
-      $at_traceoff
-      $at_times_p && times >$at_times_file
-    ) 5>&1 2>&1 | eval $at_tee_pipe
-    at_status=`cat $at_status_file`
-    ;;
-
-  2 ) # 2. fa2hdsq.at:29: The file of length zero.
-    at_setup_line='fa2hdsq.at:29'
-    at_desc='The file of length zero.'
-    $at_quiet $ECHO_N "  2: The file of length zero.                     $ECHO_C"
-    at_xfail=no
-    (
-      echo "2. fa2hdsq.at:29: testing ..."
-      $at_traceon
-
-
-cat >data.fa <<'_ATEOF'
-_ATEOF
-
-$at_traceoff
-echo "fa2hdsq.at:32: fa2hdsq data.fa"
-echo fa2hdsq.at:32 >$at_check_line_file
-( $at_traceon; fa2hdsq data.fa ) >$at_stdout 2>$at_stder1
-at_status=$?
-grep '^ *+' $at_stder1 >&2
-grep -v '^ *+' $at_stder1 >$at_stderr
-at_failed=false
-echo stderr:; cat $at_stderr
-echo stdout:; cat $at_stdout
-case $at_status in
-   77) echo 77 > $at_status_file
-            exit 77;;
-   0) ;;
-   *) echo "fa2hdsq.at:32: exit code was $at_status, expected 0"
-      at_failed=:;;
-esac
-if $at_failed; then
-
-  echo 1 > $at_status_file
-  exit 1
-fi
-
-$at_traceon
-
-      $at_traceoff
-      $at_times_p && times >$at_times_file
-    ) 5>&1 2>&1 | eval $at_tee_pipe
-    at_status=`cat $at_status_file`
-    ;;
-
-
-  banner-2 ) # Banner 2. bl2dump.at:21
-    cat <<\_ATEOF
-
-Tests for bl2dump.
-
-_ATEOF
-    ;;
-
-
-  banner-3 ) # Banner 3. mksfxa.at:21
+  banner-1 ) # Banner 1. mksfxa.at:21
     cat <<\_ATEOF
 
 Tests for mksfxa.
@@ -913,13 +787,13 @@ Tests for mksfxa.
 _ATEOF
     ;;
 
-  3 ) # 3. mksfxa.at:23: The file not existing.
+  1 ) # 1. mksfxa.at:23: The file not existing.
     at_setup_line='mksfxa.at:23'
     at_desc='The file not existing.'
-    $at_quiet $ECHO_N "  3: The file not existing.                       $ECHO_C"
+    $at_quiet $ECHO_N "  1: The file not existing.                       $ECHO_C"
     at_xfail=no
     (
-      echo "3. mksfxa.at:23: testing ..."
+      echo "1. mksfxa.at:23: testing ..."
       $at_traceon
 
 
@@ -977,13 +851,13 @@ $at_traceon
     at_status=`cat $at_status_file`
     ;;
 
-  4 ) # 4. mksfxa.at:29: The file of length zero.
+  2 ) # 2. mksfxa.at:29: The file of length zero.
     at_setup_line='mksfxa.at:29'
     at_desc='The file of length zero.'
-    $at_quiet $ECHO_N "  4: The file of length zero.                     $ECHO_C"
+    $at_quiet $ECHO_N "  2: The file of length zero.                     $ECHO_C"
     at_xfail=no
     (
-      echo "4. mksfxa.at:29: testing ..."
+      echo "2. mksfxa.at:29: testing ..."
       $at_traceon
 
 
@@ -1022,7 +896,7 @@ $at_traceon
     ;;
 
 
-  banner-4 ) # Banner 4. mklcpa.at:21
+  banner-2 ) # Banner 2. mklcpa.at:21
     cat <<\_ATEOF
 
 Tests for mklcpa.
@@ -1030,13 +904,13 @@ Tests for mklcpa.
 _ATEOF
     ;;
 
-  5 ) # 5. mklcpa.at:23: The file not existing.
+  3 ) # 3. mklcpa.at:23: The file not existing.
     at_setup_line='mklcpa.at:23'
     at_desc='The file not existing.'
-    $at_quiet $ECHO_N "  5: The file not existing.                       $ECHO_C"
+    $at_quiet $ECHO_N "  3: The file not existing.                       $ECHO_C"
     at_xfail=no
     (
-      echo "5. mklcpa.at:23: testing ..."
+      echo "3. mklcpa.at:23: testing ..."
       $at_traceon
 
 
@@ -1095,7 +969,7 @@ $at_traceon
     ;;
 
 
-  banner-5 ) # Banner 5. sfxa.at:21
+  banner-3 ) # Banner 3. sfxa.at:21
     cat <<\_ATEOF
 
 Tests for sfxa.
@@ -1103,13 +977,13 @@ Tests for sfxa.
 _ATEOF
     ;;
 
-  6 ) # 6. sfxa.at:23: The file not existing.
+  4 ) # 4. sfxa.at:23: The file not existing.
     at_setup_line='sfxa.at:23'
     at_desc='The file not existing.'
-    $at_quiet $ECHO_N "  6: The file not existing.                       $ECHO_C"
+    $at_quiet $ECHO_N "  4: The file not existing.                       $ECHO_C"
     at_xfail=no
     (
-      echo "6. sfxa.at:23: testing ..."
+      echo "4. sfxa.at:23: testing ..."
       $at_traceon
 
 
@@ -1163,6 +1037,141 @@ $at_traceon
       $at_times_p && times >$at_times_file
     ) 5>&1 2>&1 | eval $at_tee_pipe
     at_status=`cat $at_status_file`
+    ;;
+
+
+  banner-4 ) # Banner 4. fa2hdsq.at:21
+    cat <<\_ATEOF
+
+Tests for fa2hdsq.
+
+_ATEOF
+    ;;
+
+  5 ) # 5. fa2hdsq.at:23: The file not existing.
+    at_setup_line='fa2hdsq.at:23'
+    at_desc='The file not existing.'
+    $at_quiet $ECHO_N "  5: The file not existing.                       $ECHO_C"
+    at_xfail=no
+    (
+      echo "5. fa2hdsq.at:23: testing ..."
+      $at_traceon
+
+
+$at_traceoff
+echo "fa2hdsq.at:25: rm deleteme"
+echo fa2hdsq.at:25 >$at_check_line_file
+( $at_traceon; rm deleteme ) >$at_stdout 2>$at_stder1
+at_status=$?
+grep '^ *+' $at_stder1 >&2
+grep -v '^ *+' $at_stder1 >$at_stderr
+at_failed=false
+echo stderr:; cat $at_stderr
+echo stdout:; cat $at_stdout
+case $at_status in
+   77) echo 77 > $at_status_file
+            exit 77;;
+   *);;
+esac
+if $at_failed; then
+
+  echo 1 > $at_status_file
+  exit 1
+fi
+
+$at_traceon
+
+$at_traceoff
+echo "fa2hdsq.at:26: fa2hdsq deleteme"
+echo fa2hdsq.at:26 >$at_check_line_file
+( $at_traceon; fa2hdsq deleteme ) >$at_stdout 2>$at_stder1
+at_status=$?
+grep '^ *+' $at_stder1 >&2
+grep -v '^ *+' $at_stder1 >$at_stderr
+at_failed=false
+echo stderr:; cat $at_stderr
+echo stdout:; cat $at_stdout
+case $at_status in
+   77) echo 77 > $at_status_file
+            exit 77;;
+   1) ;;
+   *) echo "fa2hdsq.at:26: exit code was $at_status, expected 1"
+      at_failed=:;;
+esac
+if $at_failed; then
+
+  echo 1 > $at_status_file
+  exit 1
+fi
+
+$at_traceon
+
+      $at_traceoff
+      $at_times_p && times >$at_times_file
+    ) 5>&1 2>&1 | eval $at_tee_pipe
+    at_status=`cat $at_status_file`
+    ;;
+
+  6 ) # 6. fa2hdsq.at:29: The file of length zero.
+    at_setup_line='fa2hdsq.at:29'
+    at_desc='The file of length zero.'
+    $at_quiet $ECHO_N "  6: The file of length zero.                     $ECHO_C"
+    at_xfail=no
+    (
+      echo "6. fa2hdsq.at:29: testing ..."
+      $at_traceon
+
+
+cat >data.fa <<'_ATEOF'
+_ATEOF
+
+$at_traceoff
+echo "fa2hdsq.at:32: fa2hdsq data.fa"
+echo fa2hdsq.at:32 >$at_check_line_file
+( $at_traceon; fa2hdsq data.fa ) >$at_stdout 2>$at_stder1
+at_status=$?
+grep '^ *+' $at_stder1 >&2
+grep -v '^ *+' $at_stder1 >$at_stderr
+at_failed=false
+echo stderr:; cat $at_stderr
+echo stdout:; cat $at_stdout
+case $at_status in
+   77) echo 77 > $at_status_file
+            exit 77;;
+   0) ;;
+   *) echo "fa2hdsq.at:32: exit code was $at_status, expected 0"
+      at_failed=:;;
+esac
+if $at_failed; then
+
+  echo 1 > $at_status_file
+  exit 1
+fi
+
+$at_traceon
+
+      $at_traceoff
+      $at_times_p && times >$at_times_file
+    ) 5>&1 2>&1 | eval $at_tee_pipe
+    at_status=`cat $at_status_file`
+    ;;
+
+
+  banner-5 ) # Banner 5. annotidx.at:21
+    cat <<\_ATEOF
+
+Tests for annotidx.
+
+_ATEOF
+    ;;
+
+
+  banner-6 ) # Banner 6. bl2dump.at:21
+    cat <<\_ATEOF
+
+Tests for bl2dump.
+
+_ATEOF
     ;;
 
 

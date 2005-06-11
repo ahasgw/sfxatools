@@ -24312,6 +24312,8 @@ done
 
           ac_config_files="$ac_config_files tests/fa2hdsq"
 
+          ac_config_files="$ac_config_files tests/annotidx"
+
           ac_config_files="$ac_config_files tests/bl2dump"
 
           ac_config_files="$ac_config_files doc/Makefile"
@@ -24885,6 +24887,7 @@ do
   "tests/mklcpa" ) CONFIG_FILES="$CONFIG_FILES tests/mklcpa" ;;
   "tests/sfxa" ) CONFIG_FILES="$CONFIG_FILES tests/sfxa" ;;
   "tests/fa2hdsq" ) CONFIG_FILES="$CONFIG_FILES tests/fa2hdsq" ;;
+  "tests/annotidx" ) CONFIG_FILES="$CONFIG_FILES tests/annotidx" ;;
   "tests/bl2dump" ) CONFIG_FILES="$CONFIG_FILES tests/bl2dump" ;;
   "doc/Makefile" ) CONFIG_FILES="$CONFIG_FILES doc/Makefile" ;;
   "sfxatools.spec" ) CONFIG_FILES="$CONFIG_FILES sfxatools.spec" ;;
@@ -25292,6 +25295,7 @@ s,@INSTALL@,$ac_INSTALL,;t t
     tests/mklcpa ) chmod +x tests/mklcpa ;;
     tests/sfxa ) chmod +x tests/sfxa ;;
     tests/fa2hdsq ) chmod +x tests/fa2hdsq ;;
+    tests/annotidx ) chmod +x tests/annotidx ;;
     tests/bl2dump ) chmod +x tests/bl2dump ;;
   esac
 done
