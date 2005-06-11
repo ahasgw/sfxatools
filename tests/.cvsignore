@@ -4,5 +4,6 @@
 *.log
 *.spec
 *.cache
+*.o64
 *~
 00*
