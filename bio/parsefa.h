@@ -1,7 +1,7 @@
 /***********************************************************************
- * $Id: output.h,v 1.5 2005/06/11 06:23:10 aki Exp $
+ * $Id: parsefa.h,v 1.1 2005/06/11 06:23:09 aki Exp $
  *
- * output header file
+ * parsefa header file
  * Copyright (C) 2005 RIKEN. All rights reserved.
  * Written by Aki Hasegawa <aki@gsc.riken.jp>.
  *
@@ -20,48 +20,36 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  ***********************************************************************/
 
-#ifndef OUTPUT_H
-#define OUTPUT_H 1
+#ifndef PARSEFA_H
+#define PARSEFA_H 1
 
 #ifndef CONFIG_H_INCLUDED
 # define CONFIG_H_INCLUDED 1
 # include <config.h>
 #endif
 
-#ifndef STDINT_H_INCLUDED
-# define STDINT_H_INCLUDED 1
-# include <stdint.h>
-#endif
-
-#ifndef CMAP_H_INCLUDED
-# define CMAP_H_INCLUDED 1
-# include "cmap.h"
-#endif
+#include <cmap.h>
 
 /*======================================================================
  * type definitions
  *======================================================================*/
 
-typedef struct output_param_type {
-    cmap_t  *cmap;  /* cmap */
-    int	    hdr;    /* whether print information header */
-    int	    pos;    /* whether print position column */
-    int	    idx;    /* whether print index column */
-    int	    sfx;    /* length of suffix column */
-    int	    pre;    /* length of substring ahead of the suffix */
-    int	    chop;   /* whether chop suffix beyond character '\0' */
-} output_param_t;
+typedef struct parsefa_param_type {
+    cmap_t	    *cmap;
+    FILE	    *fseqout;
+    FILE	    *fhdxout;
+    FILE	    *fhdrout;
+    unsigned int    ignore_case: 1;
+} parsefa_param_t;
 
 /*======================================================================
  * function declarations
  *======================================================================*/
 
-int output32(const char *txt, const int32_t *idx, const int32_t len,
-	const int32_t beg, const int32_t end, const output_param_t *param);
+int parse_fasta32(const parsefa_param_t *param);
 
 #if SIZEOF_OFF_T >= 8
-int output64(const char *txt, const int64_t *idx, const int64_t len,
-	const int64_t beg, const int64_t end, const output_param_t *param);
+int parse_fasta64(const parsefa_param_t *param);
 #endif
 
-#endif /* OUTPUT_H */
+#endif /* PARSEFA_H */
