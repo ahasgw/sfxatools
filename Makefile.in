@@ -39,9 +39,10 @@ target_triplet = @target@
 DIST_COMMON = README $(am__configure_deps) $(srcdir)/Makefile.am \
 	$(srcdir)/Makefile.in $(srcdir)/config.h.in \
 	$(srcdir)/sfxatools.spec.in $(top_srcdir)/configure AUTHORS \
-	COPYING ChangeLog INSTALL NEWS THANKS TODO config/config.guess \
-	config/config.sub config/depcomp config/install-sh \
-	config/mdate-sh config/missing config/texinfo.tex
+	COPYING ChangeLog INSTALL NEWS THANKS TODO config.rpath \
+	config/config.guess config/config.sub config/depcomp \
+	config/install-sh config/mdate-sh config/missing \
+	config/texinfo.tex
 subdir = .
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/libgnu/m4/alloca.m4 \
@@ -247,7 +248,7 @@ MAINTAINERCLEANFILES = Makefile.in aclocal.m4 configure \
 		configure.scan autoscan.log
 
 EXTRA_DIST = bootstrap.sh BUGS THANKS TODO sfxatools.spec
-SUBDIRS = libgnu util src doc tests
+SUBDIRS = libgnu util src bio doc tests
 ACLOCAL_AMFLAGS = -I libgnu/m4
 all: config.h
 	$(MAKE) $(AM_MAKEFLAGS) all-recursive

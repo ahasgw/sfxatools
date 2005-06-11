@@ -1,5 +1,5 @@
 /***********************************************************************
- * $Id: sfxa.c,v 1.7 2005/03/23 05:57:57 aki Exp $
+ * $Id: sfxa.c,v 1.8 2005/06/11 06:23:10 aki Exp $
  *
  * sfxa
  * Copyright (C) 2005 RIKEN. All rights reserved.
@@ -63,6 +63,7 @@
  * macro definitions
  *======================================================================*/
 
+#define DEFAULT_F_HDR	(1)	/* whether print information header */
 #define DEFAULT_F_POS	(1)	/* whether print position column */
 #define DEFAULT_F_IDX	(1)	/* whether print index column */
 #define DEFAULT_F_SFX	(50)	/* length of suffix column */
@@ -113,6 +114,7 @@ static opts_t opts = {
     /* others */
     {
 	NULL,
+	DEFAULT_F_HDR,
 	DEFAULT_F_POS,
 	DEFAULT_F_IDX,
 	DEFAULT_F_SFX,
@@ -146,6 +148,10 @@ static int search_pattern(const sfxa_t *sfxa, const char *pattern, int patlen)
 	range32_t result;
 	search32(mmfile_ptr(&sfxa->ftxt), mmfile_ptr(&sfxa->fidx),
 		(int32_t)len, pattern, patlen, &result);
+	if (opts.opt_F.hdr) {
+	    printf("# '%*s' (%d)\n",
+		    patlen, pattern, result.end - result.beg + 1);
+	}
 	output32(mmfile_ptr(&sfxa->ftxt), mmfile_ptr(&sfxa->fidx),
 		(int32_t)len, result.beg, result.end, &opts.opt_F);
     } else {
@@ -157,12 +163,20 @@ static int search_pattern(const sfxa_t *sfxa, const char *pattern, int patlen)
 	range32_t result;
 	search32(mmfile_ptr(&sfxa->ftxt), mmfile_ptr(&sfxa->fidx),
 		(int32_t)len, pattern, patlen, &result);
+	if (opts.opt_F.hdr) {
+	    printf("# '%*s' (%d)\n",
+		    patlen, pattern, result.end - result.beg + 1);
+	}
 	output32(mmfile_ptr(&sfxa->ftxt), mmfile_ptr(&sfxa->fidx),
 		(int32_t)len, result.beg, result.end, &opts.opt_F);
     } else if (len <= (INT64_MAX / sizeof(int64_t))) {
 	range64_t result;
 	search64(mmfile_ptr(&sfxa->ftxt), mmfile_ptr(&sfxa->fidx),
 		(int64_t)len, pattern, patlen, &result);
+	if (opts.opt_F.hdr) {
+	    printf("# '%*s' (%lld)\n",
+		    patlen, pattern, result.end - result.beg + 1);
+	}
 	output64(mmfile_ptr(&sfxa->ftxt), mmfile_ptr(&sfxa->fidx),
 		(int64_t)len, result.beg, result.end, &opts.opt_F);
     } else {
@@ -184,8 +198,8 @@ static int dump_suffix_array(const sfxa_t *sfxa)
 	msg(MSGLVL_WARNING, "Cannot dump:");
 	return errno;
     }
-    if (opts.opt_v)
-	printf("## txt: '%s', idx:'%s', size:%ld\n"
+    if (opts.opt_F.hdr)
+	printf("## txt: '%s', idx:'%s', size:%d\n"
 		"--- dump begin ---\n",
 		mmfile_path(&sfxa->ftxt), mmfile_path(&sfxa->fidx), len);
     output32(mmfile_ptr(&sfxa->ftxt), mmfile_ptr(&sfxa->fidx),
@@ -196,7 +210,7 @@ static int dump_suffix_array(const sfxa_t *sfxa)
 	msg(MSGLVL_WARNING, "Cannot dump:");
 	return errno;
     }
-    if (opts.opt_v)
+    if (opts.opt_F.hdr)
 	printf("## txt: '%s', idx:'%s', size:%lld\n"
 		"--- dump begin ---\n",
 		mmfile_path(&sfxa->ftxt), mmfile_path(&sfxa->fidx),
@@ -247,11 +261,14 @@ static void parse_subopt_F(char **optionp)
 {
     char *val;
     int op;
-    enum {POS = 0, NOPOS, IDX, NOIDX, SFX, NOSFX, PRE, NOPRE, CHOP, NOCHOP};
+    enum {HDR = 0, NOHDR, POS, NOPOS, IDX, NOIDX, SFX, NOSFX, PRE, NOPRE, CHOP, NOCHOP};
     static char *subop[] = {
-	"pos", "nopos", "idx", "noidx", "sfx", "nosfx", "pre", "nopre", "chop", "nochop", NULL};
+	"hdr", "nohdr", "pos", "nopos", "idx", "noidx", "sfx", "nosfx", "pre", "nopre", "chop", "nochop", NULL};
     while ((op = getsubopt(optionp, subop, &val)) != -1) {
 	switch (op) {
+	    case HDR:	opts.opt_F.hdr = 1; break;
+	    case NOHDR:	opts.opt_F.hdr = 0; break;
+
 	    case POS:	opts.opt_F.pos = 1; break;
 	    case NOPOS:	opts.opt_F.pos = 0; break;
 
@@ -309,6 +326,7 @@ static void show_help(void)
 	"  -d, --dump           dump suffix array\n"
 	"  -M, --map=<file>     character mapping file\n"
 	"  -F, --format=<comma_separated_subopts>  formatting parameters\n"
+	"        [no]hdr        [do not] print information header\n"
 	"        [no]pos        [do not] print array position column\n"
 	"        [no]idx        [do not] print index column\n"
 	"        [no]sfx=<n>    [do not] print suffix at most length <n>\n"
@@ -324,6 +342,7 @@ static void show_help(void)
 	"  -d           dump suffix array\n"
 	"  -M <file>    character mapping file\n"
 	"  -F <comma_separated_subopts>  formatting parameters\n"
+	"     [no]hdr        [do not] print information header\n"
 	"     [no]pos        [do not] print array position column\n"
 	"     [no]idx        [do not] print index column\n"
 	"     [no]sfx=<n>    [do not] print suffix at most length <n>\n"
@@ -418,6 +437,18 @@ int main(int argc, char **argv)
 	    msg(MSGLVL_ERR, "Cannot open file '%s':", opts.opt_o);
 	    exit(EXIT_FAILURE);
 	}
+    }
+
+    /* print information header */
+    if (opts.opt_F.hdr) {
+	off_t len = mmfile_len(&sa.ftxt);
+#if SIZEOF_OFF_T < 8
+	printf("## txt: '%s', idx:'%s', size:%d\n",
+		mmfile_path(&sa.ftxt), mmfile_path(&sa.fidx), len);
+#else /* SIZEOF_OFF_T >= 8 */
+	printf("## txt: '%s', idx:'%s', size:%lld\n",
+		mmfile_path(&sa.ftxt), mmfile_path(&sa.fidx), len);
+#endif /* SIZEOF_OFF_T >= 8 */
     }
 
     /* search the pattern */

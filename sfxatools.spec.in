@@ -1,4 +1,4 @@
-# $Id: sfxatools.spec.in,v 1.1 2005/02/02 10:39:22 aki Exp $
+# $Id: sfxatools.spec.in,v 1.2 2005/06/11 06:23:09 aki Exp $
 %define today	%(echo 'LC_ALL="C" date +"%a %b %d %Y"')
 
 Summary:		@PACKAGE_NAME@
@@ -35,6 +35,7 @@ rm -rf ${RPM_BUILD_ROOT}
 %attr(755,root,root) %{_bindir}/*
 %{_mandir}/man1/*
 %{_infodir}/*
+%{_datadir}/*
 
 %changelog
 * Mon Jan 24 2005 Aki Hasegawa <aki@gsc.riken.jp>

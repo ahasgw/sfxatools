@@ -1,4 +1,4 @@
-## $Id: Makefile.am,v 1.1 2005/02/02 10:39:22 aki Exp $
+## $Id: Makefile.am,v 1.2 2005/06/11 06:23:08 aki Exp $
 ##
 ## Makefile for the toplevel directory of sfxatools.
 ## Copyright (C) 2005 RIKEN. All rights reserved.
@@ -24,7 +24,7 @@ MAINTAINERCLEANFILES = Makefile.in aclocal.m4 configure \
 
 EXTRA_DIST = bootstrap.sh BUGS THANKS TODO sfxatools.spec
 
-SUBDIRS = libgnu util src doc tests
+SUBDIRS = libgnu util src bio doc tests
 
 .PHONY: maintainer-check
 maintainer-check:

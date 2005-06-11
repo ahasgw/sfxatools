@@ -13,6 +13,10 @@
 # PARTICULAR PURPOSE.
 
 @SET_MAKE@
+
+
+SOURCES = $(annotidx_SOURCES) $(bl2dump_SOURCES) $(fa2hdsq_SOURCES)
+
 srcdir = @srcdir@
 top_srcdir = @top_srcdir@
 VPATH = @srcdir@
@@ -36,10 +40,10 @@ POST_UNINSTALL = :
 build_triplet = @build@
 host_triplet = @host@
 target_triplet = @target@
-subdir = tests
-DIST_COMMON = $(srcdir)/Makefile.am $(srcdir)/Makefile.in \
-	$(srcdir)/bl2dump.in $(srcdir)/fa2hdsq.in $(srcdir)/mklcpa.in \
-	$(srcdir)/mksfxa.in $(srcdir)/sfxa.in
+bin_PROGRAMS = fa2hdsq$(EXEEXT) bl2dump$(EXEEXT) annotidx$(EXEEXT)
+@IS_SIZEOF_OFF_T_EQ_8_TRUE@am__append_1 = parsefa.o64
+subdir = bio
+DIST_COMMON = $(srcdir)/Makefile.am $(srcdir)/Makefile.in
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/libgnu/m4/alloca.m4 \
 	$(top_srcdir)/libgnu/m4/assert.m4 \
@@ -112,9 +116,43 @@ am__configure_deps = $(am__aclocal_m4_deps) $(CONFIGURE_DEPENDENCIES) \
 	$(ACLOCAL_M4)
 mkinstalldirs = $(install_sh) -d
 CONFIG_HEADER = $(top_builddir)/config.h
-CONFIG_CLEAN_FILES = mksfxa mklcpa sfxa fa2hdsq bl2dump
-SOURCES =
-DIST_SOURCES =
+CONFIG_CLEAN_FILES =
+am__installdirs = "$(DESTDIR)$(bindir)" "$(DESTDIR)$(pkgdatadir)"
+binPROGRAMS_INSTALL = $(INSTALL_PROGRAM)
+PROGRAMS = $(bin_PROGRAMS)
+am_annotidx_OBJECTS = annotidx.$(OBJEXT)
+annotidx_OBJECTS = $(am_annotidx_OBJECTS)
+annotidx_DEPENDENCIES = $(top_builddir)/util/libutil.a \
+	$(top_builddir)/libgnu/libgnu.a
+am_bl2dump_OBJECTS = bl2dump.$(OBJEXT)
+bl2dump_OBJECTS = $(am_bl2dump_OBJECTS)
+bl2dump_DEPENDENCIES = $(top_builddir)/util/libutil.a \
+	$(top_builddir)/libgnu/libgnu.a
+am_fa2hdsq_OBJECTS = fa2hdsq.$(OBJEXT) parsefa.$(OBJEXT)
+fa2hdsq_OBJECTS = $(am_fa2hdsq_OBJECTS)
+@IS_SIZEOF_OFF_T_EQ_8_TRUE@am__DEPENDENCIES_1 = parsefa.o64
+fa2hdsq_DEPENDENCIES = $(am__DEPENDENCIES_1) \
+	$(top_builddir)/util/libutil.a $(top_builddir)/libgnu/libgnu.a
+DEFAULT_INCLUDES = -I. -I$(srcdir) -I$(top_builddir)
+depcomp = $(SHELL) $(top_srcdir)/config/depcomp
+am__depfiles_maybe = depfiles
+COMPILE = $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) \
+	$(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS)
+CCLD = $(CC)
+LINK = $(CCLD) $(AM_CFLAGS) $(CFLAGS) $(AM_LDFLAGS) $(LDFLAGS) -o $@
+SOURCES = $(annotidx_SOURCES) $(bl2dump_SOURCES) $(fa2hdsq_SOURCES)
+DIST_SOURCES = $(annotidx_SOURCES) $(bl2dump_SOURCES) \
+	$(fa2hdsq_SOURCES)
+am__vpath_adj_setup = srcdirstrip=`echo "$(srcdir)" | sed 's|.|.|g'`;
+am__vpath_adj = case $$p in \
+    $(srcdir)/*) f=`echo "$$p" | sed "s|^$$srcdirstrip/||"`;; \
+    *) f=$$p;; \
+  esac;
+am__strip_dir = `echo $$p | sed -e 's|^.*/||'`;
+pkgdataDATA_INSTALL = $(INSTALL_DATA)
+DATA = $(pkgdata_DATA)
+ETAGS = etags
+CTAGS = ctags
 DISTFILES = $(DIST_COMMON) $(DIST_SOURCES) $(TEXINFOS) $(EXTRA_DIST)
 ACLOCAL = @ACLOCAL@
 ALLOCA = @ALLOCA@
@@ -218,17 +256,24 @@ target_alias = @target_alias@
 target_cpu = @target_cpu@
 target_os = @target_os@
 target_vendor = @target_vendor@
-MAINTAINERCLEANFILES = Makefile.in $(TESTSUITE)
-DISTCLEANFILES = atconfig $(check_SCRIPTS)
-EXTRA_DIST = $(TESTSUITE_AT) $(TESTSUITE) package.m4
-TESTSUITE = $(srcdir)/testsuite
-AUTOTEST = $(AUTOM4TE) --language=autotest
-TESTSUITE_AT = testsuite.at fa2hdsq.at bl2dump.at mksfxa.at mklcpa.at \
-	sfxa.at
-check_SCRIPTS = fa2hdsq bl2dump mksfxa mklcpa sfxa
+MAINTAINERCLEANFILES = Makefile.in
+EXTRA_DIST = NCBIstdaa.map NCBI2na.map
+SUFFIXES = .o64
+pkgdata_DATA = $(top_srcdir)/bio/NCBIstdaa.map \
+	$(top_srcdir)/bio/NCBI2na.map
+AM_CPPFLAGS = -I$(top_srcdir)/util -I$(top_srcdir)/libgnu
+AM_CFLAGS = -DNDEBUG
+fa2hdsq_SOURCES = fa2hdsq.c parsefa.c parsefa.h
+fa2hdsq_LDADD = $(am__append_1) $(top_builddir)/util/libutil.a \
+	$(top_builddir)/libgnu/libgnu.a
+bl2dump_SOURCES = bl2dump.c
+bl2dump_LDADD = $(top_builddir)/util/libutil.a $(top_builddir)/libgnu/libgnu.a
+annotidx_SOURCES = annotidx.c
+annotidx_LDADD = $(top_builddir)/util/libutil.a $(top_builddir)/libgnu/libgnu.a
 all: all-am
 
 .SUFFIXES:
+.SUFFIXES: .o64 .c .o .obj
 $(srcdir)/Makefile.in:  $(srcdir)/Makefile.am  $(am__configure_deps)
 	@for dep in $?; do \
 	  case '$(am__configure_deps)' in \
@@ -238,9 +283,9 @@ $(srcdir)/Makefile.in:  $(srcdir)/Makefile.am  $(am__configure_deps)
 	      exit 1;; \
 	  esac; \
 	done; \
-	echo ' cd $(top_srcdir) && $(AUTOMAKE) --gnu  tests/Makefile'; \
+	echo ' cd $(top_srcdir) && $(AUTOMAKE) --gnu  bio/Makefile'; \
 	cd $(top_srcdir) && \
-	  $(AUTOMAKE) --gnu  tests/Makefile
+	  $(AUTOMAKE) --gnu  bio/Makefile
 .PRECIOUS: Makefile
 Makefile: $(srcdir)/Makefile.in $(top_builddir)/config.status
 	@case '$?' in \
@@ -258,26 +303,131 @@ $(top_srcdir)/configure:  $(am__configure_deps)
 	cd $(top_builddir) && $(MAKE) $(AM_MAKEFLAGS) am--refresh
 $(ACLOCAL_M4):  $(am__aclocal_m4_deps)
 	cd $(top_builddir) && $(MAKE) $(AM_MAKEFLAGS) am--refresh
-mksfxa: $(top_builddir)/config.status $(srcdir)/mksfxa.in
-	cd $(top_builddir) && $(SHELL) ./config.status $(subdir)/$@
-mklcpa: $(top_builddir)/config.status $(srcdir)/mklcpa.in
-	cd $(top_builddir) && $(SHELL) ./config.status $(subdir)/$@
-sfxa: $(top_builddir)/config.status $(srcdir)/sfxa.in
-	cd $(top_builddir) && $(SHELL) ./config.status $(subdir)/$@
-fa2hdsq: $(top_builddir)/config.status $(srcdir)/fa2hdsq.in
-	cd $(top_builddir) && $(SHELL) ./config.status $(subdir)/$@
-bl2dump: $(top_builddir)/config.status $(srcdir)/bl2dump.in
-	cd $(top_builddir) && $(SHELL) ./config.status $(subdir)/$@
+install-binPROGRAMS: $(bin_PROGRAMS)
+	@$(NORMAL_INSTALL)
+	test -z "$(bindir)" || $(mkdir_p) "$(DESTDIR)$(bindir)"
+	@list='$(bin_PROGRAMS)'; for p in $$list; do \
+	  p1=`echo $$p|sed 's/$(EXEEXT)$$//'`; \
+	  if test -f $$p \
+	  ; then \
+	    f=`echo "$$p1" | sed 's,^.*/,,;$(transform);s/$$/$(EXEEXT)/'`; \
+	   echo " $(INSTALL_PROGRAM_ENV) $(binPROGRAMS_INSTALL) '$$p' '$(DESTDIR)$(bindir)/$$f'"; \
+	   $(INSTALL_PROGRAM_ENV) $(binPROGRAMS_INSTALL) "$$p" "$(DESTDIR)$(bindir)/$$f" || exit 1; \
+	  else :; fi; \
+	done
+
+uninstall-binPROGRAMS:
+	@$(NORMAL_UNINSTALL)
+	@list='$(bin_PROGRAMS)'; for p in $$list; do \
+	  f=`echo "$$p" | sed 's,^.*/,,;s/$(EXEEXT)$$//;$(transform);s/$$/$(EXEEXT)/'`; \
+	  echo " rm -f '$(DESTDIR)$(bindir)/$$f'"; \
+	  rm -f "$(DESTDIR)$(bindir)/$$f"; \
+	done
+
+clean-binPROGRAMS:
+	-test -z "$(bin_PROGRAMS)" || rm -f $(bin_PROGRAMS)
+annotidx$(EXEEXT): $(annotidx_OBJECTS) $(annotidx_DEPENDENCIES) 
+	@rm -f annotidx$(EXEEXT)
+	$(LINK) $(annotidx_LDFLAGS) $(annotidx_OBJECTS) $(annotidx_LDADD) $(LIBS)
+bl2dump$(EXEEXT): $(bl2dump_OBJECTS) $(bl2dump_DEPENDENCIES) 
+	@rm -f bl2dump$(EXEEXT)
+	$(LINK) $(bl2dump_LDFLAGS) $(bl2dump_OBJECTS) $(bl2dump_LDADD) $(LIBS)
+fa2hdsq$(EXEEXT): $(fa2hdsq_OBJECTS) $(fa2hdsq_DEPENDENCIES) 
+	@rm -f fa2hdsq$(EXEEXT)
+	$(LINK) $(fa2hdsq_LDFLAGS) $(fa2hdsq_OBJECTS) $(fa2hdsq_LDADD) $(LIBS)
+
+mostlyclean-compile:
+	-rm -f *.$(OBJEXT)
+
+distclean-compile:
+	-rm -f *.tab.c
+
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/annotidx.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/bl2dump.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/fa2hdsq.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/parsefa.Po@am__quote@
+
+.c.o:
+@am__fastdepCC_TRUE@	if $(COMPILE) -MT $@ -MD -MP -MF "$(DEPDIR)/$*.Tpo" -c -o $@ $<; \
+@am__fastdepCC_TRUE@	then mv -f "$(DEPDIR)/$*.Tpo" "$(DEPDIR)/$*.Po"; else rm -f "$(DEPDIR)/$*.Tpo"; exit 1; fi
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='$<' object='$@' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(COMPILE) -c $<
+
+.c.obj:
+@am__fastdepCC_TRUE@	if $(COMPILE) -MT $@ -MD -MP -MF "$(DEPDIR)/$*.Tpo" -c -o $@ `$(CYGPATH_W) '$<'`; \
+@am__fastdepCC_TRUE@	then mv -f "$(DEPDIR)/$*.Tpo" "$(DEPDIR)/$*.Po"; else rm -f "$(DEPDIR)/$*.Tpo"; exit 1; fi
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='$<' object='$@' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(COMPILE) -c `$(CYGPATH_W) '$<'`
 uninstall-info-am:
+install-pkgdataDATA: $(pkgdata_DATA)
+	@$(NORMAL_INSTALL)
+	test -z "$(pkgdatadir)" || $(mkdir_p) "$(DESTDIR)$(pkgdatadir)"
+	@list='$(pkgdata_DATA)'; for p in $$list; do \
+	  if test -f "$$p"; then d=; else d="$(srcdir)/"; fi; \
+	  f=$(am__strip_dir) \
+	  echo " $(pkgdataDATA_INSTALL) '$$d$$p' '$(DESTDIR)$(pkgdatadir)/$$f'"; \
+	  $(pkgdataDATA_INSTALL) "$$d$$p" "$(DESTDIR)$(pkgdatadir)/$$f"; \
+	done
+
+uninstall-pkgdataDATA:
+	@$(NORMAL_UNINSTALL)
+	@list='$(pkgdata_DATA)'; for p in $$list; do \
+	  f=$(am__strip_dir) \
+	  echo " rm -f '$(DESTDIR)$(pkgdatadir)/$$f'"; \
+	  rm -f "$(DESTDIR)$(pkgdatadir)/$$f"; \
+	done
+
+ID: $(HEADERS) $(SOURCES) $(LISP) $(TAGS_FILES)
+	list='$(SOURCES) $(HEADERS) $(LISP) $(TAGS_FILES)'; \
+	unique=`for i in $$list; do \
+	    if test -f "$$i"; then echo $$i; else echo $(srcdir)/$$i; fi; \
+	  done | \
+	  $(AWK) '    { files[$$0] = 1; } \
+	       END { for (i in files) print i; }'`; \
+	mkid -fID $$unique
 tags: TAGS
-TAGS:
 
+TAGS:  $(HEADERS) $(SOURCES)  $(TAGS_DEPENDENCIES) \
+		$(TAGS_FILES) $(LISP)
+	tags=; \
+	here=`pwd`; \
+	list='$(SOURCES) $(HEADERS)  $(LISP) $(TAGS_FILES)'; \
+	unique=`for i in $$list; do \
+	    if test -f "$$i"; then echo $$i; else echo $(srcdir)/$$i; fi; \
+	  done | \
+	  $(AWK) '    { files[$$0] = 1; } \
+	       END { for (i in files) print i; }'`; \
+	if test -z "$(ETAGS_ARGS)$$tags$$unique"; then :; else \
+	  test -n "$$unique" || unique=$$empty_fix; \
+	  $(ETAGS) $(ETAGSFLAGS) $(AM_ETAGSFLAGS) $(ETAGS_ARGS) \
+	    $$tags $$unique; \
+	fi
 ctags: CTAGS
-CTAGS:
+CTAGS:  $(HEADERS) $(SOURCES)  $(TAGS_DEPENDENCIES) \
+		$(TAGS_FILES) $(LISP)
+	tags=; \
+	here=`pwd`; \
+	list='$(SOURCES) $(HEADERS)  $(LISP) $(TAGS_FILES)'; \
+	unique=`for i in $$list; do \
+	    if test -f "$$i"; then echo $$i; else echo $(srcdir)/$$i; fi; \
+	  done | \
+	  $(AWK) '    { files[$$0] = 1; } \
+	       END { for (i in files) print i; }'`; \
+	test -z "$(CTAGS_ARGS)$$tags$$unique" \
+	  || $(CTAGS) $(CTAGSFLAGS) $(AM_CTAGSFLAGS) $(CTAGS_ARGS) \
+	     $$tags $$unique
 
+GTAGS:
+	here=`$(am__cd) $(top_builddir) && pwd` \
+	  && cd $(top_srcdir) \
+	  && gtags -i $(GTAGS_ARGS) $$here
+
+distclean-tags:
+	-rm -f TAGS ID GTAGS GRTAGS GSYMS GPATH tags
 
 distdir: $(DISTFILES)
-	$(mkdir_p) $(distdir)/$(srcdir)
 	@srcdirstrip=`echo "$(srcdir)" | sed 's|.|.|g'`; \
 	topsrcdirstrip=`echo "$(top_srcdir)" | sed 's|.|.|g'`; \
 	list='$(DISTFILES)'; for file in $$list; do \
@@ -305,11 +455,12 @@ distdir: $(DISTFILES)
 	  fi; \
 	done
 check-am: all-am
-	$(MAKE) $(AM_MAKEFLAGS) $(check_SCRIPTS)
-	$(MAKE) $(AM_MAKEFLAGS) check-local
 check: check-am
-all-am: Makefile
+all-am: Makefile $(PROGRAMS) $(DATA)
 installdirs:
+	for dir in "$(DESTDIR)$(bindir)" "$(DESTDIR)$(pkgdatadir)"; do \
+	  test -z "$$dir" || $(mkdir_p) "$$dir"; \
+	done
 install: install-am
 install-exec: install-exec-am
 install-data: install-data-am
@@ -330,19 +481,21 @@ clean-generic:
 
 distclean-generic:
 	-test -z "$(CONFIG_CLEAN_FILES)" || rm -f $(CONFIG_CLEAN_FILES)
-	-test -z "$(DISTCLEANFILES)" || rm -f $(DISTCLEANFILES)
 
 maintainer-clean-generic:
 	@echo "This command is intended for maintainers to use"
 	@echo "it deletes files that may require special tools to rebuild."
 	-test -z "$(MAINTAINERCLEANFILES)" || rm -f $(MAINTAINERCLEANFILES)
+@IS_SIZEOF_OFF_T_EQ_8_FALSE@clean-local:
 clean: clean-am
 
-clean-am: clean-generic clean-local mostlyclean-am
+clean-am: clean-binPROGRAMS clean-generic clean-local mostlyclean-am
 
 distclean: distclean-am
+	-rm -rf ./$(DEPDIR)
 	-rm -f Makefile
-distclean-am: clean-am distclean-generic
+distclean-am: clean-am distclean-compile distclean-generic \
+	distclean-tags
 
 dvi: dvi-am
 
@@ -354,23 +507,24 @@ info: info-am
 
 info-am:
 
-install-data-am:
+install-data-am: install-pkgdataDATA
 
-install-exec-am:
+install-exec-am: install-binPROGRAMS
 
 install-info: install-info-am
 
 install-man:
 
-installcheck-am: installcheck-local
+installcheck-am:
 
 maintainer-clean: maintainer-clean-am
+	-rm -rf ./$(DEPDIR)
 	-rm -f Makefile
 maintainer-clean-am: distclean-am maintainer-clean-generic
 
 mostlyclean: mostlyclean-am
 
-mostlyclean-am: mostlyclean-generic
+mostlyclean-am: mostlyclean-compile mostlyclean-generic
 
 pdf: pdf-am
 
@@ -380,45 +534,30 @@ ps: ps-am
 
 ps-am:
 
-uninstall-am: uninstall-info-am
+uninstall-am: uninstall-binPROGRAMS uninstall-info-am \
+	uninstall-pkgdataDATA
 
-.PHONY: all all-am check check-am check-local clean clean-generic \
-	clean-local distclean distclean-generic distdir dvi dvi-am \
-	html html-am info info-am install install-am install-data \
-	install-data-am install-exec install-exec-am install-info \
-	install-info-am install-man install-strip installcheck \
-	installcheck-am installcheck-local installdirs \
+.PHONY: CTAGS GTAGS all all-am check check-am clean clean-binPROGRAMS \
+	clean-generic clean-local ctags distclean distclean-compile \
+	distclean-generic distclean-tags distdir dvi dvi-am html \
+	html-am info info-am install install-am install-binPROGRAMS \
+	install-data install-data-am install-exec install-exec-am \
+	install-info install-info-am install-man install-pkgdataDATA \
+	install-strip installcheck installcheck-am installdirs \
 	maintainer-clean maintainer-clean-generic mostlyclean \
-	mostlyclean-generic pdf pdf-am ps ps-am uninstall uninstall-am \
-	uninstall-info-am
+	mostlyclean-compile mostlyclean-generic pdf pdf-am ps ps-am \
+	tags uninstall uninstall-am uninstall-binPROGRAMS \
+	uninstall-info-am uninstall-pkgdataDATA
 
+.c.o64:
+@am__fastdepCC_TRUE@	if $(COMPILE) -DSIZEOF_INTXX_T=8 -MT $@ -MD -MP -MF "$(DEPDIR)/$*.Tpo" -c -o $@ $<; \
+@am__fastdepCC_TRUE@	then mv -f "$(DEPDIR)/$*.Tpo" "$(DEPDIR)/$*.Po"; else rm -f "$(DEPDIR)/$*.Tpo"; exit 1; fi
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='$<' object='$@' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(COMPILE) -DSIZEOF_INTXX_T=8 -c -o $@ $<
 
-$(srcdir)/package.m4: $(top_srcdir)/configure.ac
-	{ \
-	echo '# Signature of the current package.'; \
-	echo 'm4_define([AT_PACKAGE_NAME],      [@PACKAGE_NAME@])'; \
-	echo 'm4_define([AT_PACKAGE_TARNAME],   [@PACKAGE_TARNAME@])'; \
-	echo 'm4_define([AT_PACKAGE_VERSION],   [@PACKAGE_VERSION@])'; \
-	echo 'm4_define([AT_PACKAGE_STRING],    [@PACKAGE_STRING@])'; \
-	echo 'm4_define([AT_PACKAGE_BUGREPORT], [@PACKAGE_BUGREPORT@])'; \
-	} >$(srcdir)/package.m4
-
-$(TESTSUITE): package.m4 $(TESTSUITE_AT)
-	$(AUTOTEST) -I $(srcdir) $@.at -o $@.tmp
-	mv $@.tmp $@
-
-atconfig: $(top_builddir)/config.status
-	cd $(top_builddir) && ./config.status tests/$@
-
-clean-local:
-	$(SHELL) $(TESTSUITE) --clean
-
-check-local: atconfig $(TESTSUITE)
-	$(SHELL) $(TESTSUITE)
-
-# Run the test suite on the *installed* tree.
-installcheck-local:
-	$(SHELL) $(TESTSUITE) AUTOTEST_PATH=$(exec_prefix)/bin
+@IS_SIZEOF_OFF_T_EQ_8_TRUE@clean-local:
+@IS_SIZEOF_OFF_T_EQ_8_TRUE@	-rm -f *.o64
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.
 .NOEXPORT:
