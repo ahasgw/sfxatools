@@ -1,3 +1,7 @@
+2005-06-11  Aki Hasegawa  <aki@gsc.riken.go.jp>
+
+	* sfxatools: added biosequence handling commands.
+
 2005-03-17  Aki Hasegawa  <aki@gsc.riken.go.jp>
 
 	* sfxatools: added character mapping function.
