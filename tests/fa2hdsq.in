@@ -1,7 +1,9 @@
-# $Id: testsuite.at,v 1.4 2005/06/11 07:07:03 aki Exp $
+#! @SHELL@
 #
-# Test suite for sfxatools.
-# Copyright (C) 2004 RIKEN. All rights reserved.
+# $Id: fa2hdsq.in,v 1.1 2005/06/11 07:07:03 aki Exp $
+#
+# fa2hdsq
+# Copyright (C) 2005 RIKEN. All rights reserved.
 # Written by Aki Hasegawa <aki@gsc.riken.jp>.
 #
 # This program is free software; you can redistribute it and/or modify
@@ -17,14 +19,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
+                                                                                
+# @configure_input@
 
-AT_INIT
-AT_TESTED([mksfxa mklcpa sfxa fa2hdsq annotidx bl2dump])
-
-m4_include(mksfxa.at)
-m4_include(mklcpa.at)
-m4_include(sfxa.at)
-
-m4_include(fa2hdsq.at)
-m4_include(annotidx.at)
-m4_include(bl2dump.at)
+exec '@abs_top_builddir@/bio/fa2hdsq' ${1+"$@"}

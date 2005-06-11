@@ -1,6 +1,6 @@
-# $Id: testsuite.at,v 1.4 2005/06/11 07:07:03 aki Exp $
+# $Id: bl2dump.at,v 1.1 2005/06/11 07:07:03 aki Exp $
 #
-# Test suite for sfxatools.
+# Test for bl2dump.
 # Copyright (C) 2004 RIKEN. All rights reserved.
 # Written by Aki Hasegawa <aki@gsc.riken.jp>.
 #
@@ -18,13 +18,10 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
 
-AT_INIT
-AT_TESTED([mksfxa mklcpa sfxa fa2hdsq annotidx bl2dump])
+AT_BANNER([[Tests for bl2dump.]])
 
-m4_include(mksfxa.at)
-m4_include(mklcpa.at)
-m4_include(sfxa.at)
-
-m4_include(fa2hdsq.at)
-m4_include(annotidx.at)
-m4_include(bl2dump.at)
+#AT_SETUP([The file not existing.])
+#AT_KEYWORDS([non-existent-file])
+#AT_CHECK([rm deleteme], ignore, ignore, ignore)
+#AT_CHECK([bl2dump deleteme], ignore, ignore, ignore)
+#AT_CLEANUP

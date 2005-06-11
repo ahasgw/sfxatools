@@ -234,12 +234,12 @@ target_alias = @target_alias@
 target_cpu = @target_cpu@
 target_os = @target_os@
 target_vendor = @target_vendor@
-CLEANFILES = mksfxa.1 mklcpa.1 sfxa.1 fa2hdsq.1 bl2dump.1
+CLEANFILES = mksfxa.1 mklcpa.1 sfxa.1 fa2hdsq.1 annotidx.1 bl2dump.1
 DISTCLEANFILES = sfxatools.info
 MAINTAINERCLEANFILES = Makefile.in
 EXTRA_DIST = $(man_MANS)
 info_TEXINFOS = sfxatools.texi
-man_MANS = mksfxa.1 mklcpa.1 sfxa.1 fa2hdsq.1 bl2dump.1
+man_MANS = mksfxa.1 mklcpa.1 sfxa.1 fa2hdsq.1 annotidx.1 bl2dump.1
 HELP2MANFLAGS = -p sfxatools
 all: all-am
 
@@ -608,6 +608,10 @@ sfxa.1 : $(top_builddir)/src/sfxa
 	  $(HELP2MAN) $(HELP2MANFLAGS) $< > $@; \
 	fi
 fa2hdsq.1 : $(top_builddir)/bio/fa2hdsq
+	if test "x$(HELP2MAN)" != x; then \
+	  $(HELP2MAN) $(HELP2MANFLAGS) $< > $@; \
+	fi
+annotidx.1 : $(top_builddir)/bio/annotidx
 	if test "x$(HELP2MAN)" != x; then \
 	  $(HELP2MAN) $(HELP2MANFLAGS) $< > $@; \
 	fi
