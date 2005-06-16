@@ -1,5 +1,5 @@
 /***********************************************************************
- * $Id: parsefa.c,v 1.1 2005/06/11 06:23:09 aki Exp $
+ * $Id: parsefa.c,v 1.2 2005/06/16 09:59:44 aki Exp $
  *
  * parsefa
  * Copyright (C) 2005 RIKEN. All rights reserved.
@@ -76,8 +76,8 @@ int parse_fastaXX(const parsefa_param_t *param)
     size_t len = 0;
     ssize_t read;
 
-    uintXX_t hdr_beg = 0;
-    uintXX_t hdr_len = 0;
+    uint32_t hdr_beg = 0;
+    uint32_t hdr_len = 0;
     uintXX_t seq_beg = 0;
     uintXX_t seq_len = 0;
 
@@ -98,7 +98,7 @@ int parse_fastaXX(const parsefa_param_t *param)
 		    uintXX_t seq_end = seq_beg + seq_len;
 		    fwrite(&seq_beg, sizeof(uintXX_t), 1, param->fhdxout);
 		    fwrite(&seq_end, sizeof(uintXX_t), 1, param->fhdxout);
-		    fwrite(&hdr_beg, sizeof(uintXX_t), 1, param->fhdxout);
+		    fwrite(&hdr_beg, sizeof(uint32_t), 1, param->fhdxout);
 		}
 		seq_beg += (seq_len + 1), seq_len = 0;
 		hdr_beg += hdr_len, hdr_len = 0;
@@ -108,7 +108,7 @@ int parse_fastaXX(const parsefa_param_t *param)
 	    line[read] = '\0';  /* truncate delimiter */
 	    fputs(line + 1, param->fhdrout);
 	    fputc('\0', param->fhdrout);
-	    hdr_len = (uintXX_t)read - 1 + 1;
+	    hdr_len = (uint32_t)read - 1 + 1;
 	} else {
 	    line[read] = '\0';  /* truncate delimiter */
 	    if (param->ignore_case) {
@@ -138,7 +138,7 @@ int parse_fastaXX(const parsefa_param_t *param)
 	uintXX_t seq_end = seq_beg + seq_len;
 	fwrite(&seq_beg, sizeof(uintXX_t), 1, param->fhdxout);
 	fwrite(&seq_end, sizeof(uintXX_t), 1, param->fhdxout);
-	fwrite(&hdr_beg, sizeof(uintXX_t), 1, param->fhdxout);
+	fwrite(&hdr_beg, sizeof(uint32_t), 1, param->fhdxout);
 	fputc('\0', param->fseqout);
     }
 

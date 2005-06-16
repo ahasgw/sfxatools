@@ -224,9 +224,9 @@ DISTCLEANFILES = atconfig $(check_SCRIPTS)
 EXTRA_DIST = $(TESTSUITE_AT) $(TESTSUITE) package.m4
 TESTSUITE = $(srcdir)/testsuite
 AUTOTEST = $(AUTOM4TE) --language=autotest
-TESTSUITE_AT = testsuite.at fa2hdsq.at annotidx.at bl2dump.at \
-	mksfxa.at mklcpa.at sfxa.at
-check_SCRIPTS = fa2hdsq annotidx bl2dump mksfxa mklcpa sfxa
+TESTSUITE_AT = testsuite.at mksfxa.at mklcpa.at sfxa.at fa2hdsq.at \
+	annotidx.at bl2dump.at
+check_SCRIPTS = mksfxa mklcpa sfxa fa2hdsq annotidx bl2dump
 all: all-am
 
 .SUFFIXES:

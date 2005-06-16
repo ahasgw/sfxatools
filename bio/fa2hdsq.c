@@ -1,5 +1,5 @@
 /***********************************************************************
- * $Id: fa2hdsq.c,v 1.1 2005/06/11 06:23:09 aki Exp $
+ * $Id: fa2hdsq.c,v 1.2 2005/06/16 09:59:44 aki Exp $
  *
  * Fasta to header/sequence separator
  * Copyright (C) 2005 RIKEN. All rights reserved.
@@ -147,11 +147,15 @@ static void process_file(const char *file)
     };
 
     /* parse fasta */
+#if SIZEOF_OFF_T < 8
+    parse_fasta32(&param);
+#else /* SIZEOF_OFF_T */
     if (opts.opt_L) {
 	parse_fasta64(&param);
     } else {
 	parse_fasta32(&param);
     }
+#endif /* SIZEOF_OFF_T */
 
     /* close files */
     fclose(opts.fseqout), opts.fseqout = NULL;
@@ -200,11 +204,15 @@ static void process_stdin(void)
     };
 
     /* parse fasta */
+#if SIZEOF_OFF_T < 8
+    parse_fasta32(&param);
+#else /* SIZEOF_OFF_T */
     if (opts.opt_L) {
 	parse_fasta64(&param);
     } else {
 	parse_fasta32(&param);
     }
+#endif /* SIZEOF_OFF_T */
 
     /* close files */
     fclose(opts.fseqout), opts.fseqout = NULL;
@@ -242,7 +250,9 @@ static void show_help(void)
 	"  -V, --version          print version number, and exit\n"
 	"  -v, --verbose          verbose output\n"
 	"  -I, --ignore-case      ignore case\n"
-	"  -L, --large-index      large header index\n"
+# if SIZEOF_OFF_T >= 8
+	"  -L, --large-index      large sequence index\n"
+# endif /* SIZEOF_OFF_T */
 	"  -M, --map=<file>       character mapping file\n"
 	"  -b, --basename=<name>  base name for newly created file (for stdin)\n"
 #else
@@ -250,7 +260,9 @@ static void show_help(void)
 	"  -V           print version number, and exit\n"
 	"  -v           verbose output\n"
 	"  -I           ignore case\n"
-	"  -L           large header index\n"
+# if SIZEOF_OFF_T >= 8
+	"  -L           large sequence index\n"
+# endif /* SIZEOF_OFF_T */
 	"  -M <file>    character mapping file\n"
 	"  -b <name>    base name for newly created file (for stdin)\n"
 #endif
@@ -277,15 +289,22 @@ int main(int argc, char **argv)
 	    {"version",	    no_argument,	NULL, 'V'},
 	    {"verbose",	    no_argument,	NULL, 'v'},
 	    {"ignore-case", no_argument,	NULL, 'I'},
+#if SIZEOF_OFF_T >= 8
 	    {"large-index", no_argument,	NULL, 'L'},
+#endif /* SIZEOF_OFF_T */
 	    {"map",	    required_argument,	NULL, 'M'},
 	    {"basename",    required_argument,	NULL, 'b'},
 	    {0, 0, 0, 0}
 	};
+#if SIZEOF_OFF_T < 8
+	const char *opt_fmt = "hVvIM:b:";
+#else /* SIZEOF_OFF_T */
+	const char *opt_fmt = "hVvILM:b:";
+#endif /* SIZEOF_OFF_T */
 
-	opt = getopt_long(argc, argv, "hVvILM:b:", long_opts, &opt_index);
+	opt = getopt_long(argc, argv, opt_fmt, long_opts, &opt_index);
 #else
-	opt = getopt(argc, argv, "hVvILM:b:");
+	opt = getopt(argc, argv, opt_fmt);
 #endif
 	if (opt == -1)
 	    break;
@@ -295,7 +314,9 @@ int main(int argc, char **argv)
 	    case 'V': opts.opt_V = 1; break;
 	    case 'v': ++opts.opt_v; break;
 	    case 'I': opts.opt_I = 1; break;
+#if SIZEOF_OFF_T >= 8
 	    case 'L': opts.opt_L = 1; break;
+#endif /* SIZEOF_OFF_T */
 	    case 'M': opts.opt_M = xstrdup(optarg); break;
 	    case 'b': opts.opt_b = xstrdup(optarg); break;
 	    default: show_help(); exit(EXIT_FAILURE);
