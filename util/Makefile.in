@@ -119,8 +119,8 @@ AR = ar
 ARFLAGS = cru
 libutil_a_AR = $(AR) $(ARFLAGS)
 libutil_a_LIBADD =
-am_libutil_a_OBJECTS = cmap.$(OBJEXT) strdupcat.$(OBJEXT) \
-	mmfile.$(OBJEXT) msg.$(OBJEXT)
+am_libutil_a_OBJECTS = cmap.$(OBJEXT) mmfile.$(OBJEXT) msg.$(OBJEXT) \
+	sfxa.$(OBJEXT) strdupcat.$(OBJEXT)
 libutil_a_OBJECTS = $(am_libutil_a_OBJECTS)
 DEFAULT_INCLUDES = -I. -I$(srcdir) -I$(top_builddir)
 depcomp = $(SHELL) $(top_srcdir)/config/depcomp
@@ -242,9 +242,10 @@ AM_CFLAGS = -DNDEBUG
 noinst_LIBRARIES = libutil.a
 libutil_a_SOURCES = \
 	cmap.c cmap.h \
-	strdupcat.c strdupcat.h \
 	mmfile.c mmfile.h \
-	msg.c msg.h
+	msg.c msg.h \
+	sfxa.c sfxa.h \
+	strdupcat.c strdupcat.h
 
 all: all-am
 
@@ -296,6 +297,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/cmap.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/mmfile.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/msg.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/sfxa.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/strdupcat.Po@am__quote@
 
 .c.o:

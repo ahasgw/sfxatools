@@ -1,5 +1,5 @@
 /***********************************************************************
- * $Id: output.c,v 1.4 2005/03/17 12:50:13 aki Exp $
+ * $Id: output.c,v 1.5 2005/06/16 09:59:44 aki Exp $
  *
  * output
  * Copyright (C) 2005 RIKEN. All rights reserved.
@@ -138,14 +138,14 @@ static void print_line(const outputXX_arg_t *arg, const intXX_t x)
     assert(arg != NULL);
     assert(arg->param != NULL);
 
-    if (arg->param->pos) {
-	if (col++) printf("%s", sep);
-	printf(fmt, arg->max_digit, x);
-    }
-
     if (arg->param->idx) {
 	if (col++) printf("%s", sep);
 	printf(fmt, arg->max_digit, arg->idx[x]);
+    }
+
+    if (arg->param->pos) {
+	if (col++) printf("%s", sep);
+	printf(fmt, arg->max_digit, x);
     }
 
 #if 0

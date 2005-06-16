@@ -1,5 +1,5 @@
 /***********************************************************************
- * $Id: sfxa.c,v 1.8 2005/06/11 06:23:10 aki Exp $
+ * $Id: sfxa.c,v 1.9 2005/06/16 09:59:45 aki Exp $
  *
  * sfxa
  * Copyright (C) 2005 RIKEN. All rights reserved.
@@ -42,6 +42,7 @@
 # include <limits.h>
 #endif
 
+#include <sfxa.h>
 #include "search.h"
 #include "cmap.h"
 #include "output.h"
@@ -64,7 +65,7 @@
  *======================================================================*/
 
 #define DEFAULT_F_HDR	(1)	/* whether print information header */
-#define DEFAULT_F_POS	(1)	/* whether print position column */
+#define DEFAULT_F_POS	(0)	/* whether print position column */
 #define DEFAULT_F_IDX	(1)	/* whether print index column */
 #define DEFAULT_F_SFX	(50)	/* length of suffix column */
 #define DEFAULT_F_PRE	(3)	/* length of substring ahead of the suffix */
@@ -81,11 +82,6 @@
 /*======================================================================
  * type definitions
  *======================================================================*/
-
-typedef struct sfxa_type {
-    mmfile_t	    ftxt;
-    mmfile_t	    fidx;
-} sfxa_t;
 
 typedef struct opts_type {
     char	    *opt_o;	/* output file path */
@@ -129,8 +125,6 @@ static opts_t opts = {
 
 static int search_pattern(const sfxa_t *sfxa, const char *pattern, int patlen);
 static int dump_suffix_array(const sfxa_t *sfxa);
-static int open_suffix_array(sfxa_t *sfxa, const char *ftxt, const char *fidx);
-static int close_suffix_array(sfxa_t *sfxa);
 static void show_version(void);
 static void show_help(void);
 
@@ -225,34 +219,6 @@ static int dump_suffix_array(const sfxa_t *sfxa)
 #endif /* SIZEOF_OFF_T >= 8 */
     if (opts.opt_v)
 	printf("--- dump end ---\n");
-    return ret;
-}
-
-static int open_suffix_array(sfxa_t *sfxa, const char *ftxt, const char *fidx)
-{
-    int ret = 0;
-    /* map text file */
-    if ((ret = mmfile_init(&sfxa->ftxt, ftxt)) == 0)
-	if ((ret = mmfile_map_private_rd(&sfxa->ftxt)) != 0)
-	    mmfile_free(&sfxa->ftxt);
-    /* map index file */
-    if (ret == 0 && (ret = mmfile_init(&sfxa->fidx, fidx)) == 0)
-	if ((ret = mmfile_map_private_rd(&sfxa->fidx)) != 0)
-	    mmfile_free(&sfxa->fidx);
-    return ret;
-}
-
-static int close_suffix_array(sfxa_t *sfxa)
-{
-    int ret = 0;
-    /* unmap index file */
-    if ((ret = mmfile_unmap(&sfxa->fidx)) != 0)
-	return ret;
-    /* unmap text file */
-    if ((ret = mmfile_unmap(&sfxa->ftxt)) != 0)
-	return ret;
-    mmfile_free(&sfxa->fidx);
-    mmfile_free(&sfxa->ftxt);
     return ret;
 }
 
@@ -425,7 +391,7 @@ int main(int argc, char **argv)
     {
 	char *ftxt = argv[optind++];
 	char *fidx = argv[optind++];
-	if (open_suffix_array(&sa, ftxt, fidx) != 0) {
+	if (sfxa_init(&sa, ftxt, fidx, NULL) != 0) {
 	    msg(MSGLVL_ERR, "Cannot open suffix array:");
 	    exit(EXIT_FAILURE);
 	}
@@ -484,7 +450,7 @@ int main(int argc, char **argv)
     }
 
     /* close suffix array */
-    if (close_suffix_array(&sa) != 0) {
+    if (sfxa_free(&sa) != 0) {
 	msg(MSGLVL_ERR, "Cannot close suffix array:");
 	exit(EXIT_FAILURE);
     }

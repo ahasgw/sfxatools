@@ -1,4 +1,4 @@
-## $Id: Makefile.am,v 1.2 2005/02/18 08:39:53 aki Exp $
+## $Id: Makefile.am,v 1.3 2005/06/16 09:59:44 aki Exp $
 ##
 ## Makefile for the src directory of sfxatools.
 ## Copyright (C) 2004 RIKEN. All rights reserved.
@@ -44,7 +44,8 @@ mksfxa_LDADD =
 if IS_SIZEOF_OFF_T_EQ_8
 mksfxa_LDADD += sort.o64
 endif
-mksfxa_LDADD += $(top_builddir)/util/libutil.a $(top_builddir)/libgnu/libgnu.a
+mksfxa_LDADD += $(top_builddir)/util/libutil.a
+mksfxa_LDADD += $(top_builddir)/libgnu/libgnu.a
 
 ## mklcpa
 bin_PROGRAMS += mklcpa
@@ -53,7 +54,8 @@ mklcpa_LDADD =
 if IS_SIZEOF_OFF_T_EQ_8
 mklcpa_LDADD += lcp.o64
 endif
-mklcpa_LDADD += $(top_builddir)/util/libutil.a $(top_builddir)/libgnu/libgnu.a
+mklcpa_LDADD += $(top_builddir)/util/libutil.a
+mklcpa_LDADD += $(top_builddir)/libgnu/libgnu.a
 
 ## sfxa
 bin_PROGRAMS += sfxa
@@ -62,7 +64,8 @@ sfxa_LDADD =
 if IS_SIZEOF_OFF_T_EQ_8
 sfxa_LDADD += search.o64 output.o64
 endif
-sfxa_LDADD += $(top_builddir)/util/libutil.a $(top_builddir)/libgnu/libgnu.a
+sfxa_LDADD += $(top_builddir)/util/libutil.a
+sfxa_LDADD += $(top_builddir)/libgnu/libgnu.a
 
 if IS_SIZEOF_OFF_T_EQ_8
 clean-local:

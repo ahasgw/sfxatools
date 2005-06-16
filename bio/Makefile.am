@@ -1,4 +1,4 @@
-## $Id: Makefile.am,v 1.1 2005/06/11 06:23:09 aki Exp $
+## $Id: Makefile.am,v 1.2 2005/06/16 09:59:43 aki Exp $
 ##
 ## Makefile for the bio directory of biotuils.
 ## Copyright (C) 2004 RIKEN. All rights reserved.
@@ -46,7 +46,8 @@ fa2hdsq_LDADD =
 if IS_SIZEOF_OFF_T_EQ_8
 fa2hdsq_LDADD += parsefa.o64
 endif
-fa2hdsq_LDADD += $(top_builddir)/util/libutil.a $(top_builddir)/libgnu/libgnu.a
+fa2hdsq_LDADD += $(top_builddir)/util/libutil.a
+fa2hdsq_LDADD += $(top_builddir)/libgnu/libgnu.a
 
 ## bl2dump
 bin_PROGRAMS += bl2dump

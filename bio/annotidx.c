@@ -1,5 +1,5 @@
 /***********************************************************************
- * $Id: annotidx.c,v 1.1 2005/06/11 06:23:09 aki Exp $
+ * $Id: annotidx.c,v 1.2 2005/06/16 09:59:44 aki Exp $
  *
  * Annotate index.
  * Copyright (C) 2004,2005 RIKEN. All rights reserved.
@@ -43,6 +43,7 @@
 #include <mmfile.h>
 #include <msg.h>
 
+#include <ctype.h>
 #include <errno.h>
 #include <dirname.h>
 #include <getopt.h>
@@ -54,15 +55,15 @@
  *======================================================================*/
 
 typedef struct {
-    uint32_t	    beg;
-    uint32_t	    end;
-    uint32_t	    txt_off;
+    uint32_t	    seq_beg;
+    uint32_t	    seq_end;
+    uint32_t	    hdr_beg;
 } hdx32_elem_t;
 
 typedef struct {
-    uint64_t	    beg;
-    uint64_t	    end;
-    uint64_t	    txt_off;
+    uint64_t	    seq_beg;
+    uint64_t	    seq_end;
+    uint32_t	    hdr_beg;
 } hdx64_elem_t;
 
 /*======================================================================
@@ -131,7 +132,7 @@ static void annotate_index(const char *fpath)
 	    }
 	}
 
-	if (!opts.opt_L) {	/* when 32bit header index */
+	if (!opts.opt_L) {	/* when 32bit sequence index */
 	    while ((read = getline(&line, &len, stdin)) != -1) {
 		if (read > 1 && *line != '#') {
 		    char *endp = NULL;
@@ -141,11 +142,13 @@ static void annotate_index(const char *fpath)
 			elem = bsearch_hdx32(idx + (opts.opt_z ? 1 : 0));
 			if (elem != NULL) {
 			    line[read - 1] = '\0';  /* truncate delimiter */
-			    printf("%ld\t%ld%s\t%s\n",
+			    while (*endp != '\0' && isspace(*endp))
+				++endp;
+			    printf("%ld\t%ld\t%s\t%s\n",
 				    (long)idx,
-				    (long)(idx - elem->beg + 1),
+				    (long)(idx - elem->seq_beg + 1),
 				    endp,
-				    (char*)mmfile_ptr(&opts.fhdr) + elem->txt_off
+				    (char*)mmfile_ptr(&opts.fhdr) + elem->hdr_beg
 				   );
 			    continue;
 			}
@@ -153,7 +156,7 @@ static void annotate_index(const char *fpath)
 		}
 		printf("%s", line);	/* print the line as is */
 	    }
-	} else {		/* when 64bit header index */
+	} else {		/* when 64bit sequence index */
 	    while ((read = getline(&line, &len, stdin)) != -1) {
 		if (read > 1 && *line != '#') {
 		    char *endp = NULL;
@@ -163,11 +166,13 @@ static void annotate_index(const char *fpath)
 			elem = bsearch_hdx64(idx + (opts.opt_z ? 1 : 0));
 			if (elem != NULL) {
 			    line[read - 1] = '\0';  /* truncate delimiter */
-			    printf("%ld\t%ld%s\t%s\n",
+			    while (*endp != '\0' && isspace(*endp))
+				++endp;
+			    printf("%ld\t%ld\t%s\t%s\n",
 				    (long)idx,
-				    (long)(idx - elem->beg + 1),
+				    (long)(idx - elem->seq_beg + 1),
 				    endp,
-				    (char*)mmfile_ptr(&opts.fhdr) + elem->txt_off
+				    (char*)mmfile_ptr(&opts.fhdr) + elem->hdr_beg
 				   );
 			    continue;
 			}
@@ -192,9 +197,9 @@ static hdx32_elem_t *bsearch_hdx32(const int32_t idx)
 
     while (left < right) {
 	int32_t mid = (left + right) / 2;
-	if (hdx_ptr[mid].end <= idx) {
+	if (hdx_ptr[mid].seq_end <= idx) {
 	    left = mid + 1;
-	} else if (idx < hdx_ptr[mid].beg) {
+	} else if (idx < hdx_ptr[mid].seq_beg) {
 	    right = mid;
 	} else {
 	    return hdx_ptr + mid;
@@ -212,9 +217,9 @@ static hdx64_elem_t *bsearch_hdx64(const int64_t idx)
 
     while (left < right) {
 	int64_t mid = (left + right) / 2;
-	if (hdx_ptr[mid].end <= idx) {
+	if (hdx_ptr[mid].seq_end <= idx) {
 	    left = mid + 1;
-	} else if (idx < hdx_ptr[mid].beg) {
+	} else if (idx < hdx_ptr[mid].seq_beg) {
 	    right = mid;
 	} else {
 	    return hdx_ptr + mid;
