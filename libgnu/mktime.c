@@ -1,5 +1,6 @@
 /* Convert a `struct tm' to a time_t value.
-   Copyright (C) 1993-1999, 2002, 2003, 2004 Free Software Foundation, Inc.
+   Copyright (C) 1993-1999, 2002, 2003, 2004, 2005 Free Software Foundation,
+   Inc.
    This file is part of the GNU C Library.
    Contributed by Paul Eggert (eggert@twinsun.com).
 
@@ -15,7 +16,7 @@
 
    You should have received a copy of the GNU General Public License along
    with this program; if not, write to the Free Software Foundation,
-   Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  */
+   Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.  */
 
 /* Define this to have a standalone program to test this implementation of
    mktime.  */
@@ -45,13 +46,53 @@
 # define mktime my_mktime
 #endif /* DEBUG */
 
-/* The extra casts work around common compiler bugs.  */
+/* Shift A right by B bits portably, by dividing A by 2**B and
+   truncating towards minus infinity.  A and B should be free of side
+   effects, and B should be in the range 0 <= B <= INT_BITS - 2, where
+   INT_BITS is the number of useful bits in an int.  GNU code can
+   assume that INT_BITS is at least 32.
+
+   ISO C99 says that A >> B is implementation-defined if A < 0.  Some
+   implementations (e.g., UNICOS 9.0 on a Cray Y-MP EL) don't shift
+   right in the usual way when A < 0, so SHR falls back on division if
+   ordinary A >> B doesn't seem to be the usual signed shift.  */
+#define SHR(a, b)	\
+  (-1 >> 1 == -1	\
+   ? (a) >> (b)		\
+   : (a) / (1 << (b)) - ((a) % (1 << (b)) < 0))
+
+/* The extra casts in the following macros work around compiler bugs,
+   e.g., in Cray C 5.0.3.0.  */
+
+/* True if the arithmetic type T is an integer type.  bool counts as
+   an integer.  */
+#define TYPE_IS_INTEGER(t) ((t) 1.5 == 1)
+
+/* True if negative values of the signed integer type T use two's
+   complement, ones' complement, or signed magnitude representation,
+   respectively.  Much GNU code assumes two's complement, but some
+   people like to be portable to all possible C hosts.  */
+#define TYPE_TWOS_COMPLEMENT(t) ((t) ~ (t) 0 == (t) -1)
+#define TYPE_ONES_COMPLEMENT(t) ((t) ~ (t) 0 == 0)
+#define TYPE_SIGNED_MAGNITUDE(t) ((t) ~ (t) 0 < (t) -1)
+
+/* True if the arithmetic type T is signed.  */
 #define TYPE_SIGNED(t) (! ((t) 0 < (t) -1))
-/* The outer cast is needed to work around a bug in Cray C 5.0.3.0.
-   It is necessary at least when t == time_t.  */
-#define TYPE_MINIMUM(t) ((t) (TYPE_SIGNED (t) \
-			      ? ~ (t) 0 << (sizeof (t) * CHAR_BIT - 1) : (t) 0))
-#define TYPE_MAXIMUM(t) ((t) (~ (t) 0 - TYPE_MINIMUM (t)))
+
+/* The maximum and minimum values for the integer type T.  These
+   macros have undefined behavior if T is signed and has padding bits.
+   If this is a problem for you, please let us know how to fix it for
+   your host.  */
+#define TYPE_MINIMUM(t) \
+  ((t) (! TYPE_SIGNED (t) \
+	? (t) 0 \
+	: TYPE_SIGNED_MAGNITUDE (t) \
+	? ~ (t) 0 \
+	: ~ (t) 0 << (sizeof (t) * CHAR_BIT - 1)))
+#define TYPE_MAXIMUM(t) \
+  ((t) (! TYPE_SIGNED (t) \
+	? (t) -1 \
+	: ~ (~ (t) 0 << (sizeof (t) * CHAR_BIT - 1))))
 
 #ifndef TIME_T_MIN
 # define TIME_T_MIN TYPE_MINIMUM (time_t)
@@ -59,14 +100,13 @@
 #ifndef TIME_T_MAX
 # define TIME_T_MAX TYPE_MAXIMUM (time_t)
 #endif
-#define TIME_T_MIDPOINT (((TIME_T_MIN + TIME_T_MAX) >> 1) + 1)
+#define TIME_T_MIDPOINT (SHR (TIME_T_MIN + TIME_T_MAX, 1) + 1)
 
 /* Verify a requirement at compile-time (unlike assert, which is runtime).  */
 #define verify(name, assertion) struct name { char a[(assertion) ? 1 : -1]; }
 
-verify (time_t_is_integer, (time_t) 0.5 == 0);
-verify (twos_complement_arithmetic, -1 == ~1 + 1);
-verify (right_shift_propagates_sign, -1 >> 1 == -1);
+verify (time_t_is_integer, TYPE_IS_INTEGER (time_t));
+verify (twos_complement_arithmetic, TYPE_TWOS_COMPLEMENT (int));
 /* The code also assumes that signed integer overflow silently wraps
    around, but this assumption can't be stated without causing a
    diagnostic on some hosts.  */
@@ -77,7 +117,7 @@ verify (base_year_is_a_multiple_of_100, TM_YEAR_BASE % 100 == 0);
 
 /* Return 1 if YEAR + TM_YEAR_BASE is a leap year.  */
 static inline int
-leapyear (int year)
+leapyear (long int year)
 {
   /* Don't add YEAR to TM_YEAR_BASE, as that might overflow.
      Also, work even if YEAR is negative.  */
@@ -132,12 +172,12 @@ ydhms_diff (long int year1, long int yday1, int hour1, int min1, int sec1,
 
   /* Compute intervening leap days correctly even if year is negative.
      Take care to avoid integer overflow here.  */
-  int a4 = (year1 >> 2) + (TM_YEAR_BASE >> 2) - ! (year1 & 3);
-  int b4 = (year0 >> 2) + (TM_YEAR_BASE >> 2) - ! (year0 & 3);
+  int a4 = SHR (year1, 2) + SHR (TM_YEAR_BASE, 2) - ! (year1 & 3);
+  int b4 = SHR (year0, 2) + SHR (TM_YEAR_BASE, 2) - ! (year0 & 3);
   int a100 = a4 / 25 - (a4 % 25 < 0);
   int b100 = b4 / 25 - (b4 % 25 < 0);
-  int a400 = a100 >> 2;
-  int b400 = b100 >> 2;
+  int a400 = SHR (a100, 2);
+  int b400 = SHR (b100, 2);
   int intervening_leap_days = (a4 - b4) - (a100 - b100) + (a400 - b400);
 
   /* Compute the desired time in time_t precision.  Overflow might
@@ -321,14 +361,16 @@ __mktime_internal (struct tm *tp,
       int LOG2_YEARS_PER_BIENNIUM = 1;
 
       int approx_requested_biennia =
-	((year_requested >> LOG2_YEARS_PER_BIENNIUM)
-	 - ((EPOCH_YEAR - TM_YEAR_BASE) >> LOG2_YEARS_PER_BIENNIUM)
-	 + (mday >> ALOG2_DAYS_PER_BIENNIUM)
-	 + (hour >> ALOG2_HOURS_PER_BIENNIUM)
-	 + (min >> ALOG2_MINUTES_PER_BIENNIUM)
-	 + (LEAP_SECONDS_POSSIBLE ? 0 : sec >> ALOG2_SECONDS_PER_BIENNIUM));
+	(SHR (year_requested, LOG2_YEARS_PER_BIENNIUM)
+	 - SHR (EPOCH_YEAR - TM_YEAR_BASE, LOG2_YEARS_PER_BIENNIUM)
+	 + SHR (mday, ALOG2_DAYS_PER_BIENNIUM)
+	 + SHR (hour, ALOG2_HOURS_PER_BIENNIUM)
+	 + SHR (min, ALOG2_MINUTES_PER_BIENNIUM)
+	 + (LEAP_SECONDS_POSSIBLE
+	    ? 0
+	    : SHR (sec, ALOG2_SECONDS_PER_BIENNIUM)));
 
-      int approx_biennia = t0 >> ALOG2_SECONDS_PER_BIENNIUM;
+      int approx_biennia = SHR (t0, ALOG2_SECONDS_PER_BIENNIUM);
       int diff = approx_biennia - approx_requested_biennia;
       int abs_diff = diff < 0 ? - diff : diff;
 
@@ -346,7 +388,7 @@ __mktime_internal (struct tm *tp,
 	  /* Overflow occurred.  Try repairing it; this might work if
 	     the time zone offset is enough to undo the overflow.  */
 	  time_t repaired_t0 = -1 - t0;
-	  approx_biennia = repaired_t0 >> ALOG2_SECONDS_PER_BIENNIUM;
+	  approx_biennia = SHR (repaired_t0, ALOG2_SECONDS_PER_BIENNIUM);
 	  diff = approx_biennia - approx_requested_biennia;
 	  abs_diff = diff < 0 ? - diff : diff;
 	  if (overflow_threshold < abs_diff)
@@ -446,8 +488,9 @@ __mktime_internal (struct tm *tp,
       t2 = t1 + sec_adjustment;
       if (((t1 < t) != (sec_requested < 0))
 	  | ((t2 < t1) != (sec_adjustment < 0))
-	  | ! (*convert) (&t, &tm))
+	  | ! (*convert) (&t2, &tm))
 	return -1;
+      t = t2;
     }
 
   *tp = tm;
@@ -495,7 +538,6 @@ not_equal_tm (const struct tm *a, const struct tm *b)
 	  | (a->tm_mday ^ b->tm_mday)
 	  | (a->tm_mon ^ b->tm_mon)
 	  | (a->tm_year ^ b->tm_year)
-	  | (a->tm_mday ^ b->tm_mday)
 	  | (a->tm_yday ^ b->tm_yday)
 	  | (a->tm_isdst ^ b->tm_isdst));
 }
