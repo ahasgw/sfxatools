@@ -1,5 +1,5 @@
 /***********************************************************************
- * $Id: sort.c,v 1.4 2005/03/22 13:12:48 aki Exp $
+ * $Id: sort.c,v 1.5 2005/07/05 07:33:27 aki Exp $
  *
  * sort
  * Copyright (C) 2005 RIKEN. All rights reserved.
@@ -45,29 +45,20 @@
 #endif
 
 #include <stdio.h>
-#if STDC_HEADERS
-# include <stdlib.h>
-# include <stddef.h>
-#else
-# if HAVE_STDLIB_H
-#  include <stdlib.h>
-# endif
-#endif
+#include <stdlib.h>
+#include <stddef.h>
+#include <assert.h>
+#include <errno.h>
+#include <limits.h>
+#include <string.h>
 
-#if HAVE_LIMITS_H
-# include <limits.h>
-#endif
+#include <xalloc.h>
 
 #include "sort.h"
 
-#include <assert.h>
-#include <msg.h>
-#include <mmfile.h>
-
-#include <errno.h>
+#include "msg.h"
+#include "mmfile.h"
 #include <minmax.h>
-#include <string.h>
-#include <xalloc.h>
 
 /*======================================================================
  * macro definitions

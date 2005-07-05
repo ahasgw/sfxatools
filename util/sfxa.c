@@ -1,5 +1,5 @@
 /***********************************************************************
- * $Id: sfxa.c,v 1.2 2005/07/05 05:12:57 aki Exp $
+ * $Id: sfxa.c,v 1.3 2005/07/05 07:33:28 aki Exp $
  *
  * sfxa
  * Copyright (C) 2005 RIKEN. All rights reserved.
@@ -32,7 +32,7 @@
 
 #include "sfxa.h"
 
-#include <mmfile.h>
+#include "mmfile.h"
 
 /*======================================================================
  * public function definitions

@@ -1,5 +1,5 @@
 /***********************************************************************
- * $Id: search.c,v 1.6 2005/07/05 05:12:55 aki Exp $
+ * $Id: search.c,v 1.7 2005/07/05 07:33:26 aki Exp $
  *
  * search
  * Copyright (C) 2005 RIKEN. All rights reserved.
@@ -26,32 +26,18 @@
 #endif
 
 #include <stdio.h>
-#if STDC_HEADERS
-# include <stdlib.h>
-# include <stddef.h>
-#else
-# if HAVE_STDLIB_H
-#  include <stdlib.h>
-# endif
-#endif
-
-#if HAVE_LIMITS_H
-# include <limits.h>
-#endif
-
-#ifndef SEARCH_H
-# include "search.h"
-#endif
-#ifndef RANGE_H
-# include "range.h"
-#endif
-
-#include <mmfile.h>
-#include <msg.h>
-
+#include <stdlib.h>
+#include <stddef.h>
+#include <limits.h>
 #include <assert.h>
 #include <errno.h>
 #include <string.h>
+
+#include "search.h"
+#include "range.h"
+
+#include "mmfile.h"
+#include "msg.h"
 #include <minmax.h>
 
 /*======================================================================

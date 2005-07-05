@@ -1,5 +1,5 @@
 /***********************************************************************
- * $Id: mmfile.c,v 1.2 2005/07/05 05:12:57 aki Exp $
+ * $Id: mmfile.c,v 1.3 2005/07/05 07:33:27 aki Exp $
  *
  * Memory mapped file
  * Copyright (C) 2005 RIKEN. All rights reserved.
@@ -49,7 +49,7 @@
 
 #include "mmfile.h"
 
-#include <msg.h>
+#include "msg.h"
 
 /*======================================================================
  * public function definitions

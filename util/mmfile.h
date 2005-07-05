@@ -1,5 +1,5 @@
 /***********************************************************************
- * $Id: mmfile.h,v 1.2 2005/07/05 05:12:57 aki Exp $
+ * $Id: mmfile.h,v 1.3 2005/07/05 07:33:27 aki Exp $
  *
  * Header file for mmfile functions
  * Copyright (C) 2005 RIKEN. All rights reserved.
@@ -22,13 +22,17 @@
 
 #ifndef MMFILE_H
 #define MMFILE_H 1
+#define MMFILE_H_INCLUDED 1
 
 #ifndef CONFIG_H_INCLUDED
 # define CONFIG_H_INCLUDED 1
 # include <config.h>
 #endif
 
-#include <sys/types.h>
+#ifndef SYS_TYPES_H_INCLUDED
+# define SYS_TYPES_H_INCLUDED 1
+# include <sys/types.h>
+#endif
 
 #ifdef __cplusplus
 extern "C" {

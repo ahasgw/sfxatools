@@ -1,5 +1,5 @@
 /***********************************************************************
- * $Id: mksfxa.c,v 1.5 2005/07/05 05:12:55 aki Exp $
+ * $Id: mksfxa.c,v 1.6 2005/07/05 07:33:26 aki Exp $
  *
  * mksfxa
  * Copyright (C) 2005 RIKEN. All rights reserved.
@@ -37,13 +37,13 @@
 #include <getopt.h>
 #include <progname.h>
 #include <xalloc.h>
-#include <minmax.h>
 
 #include "sort.h"
 
-#include <mmfile.h>
-#include <msg.h>
-#include <strdupcat.h>
+#include "mmfile.h"
+#include "msg.h"
+#include "strdupcat.h"
+#include <minmax.h>
 
 /*======================================================================
  * macro definitions

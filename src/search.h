@@ -1,5 +1,5 @@
 /***********************************************************************
- * $Id: search.h,v 1.4 2005/03/22 13:12:48 aki Exp $
+ * $Id: search.h,v 1.5 2005/07/05 07:33:26 aki Exp $
  *
  * search header file
  * Copyright (C) 2005 RIKEN. All rights reserved.
@@ -22,6 +22,7 @@
 
 #ifndef SEARCH_H
 #define SEARCH_H 1
+#define SEARCH_H_INCLUDED 1
 
 #ifndef CONFIG_H_INCLUDED
 # define CONFIG_H_INCLUDED 1
@@ -38,6 +39,10 @@
 # include "range.h"
 #endif
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /*======================================================================
  * function declarations
  *======================================================================*/
@@ -48,6 +53,10 @@ int search32(const char *txt, const int32_t *idx, const int32_t len,
 #if SIZEOF_OFF_T >= 8
 int search64(const char *txt, const int64_t *idx, const int64_t len,
 	const char *pattern, size_t patlen, range64_t *result);
+#endif
+
+#ifdef __cplusplus
+} /* extern "C" */
 #endif
 
 #endif /* SEARCH_H */

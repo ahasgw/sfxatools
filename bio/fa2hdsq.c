@@ -1,5 +1,5 @@
 /***********************************************************************
- * $Id: fa2hdsq.c,v 1.3 2005/07/05 05:12:53 aki Exp $
+ * $Id: fa2hdsq.c,v 1.4 2005/07/05 07:33:25 aki Exp $
  *
  * Fasta to header/sequence separator
  * Copyright (C) 2005 RIKEN. All rights reserved.
@@ -38,12 +38,12 @@
 #include <progname.h>
 #include <xalloc.h>
 
-#include <parsefa.h>
-#include <ofiles.h>
+#include "parsefa.h"
+#include "ofiles.h"
 
-#include <cmap.h>
-#include <msg.h>
-#include <strdupcat.h>
+#include "cmap.h"
+#include "msg.h"
+#include "strdupcat.h"
 
 /*======================================================================
  * macro definitions
@@ -114,7 +114,7 @@ static void show_help(void);
 static void process_file(const char *file)
 {
     const char *ifname = (file ? file : "stdin");
-    const char *ofname = (opts.opt_b ? basename(opts.opt_b) : basename(ifname));
+    const char *ofname = (opts.opt_b ? base_name(opts.opt_b) : base_name(ifname));
     ofnames_t ofnames;
     ofiles_t ofiles;
 

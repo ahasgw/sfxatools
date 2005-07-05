@@ -1,5 +1,5 @@
 /***********************************************************************
- * $Id: output.h,v 1.5 2005/06/11 06:23:10 aki Exp $
+ * $Id: output.h,v 1.6 2005/07/05 07:33:26 aki Exp $
  *
  * output header file
  * Copyright (C) 2005 RIKEN. All rights reserved.
@@ -22,6 +22,7 @@
 
 #ifndef OUTPUT_H
 #define OUTPUT_H 1
+#define OUTPUT_H_INCLUDED 1
 
 #ifndef CONFIG_H_INCLUDED
 # define CONFIG_H_INCLUDED 1
@@ -36,6 +37,10 @@
 #ifndef CMAP_H_INCLUDED
 # define CMAP_H_INCLUDED 1
 # include "cmap.h"
+#endif
+
+#ifdef __cplusplus
+extern "C" {
 #endif
 
 /*======================================================================
@@ -62,6 +67,10 @@ int output32(const char *txt, const int32_t *idx, const int32_t len,
 #if SIZEOF_OFF_T >= 8
 int output64(const char *txt, const int64_t *idx, const int64_t len,
 	const int64_t beg, const int64_t end, const output_param_t *param);
+#endif
+
+#ifdef __cplusplus
+} /* extern "C" */
 #endif
 
 #endif /* OUTPUT_H */

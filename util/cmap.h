@@ -1,5 +1,5 @@
 /***********************************************************************
- * $Id: cmap.h,v 1.2 2005/07/05 05:12:57 aki Exp $
+ * $Id: cmap.h,v 1.3 2005/07/05 07:33:27 aki Exp $
  *
  * cmap header file
  * Copyright (C) 2005 RIKEN. All rights reserved.
@@ -22,13 +22,17 @@
 
 #ifndef CMAP_H
 #define CMAP_H 1
+#define CMAP_H_INCLUDED 1
 
 #ifndef CONFIG_H_INCLUDED
 # define CONFIG_H_INCLUDED 1
 # include <config.h>
 #endif
 
-#include <limits.h>
+#ifndef LIMITS_H_INCLUDED
+# define LIMITS_H_INCLUDED 1
+# include <limits.h>
+#endif
 
 #define CMAP_ALPH_SIZE	(UCHAR_MAX + 1)
 #define CMAP_UNMAP	(SHRT_MAX)

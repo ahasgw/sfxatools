@@ -1,5 +1,5 @@
 /***********************************************************************
- * $Id: bl2dump.c,v 1.2 2005/07/05 05:12:53 aki Exp $
+ * $Id: bl2dump.c,v 1.3 2005/07/05 07:33:25 aki Exp $
  *
  * Blast2 database dump
  * Copyright (C) 2005 RIKEN. All rights reserved.
@@ -40,9 +40,9 @@
 #include <progname.h>
 #include <xalloc.h>
 
-#include <cmap.h>
-#include <mmfile.h>
-#include <msg.h>
+#include "cmap.h"
+#include "mmfile.h"
+#include "msg.h"
 
 /*
  * Format of the pin/nin file:
@@ -65,7 +65,6 @@
  * macro definitions
  *======================================================================*/
 
-#define MAXPATHLEN  256
 #define EXTLEN	4
 
 /*======================================================================

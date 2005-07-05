@@ -1,5 +1,5 @@
 /***********************************************************************
- * $Id: ofiles.h,v 1.1 2005/07/05 05:12:54 aki Exp $
+ * $Id: ofiles.h,v 1.2 2005/07/05 07:33:25 aki Exp $
  *
  * ofiles header file
  * Copyright (C) 2005 RIKEN. All rights reserved.
@@ -22,13 +22,21 @@
 
 #ifndef OFILES_H
 #define OFILES_H 1
+#define OFILES_H_INCLUDED 1
 
 #ifndef CONFIG_H_INCLUDED
 # define CONFIG_H_INCLUDED 1
 # include <config.h>
 #endif
 
-#include <stdio.h>
+#ifndef STDIO_H_INCLUDED
+# define STDIO_H_INCLUDED 1
+# include <stdio.h>
+#endif
+
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 /*======================================================================
  * type definitions
@@ -58,5 +66,9 @@ void ofiles_close(ofiles_t *ofs);
 
 void ofiles_open_next(ofiles_t *newofs, const ofiles_t *ofs, const ofnames_t *ofn);
 void ofiles_subst(ofiles_t *destofs, const ofiles_t *srcofs);
+
+#ifdef __cplusplus
+} /* extern "C" */
+#endif
 
 #endif /* OFILES_H */

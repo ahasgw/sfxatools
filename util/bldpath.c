@@ -1,5 +1,5 @@
 /***********************************************************************
- * $Id: bldpath.c,v 1.1 2005/07/05 05:12:56 aki Exp $
+ * $Id: bldpath.c,v 1.2 2005/07/05 07:33:27 aki Exp $
  *
  * bldpath.c
  * Copyright (C) 2005 RIKEN. All rights reserved.
@@ -30,17 +30,10 @@
 #include <stddef.h>
 #include <assert.h>
 #include <errno.h>
+#include <limits.h>
 #include <string.h>
 
-#if HAVE_SYS_PARAM_H
-# include <sys/param.h>
-#else
-# ifndef MAXPATHLEN
-#  define MAXPATHLEN	4096
-# endif
-#endif
-
-#include <bldpath.h>
+#include "bldpath.h"
 
 /*======================================================================
  * function definitions
@@ -49,14 +42,14 @@
 char *bldpathtmpl(const char *fmt, const char *path, const char *ext, int col)
 {
     int ret = 0;
-    char tmpl[MAXPATHLEN];
+    char tmpl[PATH_MAX + 1];
 
     assert(fmt != NULL);
     assert(path != NULL);
     assert(ext != NULL);
-    if ((ret = snprintf(tmpl, MAXPATHLEN, fmt, path, col, ext)) < 0)
+    if ((ret = snprintf(tmpl, PATH_MAX, fmt, path, col, ext)) < 0)
 	return NULL;
-    if (ret >= MAXPATHLEN) {
+    if (ret > PATH_MAX) {
 	errno = ENAMETOOLONG;
 	return NULL;
     }
@@ -65,12 +58,12 @@ char *bldpathtmpl(const char *fmt, const char *path, const char *ext, int col)
 
 char *bldpath(const char *tmpl, int num)
 {
-    char s[MAXPATHLEN];
+    char s[PATH_MAX + 1];
     int ret = 0;
     
     assert(tmpl != NULL);
-    ret = snprintf(s, MAXPATHLEN, tmpl, num);
-    if (ret >= MAXPATHLEN) {
+    ret = snprintf(s, PATH_MAX, tmpl, num);
+    if (ret > PATH_MAX) {
 	errno = ENAMETOOLONG;
 	return NULL;
     }

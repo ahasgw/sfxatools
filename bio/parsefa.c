@@ -1,5 +1,5 @@
 /***********************************************************************
- * $Id: parsefa.c,v 1.3 2005/07/05 05:12:54 aki Exp $
+ * $Id: parsefa.c,v 1.4 2005/07/05 07:33:25 aki Exp $
  *
  * parsefa
  * Copyright (C) 2005 RIKEN. All rights reserved.
@@ -26,40 +26,29 @@
 #endif
 
 #include <stdio.h>
-#if STDC_HEADERS
-# include <stdlib.h>
-# include <stddef.h>
-#else
-# if HAVE_STDLIB_H
-#  include <stdlib.h>
-# endif
-#endif
+#include <stdlib.h>
+#include <stddef.h>
+#include <stdint.h>
+#include <ctype.h>
+#include <errno.h>
+
+#include <sys/types.h>
 #if HAVE_UNISTD_H
 # include <unistd.h>
 #endif
 
-#ifndef STDINT_H_INCLUDED
-# define STDINT_H_INCLUDED 1
-# include <stdint.h>
-#endif
-
-#if HAVE_SYS_TYPES_H
-# include <sys/types.h>
-#endif
-
-#include "parsefa.h"
-
-#include <ctype.h>
-#include <errno.h>
+#include <getline.h>
 #include <getopt.h>
-#include <minmax.h>
 #include <progname.h>
 #include <string.h>
 #include <xalloc.h>
 
-#include <cmap.h>
-#include <msg.h>
-#include <strdupcat.h>
+#include "parsefa.h"
+
+#include "cmap.h"
+#include "msg.h"
+#include "strdupcat.h"
+#include <minmax.h>
 
 /*======================================================================
  * macro definitions
