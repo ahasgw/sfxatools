@@ -1,5 +1,5 @@
 /***********************************************************************
- * $Id: range.h,v 1.2 2005/03/22 13:12:48 aki Exp $
+ * $Id: range.h,v 1.3 2005/07/05 07:33:26 aki Exp $
  *
  * range header file
  * Copyright (C) 2005 RIKEN. All rights reserved.
@@ -22,6 +22,7 @@
 
 #ifndef RANGE_H
 #define RANGE_H 1
+#define RANGE_H_INCLUDED 1
 
 #ifndef CONFIG_H_INCLUDED
 # define CONFIG_H_INCLUDED 1
@@ -31,6 +32,10 @@
 #ifndef STDINT_H_INCLUDED
 # define STDINT_H_INCLUDED 1
 # include <stdint.h>
+#endif
+
+#ifdef __cplusplus
+extern "C" {
 #endif
 
 /*======================================================================
@@ -67,6 +72,10 @@ range32_t *range32_isect(range32_t *r1, range32_t *r2);
 #if SIZEOF_OFF_T >= 8
 range64_t *range64_union(range64_t *r1, range64_t *r2);
 range64_t *range64_isect(range64_t *r1, range64_t *r2);
+#endif
+
+#ifdef __cplusplus
+} /* extern "C" */
 #endif
 
 #endif /* RANGE_H */

@@ -1,5 +1,5 @@
 /***********************************************************************
- * $Id: sfxa.c,v 1.10 2005/07/05 05:12:55 aki Exp $
+ * $Id: sfxa.c,v 1.11 2005/07/05 07:33:26 aki Exp $
  *
  * sfxa
  * Copyright (C) 2005 RIKEN. All rights reserved.
@@ -39,16 +39,16 @@
 #include <getsubopt.h>
 #include <progname.h>
 #include <xalloc.h>
-#include <minmax.h>
 
-#include <sfxa.h>
+#include "sfxa.h"
 #include "search.h"
 #include "cmap.h"
 #include "output.h"
 
-#include <mmfile.h>
-#include <msg.h>
-#include <strdupcat.h>
+#include "mmfile.h"
+#include "msg.h"
+#include "strdupcat.h"
+#include <minmax.h>
 
 /*======================================================================
  * macro definitions

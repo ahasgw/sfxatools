@@ -1,5 +1,5 @@
 /***********************************************************************
- * $Id: strdupcat.h,v 1.1 2005/02/02 10:39:30 aki Exp $
+ * $Id: strdupcat.h,v 1.2 2005/07/05 07:33:28 aki Exp $
  *
  * Header file for strdupcat functions
  * Copyright (C) 2004 RIKEN. All rights reserved.
@@ -22,6 +22,7 @@
 
 #ifndef STRDUPCAT_H
 #define STRDUPCAT_H 1
+#define STRDUPCAT_H_INCLUDED 1
 
 #ifdef __cplusplus
 extern "C" {

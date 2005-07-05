@@ -1,5 +1,5 @@
 /***********************************************************************
- * $Id: cmap.c,v 1.2 2005/07/05 05:12:56 aki Exp $
+ * $Id: cmap.c,v 1.3 2005/07/05 07:33:27 aki Exp $
  *
  * cmap
  * Copyright (C) 2005 RIKEN. All rights reserved.
@@ -30,6 +30,8 @@
 #include <stddef.h>
 #include <errno.h>
 #include <string.h>
+
+#include <getline.h>
 
 #include "cmap.h"
 

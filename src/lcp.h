@@ -1,5 +1,5 @@
 /***********************************************************************
- * $Id: lcp.h,v 1.2 2005/03/22 13:12:47 aki Exp $
+ * $Id: lcp.h,v 1.3 2005/07/05 07:33:25 aki Exp $
  *
  * lcp header file
  * Copyright (C) 2005 RIKEN. All rights reserved.
@@ -22,6 +22,7 @@
 
 #ifndef LCP_H
 #define LCP_H 1
+#define LCP_H_INCLUDED 1
 
 #ifndef CONFIG_H_INCLUDED
 # define CONFIG_H_INCLUDED 1
@@ -33,6 +34,10 @@
 # include <stdint.h>
 #endif
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /*======================================================================
  * function declarations
  *======================================================================*/
@@ -41,6 +46,10 @@ int lcp32(const char *txt, const int32_t *idx, int32_t *lcp, const int32_t len);
 
 #if SIZEOF_OFF_T >= 8
 int lcp64(const char *txt, const int64_t *idx, int64_t *lcp, const int64_t len);
+#endif
+
+#ifdef __cplusplus
+} /* extern "C" */
 #endif
 
 #endif /* LCP_H */

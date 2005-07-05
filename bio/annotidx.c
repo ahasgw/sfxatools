@@ -1,5 +1,5 @@
 /***********************************************************************
- * $Id: annotidx.c,v 1.3 2005/07/05 05:12:53 aki Exp $
+ * $Id: annotidx.c,v 1.4 2005/07/05 07:33:24 aki Exp $
  *
  * Annotate index.
  * Copyright (C) 2004,2005 RIKEN. All rights reserved.
@@ -33,12 +33,13 @@
 #include <errno.h>
 
 #include <dirname.h>
+#include <getline.h>
 #include <getopt.h>
 #include <progname.h>
 #include <xalloc.h>
 
-#include <mmfile.h>
-#include <msg.h>
+#include "mmfile.h"
+#include "msg.h"
 
 /*======================================================================
  * type definitions

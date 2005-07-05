@@ -1,5 +1,5 @@
 /***********************************************************************
- * $Id: lcp.c,v 1.2 2005/03/22 13:12:47 aki Exp $
+ * $Id: lcp.c,v 1.3 2005/07/05 07:33:25 aki Exp $
  *
  * lcp
  * Copyright (C) 2005 RIKEN. All rights reserved.
@@ -34,20 +34,12 @@
 # include <config.h>
 #endif
 
-#if STDC_HEADERS
-# include <stdlib.h>
-# include <stddef.h>
-#else
-# if HAVE_STDLIB_H
-#  include <stdlib.h>
-# endif
-#endif
+#include <stdlib.h>
+#include <stddef.h>
+#include <stdlib.h>
+#include <errno.h>
 
 #include "lcp.h"
-
-//#include <assert.h>
-
-#include <errno.h>
 
 /*======================================================================
  * macro definitions

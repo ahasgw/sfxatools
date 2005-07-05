@@ -1,5 +1,5 @@
 /***********************************************************************
- * $Id: bldpath.h,v 1.1 2005/07/05 05:12:56 aki Exp $
+ * $Id: bldpath.h,v 1.2 2005/07/05 07:33:27 aki Exp $
  *
  * bldpath header file
  * Copyright (C) 2005 RIKEN. All rights reserved.
@@ -22,10 +22,15 @@
 
 #ifndef BLDPATH_H
 #define BLDPATH_H 1
+#define BLDPATH_H_INCLUDED 1
 
 #ifndef CONFIG_H_INCLUDED
 # define CONFIG_H_INCLUDED 1
 # include <config.h>
+#endif
+
+#ifdef __cplusplus
+extern "C" {
 #endif
 
 /*======================================================================
@@ -34,5 +39,9 @@
 
 char *bldpathtmpl(const char *fmt, const char *path, const char *ext, int col);
 char *bldpath(const char *tmpl, int num);
+
+#ifdef __cplusplus
+} /* extern "C" */
+#endif
 
 #endif /* BLDPATH_H */

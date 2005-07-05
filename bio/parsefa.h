@@ -1,5 +1,5 @@
 /***********************************************************************
- * $Id: parsefa.h,v 1.2 2005/07/05 05:12:54 aki Exp $
+ * $Id: parsefa.h,v 1.3 2005/07/05 07:33:25 aki Exp $
  *
  * parsefa header file
  * Copyright (C) 2005 RIKEN. All rights reserved.
@@ -22,14 +22,26 @@
 
 #ifndef PARSEFA_H
 #define PARSEFA_H 1
+#define PARSEFA_H_INCLUDED 1
 
 #ifndef CONFIG_H_INCLUDED
 # define CONFIG_H_INCLUDED 1
 # include <config.h>
 #endif
 
-#include <cmap.h>
-#include <ofiles.h>
+#ifndef CMAP_H_INCLUDED
+# define CMAP_H_INCLUDED 1
+# include "cmap.h"
+#endif
+
+#ifndef OFILES_H_INCLUDED
+# define OFILES_H_INCLUDED 1
+# include "ofiles.h"
+#endif
+
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 /*======================================================================
  * type definitions
@@ -49,6 +61,10 @@ int parse_fasta32(ofiles_t *ofiles, const ofnames_t *ofnames, const parsefa_para
 
 #if SIZEOF_OFF_T >= 8
 int parse_fasta64(ofiles_t *ofiles, const ofnames_t *ofnames, const parsefa_param_t *param);
+#endif
+
+#ifdef __cplusplus
+} /* extern "C" */
 #endif
 
 #endif /* PARSEFA_H */

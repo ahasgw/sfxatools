@@ -1,5 +1,5 @@
 /***********************************************************************
- * $Id: sort.h,v 1.3 2005/03/22 13:12:48 aki Exp $
+ * $Id: sort.h,v 1.4 2005/07/05 07:33:27 aki Exp $
  *
  * sort header file
  * Copyright (C) 2005 RIKEN. All rights reserved.
@@ -22,6 +22,7 @@
 
 #ifndef SORT_H
 #define SORT_H 1
+#define SORT_H_INCLUDED 1
 
 #ifndef CONFIG_H_INCLUDED
 # define CONFIG_H_INCLUDED 1
@@ -33,6 +34,10 @@
 # include <stdint.h>
 #endif
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /*======================================================================
  * function declarations
  *======================================================================*/
@@ -41,6 +46,10 @@ int sort32(const char *txt, int32_t *idx, const int32_t len);
 
 #if SIZEOF_OFF_T >= 8
 int sort64(const char *txt, int64_t *idx, const int64_t len);
+#endif
+
+#ifdef __cplusplus
+} /* extern "C" */
 #endif
 
 #endif /* SORT_H */

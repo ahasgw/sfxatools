@@ -1,5 +1,5 @@
 /***********************************************************************
- * $Id: output.c,v 1.5 2005/06/16 09:59:44 aki Exp $
+ * $Id: output.c,v 1.6 2005/07/05 07:33:26 aki Exp $
  *
  * output
  * Copyright (C) 2005 RIKEN. All rights reserved.
@@ -26,30 +26,20 @@
 #endif
 
 #include <stdio.h>
-#if STDC_HEADERS
-# include <stdlib.h>
-# include <stddef.h>
-#else
-# if HAVE_STDLIB_H
-#  include <stdlib.h>
-# endif
-#endif
-
-#if HAVE_LIMITS_H
-# include <limits.h>
-#endif
-
-#include "output.h"
-
-#include <mmfile.h>
-#include <msg.h>
-
+#include <stdlib.h>
+#include <stddef.h>
+#include <limits.h>
 #include <assert.h>
 #include <ctype.h>
 #include <errno.h>
 #include <inttypes.h>
-#include <minmax.h>
 #include <string.h>
+
+#include "output.h"
+
+#include "mmfile.h"
+#include "msg.h"
+#include <minmax.h>
 
 /*======================================================================
  * macro definitions

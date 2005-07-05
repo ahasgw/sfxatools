@@ -1,5 +1,5 @@
 /***********************************************************************
- * $Id: ofiles.c,v 1.1 2005/07/05 05:12:53 aki Exp $
+ * $Id: ofiles.c,v 1.2 2005/07/05 07:33:25 aki Exp $
  *
  * ofiles.c
  * Copyright (C) 2005 RIKEN. All rights reserved.
@@ -25,19 +25,13 @@
 # include <config.h>
 #endif
 
-#if STDC_HEADERS
-# include <stdlib.h>
-# include <stddef.h>
-#else
-# if HAVE_STDLIB_H
-#  include <stdlib.h>
-# endif
-#endif
-
-#include <ofiles.h>
-#include <bldpath.h>
-#include <msg.h>
+#include <stdlib.h>
+#include <stddef.h>
 #include <errno.h>
+
+#include "ofiles.h"
+#include "bldpath.h"
+#include "msg.h"
 
 /*======================================================================
  * constants definitions

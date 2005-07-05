@@ -1,5 +1,5 @@
 /***********************************************************************
- * $Id: msg.h,v 1.2 2005/07/05 05:12:57 aki Exp $
+ * $Id: msg.h,v 1.3 2005/07/05 07:33:28 aki Exp $
  *
  * Header file for messaging functions
  * Copyright (C) 2004 RIKEN. All rights reserved.
@@ -22,6 +22,15 @@
 
 #ifndef MSG_H
 #define MSG_H 1
+#define MSG_H_INCLUDED 1
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+/*======================================================================
+ * typedefs
+ *======================================================================*/
 
 typedef enum msglvl_type {
     MSGLVL_ERR,	    /* error level */
@@ -30,10 +39,6 @@ typedef enum msglvl_type {
     MSGLVL_INFO,    /* informational level */
     MSGLVL_DEBUG    /* debug level */
 } msglvl_t;
-
-#ifdef __cplusplus
-extern "C" {
-#endif
 
 /*======================================================================
  * prototypes
