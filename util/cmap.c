@@ -1,5 +1,5 @@
 /***********************************************************************
- * $Id: cmap.c,v 1.1 2005/03/17 12:50:15 aki Exp $
+ * $Id: cmap.c,v 1.2 2005/07/05 05:12:56 aki Exp $
  *
  * cmap
  * Copyright (C) 2005 RIKEN. All rights reserved.
@@ -26,21 +26,12 @@
 #endif
 
 #include <stdio.h>
-#if STDC_HEADERS
-# include <stdlib.h>
-# include <stddef.h>
-#else
-# if HAVE_STDLIB_H
-#  include <stdlib.h>
-# endif
-#endif
-
-#include "cmap.h"
-
-//#include <assert.h>
-
+#include <stdlib.h>
+#include <stddef.h>
 #include <errno.h>
 #include <string.h>
+
+#include "cmap.h"
 
 /*======================================================================
  * ctor & dtor
@@ -83,7 +74,7 @@ void cmap_delete(cmap_t *cm)
 /* character symbol to number mapping */
 int cmap_char2num(const cmap_t *cm, const char ch)
 {
-    return cm->map[(const unsigned char)ch];
+    return cm->map[(unsigned char)ch];
 }
 
 /* number to character symbol mapping */
@@ -115,10 +106,10 @@ cmap_t *cmap_dup(const cmap_t *cm)
 void cmap_assign(cmap_t *cm, const char ch, const int n)
 {
     if (n >= 0 && n < CMAP_ALPH_SIZE) {
-	cm->map[(const unsigned char)ch] = n;
+	cm->map[(unsigned char)ch] = n;
 	cm->rmap[n] = ch;
     } else {
-	cm->map[(const unsigned char)ch] = CMAP_UNMAP;
+	cm->map[(unsigned char)ch] = CMAP_UNMAP;
     }
 }
 

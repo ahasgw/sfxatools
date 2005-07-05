@@ -1,7 +1,7 @@
 /***********************************************************************
- * $Id: cmap.h,v 1.2 2005/07/05 05:12:57 aki Exp $
+ * $Id: bldpath.c,v 1.1 2005/07/05 05:12:56 aki Exp $
  *
- * cmap header file
+ * bldpath.c
  * Copyright (C) 2005 RIKEN. All rights reserved.
  * Written by Aki Hasegawa <aki@gsc.riken.jp>.
  *
@@ -20,59 +20,61 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  ***********************************************************************/
 
-#ifndef CMAP_H
-#define CMAP_H 1
-
 #ifndef CONFIG_H_INCLUDED
 # define CONFIG_H_INCLUDED 1
 # include <config.h>
 #endif
 
-#include <limits.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <stddef.h>
+#include <assert.h>
+#include <errno.h>
+#include <string.h>
 
-#define CMAP_ALPH_SIZE	(UCHAR_MAX + 1)
-#define CMAP_UNMAP	(SHRT_MAX)
-
-#ifdef __cplusplus
-extern "C" {
+#if HAVE_SYS_PARAM_H
+# include <sys/param.h>
+#else
+# ifndef MAXPATHLEN
+#  define MAXPATHLEN	4096
+# endif
 #endif
 
-/*======================================================================
- * typedefs
- *======================================================================*/
-
-/* character mapping information */
-typedef struct cmap_type {
-    short   map[CMAP_ALPH_SIZE];
-    short   rmap[CMAP_ALPH_SIZE];
-} cmap_t;
+#include <bldpath.h>
 
 /*======================================================================
- * prototypes
+ * function definitions
  *======================================================================*/
 
-cmap_t *cmap_new(void);
-void cmap_init(cmap_t *cm);
-void cmap_free(cmap_t *cm);
-void cmap_delete(cmap_t *cm);
+char *bldpathtmpl(const char *fmt, const char *path, const char *ext, int col)
+{
+    int ret = 0;
+    char tmpl[MAXPATHLEN];
 
-int cmap_char2num(const cmap_t *cm, const char ch);
-int cmap_num2char(const cmap_t *cm, const int n);
+    assert(fmt != NULL);
+    assert(path != NULL);
+    assert(ext != NULL);
+    if ((ret = snprintf(tmpl, MAXPATHLEN, fmt, path, col, ext)) < 0)
+	return NULL;
+    if (ret >= MAXPATHLEN) {
+	errno = ENAMETOOLONG;
+	return NULL;
+    }
+    return strdup(tmpl);
+}
 
-void cmap_copy(cmap_t * restrict dest_cm, const cmap_t * restrict src_cm);
-cmap_t *cmap_dup(const cmap_t *cm);
-
-void cmap_assign(cmap_t *cm, const char ch, const int n);
-
-void cmap_identity(cmap_t *cm);
-
-int cmap_load(cmap_t *cm, const char *path);
-int cmap_save(const cmap_t *cm, const char *path);
-
-int cmap_translate(const cmap_t *cm, const char *s, unsigned char **t, int *n);
-
-#ifdef __cplusplus
-} /* extern "C" */
-#endif
-
-#endif /* CMAP_H */
+char *bldpath(const char *tmpl, int num)
+{
+    char s[MAXPATHLEN];
+    int ret = 0;
+    
+    assert(tmpl != NULL);
+    ret = snprintf(s, MAXPATHLEN, tmpl, num);
+    if (ret >= MAXPATHLEN) {
+	errno = ENAMETOOLONG;
+	return NULL;
+    }
+    if (ret < 0)
+	return NULL;
+    return strdup(s);
+}

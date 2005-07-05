@@ -1,5 +1,5 @@
 /***********************************************************************
- * $Id: search.c,v 1.5 2005/03/22 13:12:48 aki Exp $
+ * $Id: search.c,v 1.6 2005/07/05 05:12:55 aki Exp $
  *
  * search
  * Copyright (C) 2005 RIKEN. All rights reserved.
@@ -51,8 +51,8 @@
 
 #include <assert.h>
 #include <errno.h>
-#include <minmax.h>
 #include <string.h>
+#include <minmax.h>
 
 /*======================================================================
  * macro definitions

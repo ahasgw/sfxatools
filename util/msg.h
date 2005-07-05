@@ -1,5 +1,5 @@
 /***********************************************************************
- * $Id: msg.h,v 1.1 2005/02/02 10:39:30 aki Exp $
+ * $Id: msg.h,v 1.2 2005/07/05 05:12:57 aki Exp $
  *
  * Header file for messaging functions
  * Copyright (C) 2004 RIKEN. All rights reserved.
@@ -40,7 +40,6 @@ extern "C" {
  *======================================================================*/
 
 /* messaging functions */
-//void msg(const char *pref, const char *fmt, ...);
 void msg(const msglvl_t lvl, const char *fmt, ...);
 
 #ifdef __cplusplus

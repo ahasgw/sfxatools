@@ -1,5 +1,5 @@
 /***********************************************************************
- * $Id: mklcpa.c,v 1.4 2005/03/23 08:49:14 aki Exp $
+ * $Id: mklcpa.c,v 1.5 2005/07/05 05:12:55 aki Exp $
  *
  * mklcpa
  * Copyright (C) 2005 RIKEN. All rights reserved.
@@ -26,35 +26,24 @@
 #endif
 
 #include <stdio.h>
-#if STDC_HEADERS
-# include <stdlib.h>
-# include <stddef.h>
-#else
-# if HAVE_STDLIB_H
-#  include <stdlib.h>
-# endif
-#endif
+#include <stdlib.h>
+#include <stddef.h>
+#include <assert.h>
+#include <errno.h>
+#include <limits.h>
+#include <string.h>
 
-#if HAVE_ASSERT_H
-# include <assert.h>
-#endif
-#if HAVE_LIMITS_H
-# include <limits.h>
-#endif
+#include <dirname.h>
+#include <getopt.h>
+#include <progname.h>
+#include <xalloc.h>
+#include <minmax.h>
 
 #include "lcp.h"
 
 #include <mmfile.h>
 #include <msg.h>
 #include <strdupcat.h>
-
-#include <errno.h>
-#include <dirname.h>
-#include <getopt.h>
-#include <minmax.h>
-#include <progname.h>
-#include <string.h>
-#include <xalloc.h>
 
 /*======================================================================
  * macro definitions
@@ -221,7 +210,16 @@ static char *build_lcpafile_name(const char *path)
 /* show version number */
 static void show_version(void)
 {
-    fprintf(stdout, "mklcpa (%s) %s\n", PACKAGE, VERSION);
+    static char fmt[] =
+	"mklcpa (%s) %s\n"
+	"\n"
+	"Copyright (C) 2005 RIKEN. All rights reserved.\n"
+	"This program comes with ABSOLUTELY NO WARRANTY.\n"
+	"You may redistribute copies of this program under the terms of the\n"
+	"GNU General Public License.\n"
+	"For more information about these matters, see the file named COPYING.\n"
+	;
+    fprintf(stdout, fmt, PACKAGE, VERSION);
 }
 
 /* show help */
@@ -229,30 +227,17 @@ static void show_help(void)
 {
     static char fmt[] =
 	"This is mklcpa, longest-common-prefix array builder program.\n"
-	"Copyright (C) 2005 RIKEN. All rights reserved.\n"
-	"This program comes with ABSOLUTELY NO WARRANTY.\n"
-	"You may redistribute copies of this program under the terms of the\n"
-	"GNU General Public License.\n"
-	"For more information about these matters, see the file named COPYING.\n"
 	"\n"
 	"Usage: %s [options] <text_file> <index_file>\n"
 	"Options:\n"
-#ifdef HAVE_GETOPT_LONG
 	"  -h, --help           display this message\n"
 	"  -V, --version        print version number, and exit\n"
 	"  -v, --verbose        verbose output\n"
 	"  -x, --ext=<.ext>     set lcpa file extention to <.ext> (default: .lcp)\n"
 	"  -X, --remove-ext     remove last extention before adding <.ext>\n"
-#else
-	"  -h           display this message\n"
-	"  -V           print version number, and exit\n"
-	"  -v           verbose output\n"
-	"  -x <.ext>    set lcpa file extention to <.ext> (default: .lcp)\n"
-	"  -X           remove last extention before adding <.ext>\n"
-#endif
-	"Report bugs to %s.\n"
+	"Report bugs to <%s>.\n"
 	;
-    fprintf(stdout, fmt, program_name, PACKAGE_BUGREPORT);
+    fprintf(stdout, fmt, base_name(program_name), PACKAGE_BUGREPORT);
 }
 
 /* main */
@@ -264,7 +249,6 @@ int main(int argc, char **argv)
     /* manage opts */
     for (;;) {
 	int opt;
-#ifdef HAVE_GETOPT_LONG
 	int opt_index = 0;
 	static struct option long_opts[] = {
 	    {"help",	    no_argument,	NULL, 'h'},
@@ -276,9 +260,6 @@ int main(int argc, char **argv)
 	};
 
 	opt = getopt_long(argc, argv, "hVvx:X", long_opts, &opt_index);
-#else
-	opt = getopt(argc, argv, "hVvx:X");
-#endif
 	if (opt == -1)
 	    break;
 

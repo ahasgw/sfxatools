@@ -1,4 +1,4 @@
-## $Id: Makefile.am,v 1.2 2005/06/16 09:59:43 aki Exp $
+## $Id: Makefile.am,v 1.3 2005/07/05 05:12:53 aki Exp $
 ##
 ## Makefile for the bio directory of biotuils.
 ## Copyright (C) 2004 RIKEN. All rights reserved.
@@ -41,7 +41,7 @@ AM_CFLAGS = -DNDEBUG
 
 ## fa2hdsq
 bin_PROGRAMS += fa2hdsq
-fa2hdsq_SOURCES = fa2hdsq.c parsefa.c parsefa.h
+fa2hdsq_SOURCES = fa2hdsq.c ofiles.c ofiles.h parsefa.c parsefa.h
 fa2hdsq_LDADD = 
 if IS_SIZEOF_OFF_T_EQ_8
 fa2hdsq_LDADD += parsefa.o64

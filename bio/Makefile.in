@@ -37,9 +37,6 @@ POST_INSTALL = :
 NORMAL_UNINSTALL = :
 PRE_UNINSTALL = :
 POST_UNINSTALL = :
-build_triplet = @build@
-host_triplet = @host@
-target_triplet = @target@
 bin_PROGRAMS = fa2hdsq$(EXEEXT) bl2dump$(EXEEXT) annotidx$(EXEEXT)
 @IS_SIZEOF_OFF_T_EQ_8_TRUE@am__append_1 = parsefa.o64
 subdir = bio
@@ -52,7 +49,6 @@ am__aclocal_m4_deps = $(top_srcdir)/libgnu/m4/alloca.m4 \
 	$(top_srcdir)/libgnu/m4/calloc.m4 \
 	$(top_srcdir)/libgnu/m4/dirname.m4 \
 	$(top_srcdir)/libgnu/m4/dos.m4 \
-	$(top_srcdir)/libgnu/m4/eealloc.m4 \
 	$(top_srcdir)/libgnu/m4/eoverflow.m4 \
 	$(top_srcdir)/libgnu/m4/error.m4 \
 	$(top_srcdir)/libgnu/m4/exitfail.m4 \
@@ -63,21 +59,18 @@ am__aclocal_m4_deps = $(top_srcdir)/libgnu/m4/alloca.m4 \
 	$(top_srcdir)/libgnu/m4/getndelim2.m4 \
 	$(top_srcdir)/libgnu/m4/getopt.m4 \
 	$(top_srcdir)/libgnu/m4/getsubopt.m4 \
-	$(top_srcdir)/libgnu/m4/gettimeofday.m4 \
 	$(top_srcdir)/libgnu/m4/gnulib.m4 \
 	$(top_srcdir)/libgnu/m4/intmax_t.m4 \
 	$(top_srcdir)/libgnu/m4/inttypes.m4 \
 	$(top_srcdir)/libgnu/m4/inttypes_h.m4 \
 	$(top_srcdir)/libgnu/m4/longdouble.m4 \
 	$(top_srcdir)/libgnu/m4/longlong.m4 \
-	$(top_srcdir)/libgnu/m4/mathl.m4 \
-	$(top_srcdir)/libgnu/m4/mbstate_t.m4 \
 	$(top_srcdir)/libgnu/m4/memchr.m4 \
 	$(top_srcdir)/libgnu/m4/memcmp.m4 \
 	$(top_srcdir)/libgnu/m4/memcpy.m4 \
 	$(top_srcdir)/libgnu/m4/memmove.m4 \
 	$(top_srcdir)/libgnu/m4/memset.m4 \
-	$(top_srcdir)/libgnu/m4/mkstemp.m4 \
+	$(top_srcdir)/libgnu/m4/minmax.m4 \
 	$(top_srcdir)/libgnu/m4/mktime.m4 \
 	$(top_srcdir)/libgnu/m4/onceonly_2_57.m4 \
 	$(top_srcdir)/libgnu/m4/restrict.m4 \
@@ -91,7 +84,6 @@ am__aclocal_m4_deps = $(top_srcdir)/libgnu/m4/alloca.m4 \
 	$(top_srcdir)/libgnu/m4/strchrnul.m4 \
 	$(top_srcdir)/libgnu/m4/strcspn.m4 \
 	$(top_srcdir)/libgnu/m4/strerror.m4 \
-	$(top_srcdir)/libgnu/m4/strftime.m4 \
 	$(top_srcdir)/libgnu/m4/strpbrk.m4 \
 	$(top_srcdir)/libgnu/m4/strstr.m4 \
 	$(top_srcdir)/libgnu/m4/strtod.m4 \
@@ -102,9 +94,8 @@ am__aclocal_m4_deps = $(top_srcdir)/libgnu/m4/alloca.m4 \
 	$(top_srcdir)/libgnu/m4/strtoull.m4 \
 	$(top_srcdir)/libgnu/m4/strtoumax.m4 \
 	$(top_srcdir)/libgnu/m4/time_r.m4 \
-	$(top_srcdir)/libgnu/m4/tm_gmtoff.m4 \
-	$(top_srcdir)/libgnu/m4/tzset.m4 \
 	$(top_srcdir)/libgnu/m4/uintmax_t.m4 \
+	$(top_srcdir)/libgnu/m4/ullong_max.m4 \
 	$(top_srcdir)/libgnu/m4/ulonglong.m4 \
 	$(top_srcdir)/libgnu/m4/vasnprintf.m4 \
 	$(top_srcdir)/libgnu/m4/vsnprintf.m4 \
@@ -128,7 +119,8 @@ am_bl2dump_OBJECTS = bl2dump.$(OBJEXT)
 bl2dump_OBJECTS = $(am_bl2dump_OBJECTS)
 bl2dump_DEPENDENCIES = $(top_builddir)/util/libutil.a \
 	$(top_builddir)/libgnu/libgnu.a
-am_fa2hdsq_OBJECTS = fa2hdsq.$(OBJEXT) parsefa.$(OBJEXT)
+am_fa2hdsq_OBJECTS = fa2hdsq.$(OBJEXT) ofiles.$(OBJEXT) \
+	parsefa.$(OBJEXT)
 fa2hdsq_OBJECTS = $(am_fa2hdsq_OBJECTS)
 @IS_SIZEOF_OFF_T_EQ_8_TRUE@am__DEPENDENCIES_1 = parsefa.o64
 fa2hdsq_DEPENDENCIES = $(am__DEPENDENCIES_1) \
@@ -180,8 +172,8 @@ EGREP = @EGREP@
 EOVERFLOW = @EOVERFLOW@
 EXEEXT = @EXEEXT@
 GETOPT_H = @GETOPT_H@
-HAVE_LONGLONG_64BIT = @HAVE_LONGLONG_64BIT@
 HAVE_LONG_64BIT = @HAVE_LONG_64BIT@
+HAVE_LONG_LONG_64BIT = @HAVE_LONG_LONG_64BIT@
 HAVE__BOOL = @HAVE__BOOL@
 HELP2MAN = @HELP2MAN@
 INSTALL_DATA = @INSTALL_DATA@
@@ -225,18 +217,10 @@ am__quote = @am__quote@
 am__tar = @am__tar@
 am__untar = @am__untar@
 bindir = @bindir@
-build = @build@
 build_alias = @build_alias@
-build_cpu = @build_cpu@
-build_os = @build_os@
-build_vendor = @build_vendor@
 datadir = @datadir@
 exec_prefix = @exec_prefix@
-host = @host@
 host_alias = @host_alias@
-host_cpu = @host_cpu@
-host_os = @host_os@
-host_vendor = @host_vendor@
 includedir = @includedir@
 infodir = @infodir@
 install_sh = @install_sh@
@@ -251,11 +235,7 @@ program_transform_name = @program_transform_name@
 sbindir = @sbindir@
 sharedstatedir = @sharedstatedir@
 sysconfdir = @sysconfdir@
-target = @target@
 target_alias = @target_alias@
-target_cpu = @target_cpu@
-target_os = @target_os@
-target_vendor = @target_vendor@
 MAINTAINERCLEANFILES = Makefile.in
 EXTRA_DIST = NCBIstdaa.map NCBI2na.map
 SUFFIXES = .o64
@@ -263,7 +243,7 @@ pkgdata_DATA = $(top_srcdir)/bio/NCBIstdaa.map \
 	$(top_srcdir)/bio/NCBI2na.map
 AM_CPPFLAGS = -I$(top_srcdir)/util -I$(top_srcdir)/libgnu
 AM_CFLAGS = -DNDEBUG
-fa2hdsq_SOURCES = fa2hdsq.c parsefa.c parsefa.h
+fa2hdsq_SOURCES = fa2hdsq.c ofiles.c ofiles.h parsefa.c parsefa.h
 fa2hdsq_LDADD = $(am__append_1) $(top_builddir)/util/libutil.a \
 	$(top_builddir)/libgnu/libgnu.a
 bl2dump_SOURCES = bl2dump.c
@@ -345,6 +325,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/annotidx.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/bl2dump.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/fa2hdsq.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/ofiles.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/parsefa.Po@am__quote@
 
 .c.o:

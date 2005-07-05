@@ -1,5 +1,5 @@
 /***********************************************************************
- * $Id: mmfile.c,v 1.1 2005/02/02 10:39:30 aki Exp $
+ * $Id: mmfile.c,v 1.2 2005/07/05 05:12:57 aki Exp $
  *
  * Memory mapped file
  * Copyright (C) 2005 RIKEN. All rights reserved.
@@ -25,37 +25,31 @@
 # include <config.h>
 #endif
 
-#include "mmfile.h"
-
-#if HAVE_SYS_STAT_H
-# include <sys/stat.h>
-#endif
-#if STDC_HEADERS
-# include <stdlib.h>
-# include <stddef.h>
-#else
-# if HAVE_STDLIB_H
-#  include <stdlib.h>
-# endif
-#endif
-#if HAVE_UNISTD_H
-# include <unistd.h>
+#ifndef NDEBUG
+# include <stdio.h>
 #endif
 
+#include <stdlib.h>
+#include <stddef.h>
+#include <stdint.h>
 #include <errno.h>
 #include <string.h>
 
-#if HAVE_FCNTL_H
-# include <fcntl.h>
-#endif
+#include <fcntl.h>
+#include <sys/stat.h>
 #if HAVE_SYS_FILE_H
 # include <sys/file.h>
 #endif
 #if HAVE_SYS_MMAN_H
 # include <sys/mman.h>
 #endif
+#if HAVE_UNISTD_H
+# include <unistd.h>
+#endif
 
-#include <stdint.h>
+#include "mmfile.h"
+
+#include <msg.h>
 
 /*======================================================================
  * public function definitions
@@ -77,10 +71,11 @@ mmfile_t *mmfile_new(const char *path)
 /* initialize struct mmfile_t */
 int mmfile_init(mmfile_t *mf, const char *path)
 {
+    mf->path = NULL;
     mf->ptr = NULL;
     mf->sz = -1;
     mf->fd = -1;
-    if ((mf->path = strdup(path)) == NULL)
+    if (path != NULL && (mf->path = strdup(path)) == NULL)
 	return errno;
     return 0;
 }
@@ -88,7 +83,8 @@ int mmfile_init(mmfile_t *mf, const char *path)
 /* free */
 void mmfile_free(mmfile_t *mf)
 {
-    free(mf->path), mf->path = NULL;
+    if (mf->path)
+	free(mf->path), mf->path = NULL;
     mf->ptr = NULL;
     mf->sz = -1;
     mf->fd = -1;
@@ -279,3 +275,12 @@ int mmfile_unmap(mmfile_t *mf)
     mf->fd = -1;
     return 0;
 }
+
+#ifndef NDEBUG
+/* debug print */
+void mmfile_print(const mmfile_t *mf, const char * cmnt)
+{
+    fprintf(stderr, "%s: mf@%p {path, ptr, sz, fd} = {%p [%s], %p, %lld, %d}\n",
+	    cmnt, mf, mf->path, mf->path, mf->ptr, (long long)mf->sz, mf->fd);
+}
+#endif 

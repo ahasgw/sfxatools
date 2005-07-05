@@ -1,5 +1,5 @@
 /***********************************************************************
- * $Id: msg.c,v 1.1 2005/02/02 10:39:31 aki Exp $
+ * $Id: msg.c,v 1.2 2005/07/05 05:12:57 aki Exp $
  *
  * messaging function
  * Copyright (C) 2004 RIKEN. All rights reserved.
@@ -25,23 +25,17 @@
 # include <config.h>
 #endif
 
-#include "msg.h"
-
 #include <stdio.h>
+#include <stdlib.h>
+#include <stddef.h>
 #include <stdarg.h>
-#if STDC_HEADERS
-# include <stdlib.h>
-# include <stddef.h>
-#else
-# if HAVE_STDLIB_H
-#  include <stdlib.h>
-# endif
-#endif
-
-#include <progname.h>
-#include <dirname.h>
-#include <string.h>
 #include <errno.h>
+#include <string.h>
+
+#include <dirname.h>
+#include <progname.h>
+
+#include "msg.h"
 
 /*======================================================================
  * constant definitions
