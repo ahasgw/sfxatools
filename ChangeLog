@@ -1,20 +1,28 @@
+2005-07-05  Aki Hasegawa  <aki@gsc.riken.go.jp>
+
+	* sfxatools (0.1.2): support large FASTA file splitting.
+
+2005-06-16  Aki Hasegawa  <aki@gsc.riken.go.jp>
+
+	* sfxatools (0.1.1): changed sfxa output format.
+
 2005-06-11  Aki Hasegawa  <aki@gsc.riken.go.jp>
 
-	* sfxatools: added biosequence handling commands.
+	* sfxatools (0.1.0): added biosequence handling commands.
 
 2005-03-17  Aki Hasegawa  <aki@gsc.riken.go.jp>
 
-	* sfxatools: added character mapping function.
+	* sfxatools (0.0.4): added character mapping function.
 
 2005-02-23  Aki Hasegawa  <aki@gsc.riken.go.jp>
 
-	* sfxatools: bug fix release.
+	* sfxatools (0.0.3): bug fix release.
 
 2005-02-18  Aki Hasegawa  <aki@gsc.riken.go.jp>
 
-	* sfxatools: added mklcpa command.
+	* sfxatools (0.0.2): added mklcpa command.
 
 2005-01-24  Aki Hasegawa  <aki@gsc.riken.go.jp>
 
-	* sfxatools: initial version.
+	* sfxatools (0.0.1): initial version.
 

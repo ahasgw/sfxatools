@@ -1,5 +1,5 @@
 /***********************************************************************
- * $Id: mmfile.h,v 1.1 2005/02/02 10:39:30 aki Exp $
+ * $Id: mmfile.h,v 1.2 2005/07/05 05:12:57 aki Exp $
  *
  * Header file for mmfile functions
  * Copyright (C) 2005 RIKEN. All rights reserved.
@@ -28,9 +28,7 @@
 # include <config.h>
 #endif
 
-#if HAVE_SYS_TYPES_H
-# include <sys/types.h>
-#endif
+#include <sys/types.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -78,6 +76,10 @@ int mmfile_map_private_rd(mmfile_t *mf);
 int mmfile_map_private_rw(mmfile_t *mf);
 int mmfile_sync(mmfile_t *mf, int flag);
 int mmfile_unmap(mmfile_t *mf);
+
+#ifndef NDEBUG
+void mmfile_print(const mmfile_t *mf, const char *comment);
+#endif
 
 #ifdef __cplusplus
 } /* extern "C" */

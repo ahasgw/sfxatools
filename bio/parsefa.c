@@ -1,5 +1,5 @@
 /***********************************************************************
- * $Id: parsefa.c,v 1.2 2005/06/16 09:59:44 aki Exp $
+ * $Id: parsefa.c,v 1.3 2005/07/05 05:12:54 aki Exp $
  *
  * parsefa
  * Copyright (C) 2005 RIKEN. All rights reserved.
@@ -34,10 +34,17 @@
 #  include <stdlib.h>
 # endif
 #endif
+#if HAVE_UNISTD_H
+# include <unistd.h>
+#endif
 
 #ifndef STDINT_H_INCLUDED
 # define STDINT_H_INCLUDED 1
 # include <stdint.h>
+#endif
+
+#if HAVE_SYS_TYPES_H
+# include <sys/types.h>
 #endif
 
 #include "parsefa.h"
@@ -45,6 +52,7 @@
 #include <ctype.h>
 #include <errno.h>
 #include <getopt.h>
+#include <minmax.h>
 #include <progname.h>
 #include <string.h>
 #include <xalloc.h>
@@ -66,11 +74,17 @@
 #endif
 
 /*======================================================================
+ * private function definitions
+ *======================================================================*/
+
+static void move(ofiles_t *ofs, const ofnames_t *ofn, uintXX_t *seq_beg, off_t seq_len, uint32_t *hdr_beg, off_t hdr_len);
+
+/*======================================================================
  * function definitions
  *======================================================================*/
 
-/* parse fasta */
-int parse_fastaXX(const parsefa_param_t *param)
+/* parse fasta with FILESIZE_MAX split ability */
+int parse_fastaXX(ofiles_t *ofiles, const ofnames_t *ofnames, const parsefa_param_t *param)
 {
     char *line = NULL;
     size_t len = 0;
@@ -86,19 +100,27 @@ int parse_fastaXX(const parsefa_param_t *param)
 	    continue;
 	--read;
 	if (*line == '>') {
-	    fputc('\0', param->fseqout);
+	    fputc('\0', ofiles->fseq);
 	    if (hdr_len > 0) {
+		if ((uint64_t)seq_len + 2 > (uint64_t)param->split_size) {
+		    msg(MSGLVL_ERR, "sequence too long");
+		    exit(EXIT_FAILURE);
+		}
+
+		if ((uint64_t)seq_beg + seq_len + 1 > (uint64_t)param->split_size)
+		    move(ofiles, ofnames, &seq_beg, seq_len, &hdr_beg, hdr_len);
+
 		/*
-		 * hdx[0] = {seq_beg0, hdr_beg0}
-		 * hdx[1] = {seq_beg1, hdr_beg1}
+		 * hdx[0] = {seq_beg0, seq_end0, hdr_beg0}
+		 * hdx[1] = {seq_beg1, seq_end1, hdr_beg1}
 		 *  ...
-		 * hdx[n-1] = {seq_beg(n-1), hdr_beg(n-1)}
+		 * hdx[n-1] = {seq_beg(n-1), seq_end(n-1), hdr_beg(n-1)}
 		 */
 		{
 		    uintXX_t seq_end = seq_beg + seq_len;
-		    fwrite(&seq_beg, sizeof(uintXX_t), 1, param->fhdxout);
-		    fwrite(&seq_end, sizeof(uintXX_t), 1, param->fhdxout);
-		    fwrite(&hdr_beg, sizeof(uint32_t), 1, param->fhdxout);
+		    fwrite(&seq_beg, sizeof(uintXX_t), 1, ofiles->fhdx);
+		    fwrite(&seq_end, sizeof(uintXX_t), 1, ofiles->fhdx);
+		    fwrite(&hdr_beg, sizeof(uint32_t), 1, ofiles->fhdx);
 		}
 		seq_beg += (seq_len + 1), seq_len = 0;
 		hdr_beg += hdr_len, hdr_len = 0;
@@ -106,8 +128,8 @@ int parse_fastaXX(const parsefa_param_t *param)
 		++seq_beg;
 	    }
 	    line[read] = '\0';  /* truncate delimiter */
-	    fputs(line + 1, param->fhdrout);
-	    fputc('\0', param->fhdrout);
+	    fputs(line + 1, ofiles->fhdr);
+	    fputc('\0', ofiles->fhdr);
 	    hdr_len = (uint32_t)read - 1 + 1;
 	} else {
 	    line[read] = '\0';  /* truncate delimiter */
@@ -117,7 +139,7 @@ int parse_fastaXX(const parsefa_param_t *param)
 		    *cp = (char)toupper(*cp);
 		}
 	    }
-#if 1
+# if 1
 	    if (param->cmap) {
 		char *src, *dst;
 		for (src = line, dst = line; *src != '\0'; ++src) {
@@ -129,21 +151,81 @@ int parse_fastaXX(const parsefa_param_t *param)
 		}
 		read = dst - line;
 	    }
-#endif
-	    fwrite(line, 1, read, param->fseqout);
+# endif
+	    fwrite(line, sizeof(char), read, ofiles->fseq);
 	    seq_len += (uintXX_t)read;
 	}
     }
+
+    if ((uint64_t)seq_len + 2 > (uint64_t)param->split_size) {
+	msg(MSGLVL_ERR, "sequence too long");
+	exit(EXIT_FAILURE);
+    }
+
+    if ((uint64_t)seq_beg + seq_len + 1 > (uint64_t)param->split_size)
+	move(ofiles, ofnames, &seq_beg, seq_len, &hdr_beg, hdr_len);
+
     {
 	uintXX_t seq_end = seq_beg + seq_len;
-	fwrite(&seq_beg, sizeof(uintXX_t), 1, param->fhdxout);
-	fwrite(&seq_end, sizeof(uintXX_t), 1, param->fhdxout);
-	fwrite(&hdr_beg, sizeof(uint32_t), 1, param->fhdxout);
-	fputc('\0', param->fseqout);
+	fwrite(&seq_beg, sizeof(uintXX_t), 1, ofiles->fhdx);
+	fwrite(&seq_end, sizeof(uintXX_t), 1, ofiles->fhdx);
+	fwrite(&hdr_beg, sizeof(uint32_t), 1, ofiles->fhdx);
+	fputc('\0', ofiles->fseq);
     }
 
     if (line)
 	free(line);
 
     return 0;
+}
+
+static void move(ofiles_t *ofs, const ofnames_t *ofn, uintXX_t *seq_beg, off_t seq_len, uint32_t *hdr_beg, off_t hdr_len)
+{
+    char *buf;
+    ssize_t count;
+    ofiles_t newofs;
+
+    buf = (char *)xmalloc(MAX(seq_len + 1, hdr_len));
+    /* open new ofiles */
+    ofiles_open_next(&newofs, ofs, ofn);
+    
+    /* seq */
+    fseek(ofs->fseq, (long)(*seq_beg - 1), SEEK_SET);
+    count = fread(buf, sizeof(char), seq_len + 1, ofs->fseq);
+    if (count < seq_len + 1) {
+	msg(MSGLVL_ERR, "seq read error:");
+	exit(EXIT_FAILURE);
+    }
+    count = fwrite(buf, sizeof(char), seq_len + 1, newofs.fseq);
+    if (count < seq_len + 1) {
+	msg(MSGLVL_ERR, "seq write error:");
+	exit(EXIT_FAILURE);
+    }
+    if (ftruncate(fileno(ofs->fseq), (off_t)*seq_beg) != 0) {
+	msg(MSGLVL_ERR, "seq truncate error:");
+	exit(EXIT_FAILURE);
+    }
+    *seq_beg = 1;
+
+    /* hdr */
+    fseek(ofs->fhdr, *hdr_beg, SEEK_SET);
+    count = fread(buf, sizeof(char), hdr_len, ofs->fhdr);
+    if (count < hdr_len) {
+	msg(MSGLVL_ERR, "hdr read error:");
+	exit(EXIT_FAILURE);
+    }
+    count = fwrite(buf, sizeof(char), hdr_len, newofs.fhdr);
+    if (count < hdr_len) {
+	msg(MSGLVL_ERR, "hdr write error:");
+	exit(EXIT_FAILURE);
+    }
+    if (ftruncate(fileno(ofs->fhdr), *hdr_beg) != 0) {
+	msg(MSGLVL_ERR, "hdr truncate error:");
+	exit(EXIT_FAILURE);
+    }
+    *hdr_beg = 0;
+
+    /* close original ofiles, then, use newofiles as the original one */
+    ofiles_subst(ofs, &newofs);
+    free(buf), buf = NULL;
 }

@@ -1,4 +1,4 @@
-## $Id: Makefile.am,v 1.3 2005/06/16 09:59:45 aki Exp $
+## $Id: Makefile.am,v 1.4 2005/07/05 05:12:56 aki Exp $
 ##
 ## Makefile for util directory of sfxatools.
 ## Copyright (C) 2004, 2005 RIKEN. All rights reserved.
@@ -30,5 +30,6 @@ libutil_a_SOURCES = \
 	cmap.c cmap.h \
 	mmfile.c mmfile.h \
 	msg.c msg.h \
+	bldpath.c bldpath.h \
 	sfxa.c sfxa.h \
 	strdupcat.c strdupcat.h

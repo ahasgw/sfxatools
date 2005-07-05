@@ -33,9 +33,6 @@ POST_INSTALL = :
 NORMAL_UNINSTALL = :
 PRE_UNINSTALL = :
 POST_UNINSTALL = :
-build_triplet = @build@
-host_triplet = @host@
-target_triplet = @target@
 subdir = tests
 DIST_COMMON = $(srcdir)/Makefile.am $(srcdir)/Makefile.in \
 	$(srcdir)/annotidx.in $(srcdir)/bl2dump.in \
@@ -49,7 +46,6 @@ am__aclocal_m4_deps = $(top_srcdir)/libgnu/m4/alloca.m4 \
 	$(top_srcdir)/libgnu/m4/calloc.m4 \
 	$(top_srcdir)/libgnu/m4/dirname.m4 \
 	$(top_srcdir)/libgnu/m4/dos.m4 \
-	$(top_srcdir)/libgnu/m4/eealloc.m4 \
 	$(top_srcdir)/libgnu/m4/eoverflow.m4 \
 	$(top_srcdir)/libgnu/m4/error.m4 \
 	$(top_srcdir)/libgnu/m4/exitfail.m4 \
@@ -60,21 +56,18 @@ am__aclocal_m4_deps = $(top_srcdir)/libgnu/m4/alloca.m4 \
 	$(top_srcdir)/libgnu/m4/getndelim2.m4 \
 	$(top_srcdir)/libgnu/m4/getopt.m4 \
 	$(top_srcdir)/libgnu/m4/getsubopt.m4 \
-	$(top_srcdir)/libgnu/m4/gettimeofday.m4 \
 	$(top_srcdir)/libgnu/m4/gnulib.m4 \
 	$(top_srcdir)/libgnu/m4/intmax_t.m4 \
 	$(top_srcdir)/libgnu/m4/inttypes.m4 \
 	$(top_srcdir)/libgnu/m4/inttypes_h.m4 \
 	$(top_srcdir)/libgnu/m4/longdouble.m4 \
 	$(top_srcdir)/libgnu/m4/longlong.m4 \
-	$(top_srcdir)/libgnu/m4/mathl.m4 \
-	$(top_srcdir)/libgnu/m4/mbstate_t.m4 \
 	$(top_srcdir)/libgnu/m4/memchr.m4 \
 	$(top_srcdir)/libgnu/m4/memcmp.m4 \
 	$(top_srcdir)/libgnu/m4/memcpy.m4 \
 	$(top_srcdir)/libgnu/m4/memmove.m4 \
 	$(top_srcdir)/libgnu/m4/memset.m4 \
-	$(top_srcdir)/libgnu/m4/mkstemp.m4 \
+	$(top_srcdir)/libgnu/m4/minmax.m4 \
 	$(top_srcdir)/libgnu/m4/mktime.m4 \
 	$(top_srcdir)/libgnu/m4/onceonly_2_57.m4 \
 	$(top_srcdir)/libgnu/m4/restrict.m4 \
@@ -88,7 +81,6 @@ am__aclocal_m4_deps = $(top_srcdir)/libgnu/m4/alloca.m4 \
 	$(top_srcdir)/libgnu/m4/strchrnul.m4 \
 	$(top_srcdir)/libgnu/m4/strcspn.m4 \
 	$(top_srcdir)/libgnu/m4/strerror.m4 \
-	$(top_srcdir)/libgnu/m4/strftime.m4 \
 	$(top_srcdir)/libgnu/m4/strpbrk.m4 \
 	$(top_srcdir)/libgnu/m4/strstr.m4 \
 	$(top_srcdir)/libgnu/m4/strtod.m4 \
@@ -99,9 +91,8 @@ am__aclocal_m4_deps = $(top_srcdir)/libgnu/m4/alloca.m4 \
 	$(top_srcdir)/libgnu/m4/strtoull.m4 \
 	$(top_srcdir)/libgnu/m4/strtoumax.m4 \
 	$(top_srcdir)/libgnu/m4/time_r.m4 \
-	$(top_srcdir)/libgnu/m4/tm_gmtoff.m4 \
-	$(top_srcdir)/libgnu/m4/tzset.m4 \
 	$(top_srcdir)/libgnu/m4/uintmax_t.m4 \
+	$(top_srcdir)/libgnu/m4/ullong_max.m4 \
 	$(top_srcdir)/libgnu/m4/ulonglong.m4 \
 	$(top_srcdir)/libgnu/m4/vasnprintf.m4 \
 	$(top_srcdir)/libgnu/m4/vsnprintf.m4 \
@@ -143,8 +134,8 @@ EGREP = @EGREP@
 EOVERFLOW = @EOVERFLOW@
 EXEEXT = @EXEEXT@
 GETOPT_H = @GETOPT_H@
-HAVE_LONGLONG_64BIT = @HAVE_LONGLONG_64BIT@
 HAVE_LONG_64BIT = @HAVE_LONG_64BIT@
+HAVE_LONG_LONG_64BIT = @HAVE_LONG_LONG_64BIT@
 HAVE__BOOL = @HAVE__BOOL@
 HELP2MAN = @HELP2MAN@
 INSTALL_DATA = @INSTALL_DATA@
@@ -188,18 +179,10 @@ am__quote = @am__quote@
 am__tar = @am__tar@
 am__untar = @am__untar@
 bindir = @bindir@
-build = @build@
 build_alias = @build_alias@
-build_cpu = @build_cpu@
-build_os = @build_os@
-build_vendor = @build_vendor@
 datadir = @datadir@
 exec_prefix = @exec_prefix@
-host = @host@
 host_alias = @host_alias@
-host_cpu = @host_cpu@
-host_os = @host_os@
-host_vendor = @host_vendor@
 includedir = @includedir@
 infodir = @infodir@
 install_sh = @install_sh@
@@ -214,11 +197,7 @@ program_transform_name = @program_transform_name@
 sbindir = @sbindir@
 sharedstatedir = @sharedstatedir@
 sysconfdir = @sysconfdir@
-target = @target@
 target_alias = @target_alias@
-target_cpu = @target_cpu@
-target_os = @target_os@
-target_vendor = @target_vendor@
 MAINTAINERCLEANFILES = Makefile.in $(TESTSUITE)
 DISTCLEANFILES = atconfig $(check_SCRIPTS)
 EXTRA_DIST = $(TESTSUITE_AT) $(TESTSUITE) package.m4

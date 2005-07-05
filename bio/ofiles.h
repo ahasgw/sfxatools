@@ -1,7 +1,7 @@
 /***********************************************************************
- * $Id: cmap.h,v 1.2 2005/07/05 05:12:57 aki Exp $
+ * $Id: ofiles.h,v 1.1 2005/07/05 05:12:54 aki Exp $
  *
- * cmap header file
+ * ofiles header file
  * Copyright (C) 2005 RIKEN. All rights reserved.
  * Written by Aki Hasegawa <aki@gsc.riken.jp>.
  *
@@ -20,59 +20,43 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  ***********************************************************************/
 
-#ifndef CMAP_H
-#define CMAP_H 1
+#ifndef OFILES_H
+#define OFILES_H 1
 
 #ifndef CONFIG_H_INCLUDED
 # define CONFIG_H_INCLUDED 1
 # include <config.h>
 #endif
 
-#include <limits.h>
-
-#define CMAP_ALPH_SIZE	(UCHAR_MAX + 1)
-#define CMAP_UNMAP	(SHRT_MAX)
-
-#ifdef __cplusplus
-extern "C" {
-#endif
+#include <stdio.h>
 
 /*======================================================================
- * typedefs
+ * type definitions
  *======================================================================*/
 
-/* character mapping information */
-typedef struct cmap_type {
-    short   map[CMAP_ALPH_SIZE];
-    short   rmap[CMAP_ALPH_SIZE];
-} cmap_t;
+typedef struct ofnames_type {
+    char            *fhdrname;
+    char            *fhdxname;
+    char            *fseqname;
+} ofnames_t;
+
+typedef struct ofiles_type {
+    FILE            *fhdr;
+    FILE            *fhdx;
+    FILE            *fseq;
+    int             num;
+} ofiles_t;
 
 /*======================================================================
- * prototypes
+ * function declarations
  *======================================================================*/
 
-cmap_t *cmap_new(void);
-void cmap_init(cmap_t *cm);
-void cmap_free(cmap_t *cm);
-void cmap_delete(cmap_t *cm);
+void ofnames_init(ofnames_t *ofns, const char *basename, const char *fhdr_ext, const char *fhdx_ext, const char *fseq_ext, int ext_num_len);
+void ofnames_free(ofnames_t *ofns);
+void ofiles_open(ofiles_t *ofs, const ofnames_t *ofns, int num);
+void ofiles_close(ofiles_t *ofs);
 
-int cmap_char2num(const cmap_t *cm, const char ch);
-int cmap_num2char(const cmap_t *cm, const int n);
+void ofiles_open_next(ofiles_t *newofs, const ofiles_t *ofs, const ofnames_t *ofn);
+void ofiles_subst(ofiles_t *destofs, const ofiles_t *srcofs);
 
-void cmap_copy(cmap_t * restrict dest_cm, const cmap_t * restrict src_cm);
-cmap_t *cmap_dup(const cmap_t *cm);
-
-void cmap_assign(cmap_t *cm, const char ch, const int n);
-
-void cmap_identity(cmap_t *cm);
-
-int cmap_load(cmap_t *cm, const char *path);
-int cmap_save(const cmap_t *cm, const char *path);
-
-int cmap_translate(const cmap_t *cm, const char *s, unsigned char **t, int *n);
-
-#ifdef __cplusplus
-} /* extern "C" */
-#endif
-
-#endif /* CMAP_H */
+#endif /* OFILES_H */

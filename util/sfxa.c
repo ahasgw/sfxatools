@@ -1,5 +1,5 @@
 /***********************************************************************
- * $Id: sfxa.c,v 1.1 2005/06/16 09:59:46 aki Exp $
+ * $Id: sfxa.c,v 1.2 2005/07/05 05:12:57 aki Exp $
  *
  * sfxa
  * Copyright (C) 2005 RIKEN. All rights reserved.
@@ -25,22 +25,10 @@
 # include <config.h>
 #endif
 
-#include <stdio.h>
-#if STDC_HEADERS
-# include <stdlib.h>
-# include <stddef.h>
-#else
-# if HAVE_STDLIB_H
-#  include <stdlib.h>
-# endif
-#endif
-
-#if HAVE_ASSERT_H
-# include <assert.h>
-#endif
-#if HAVE_LIMITS_H
-# include <limits.h>
-#endif
+#include <stdlib.h>
+#include <stddef.h>
+#include <assert.h>
+#include <limits.h>
 
 #include "sfxa.h"
 
@@ -56,7 +44,7 @@
 
 sfxa_t *sfxa_new(const char *ftxt, const char *fidx, const char *flcp)
 {
-    sfxa_t *sa = (sfxa_t*)malloc(sizeof(sfxa_t));
+    sfxa_t *sa = (sfxa_t*)calloc(1, sizeof(sfxa_t));
     if (sa != NULL && sfxa_init(sa, ftxt, fidx, flcp) != 0)
 	free(sa), sa = NULL;
     return sa;
@@ -65,26 +53,38 @@ sfxa_t *sfxa_new(const char *ftxt, const char *fidx, const char *flcp)
 int sfxa_init(sfxa_t *sa, const char *ftxt, const char *fidx, const char *flcp)
 {
     int ret = 0;
-    /* map text file */
-    if ((ret = mmfile_init(&sa->ftxt, ftxt)) == 0)
-	if ((ret = mmfile_map_shared_rd(&sa->ftxt)) != 0)
-	    mmfile_free(&sa->ftxt);
-    /* map index file */
-    if (ret == 0 && (ret = mmfile_init(&sa->fidx, fidx)) == 0)
-	if ((ret = mmfile_map_shared_rd(&sa->fidx)) != 0) {
-	    mmfile_free(&sa->fidx);
-	    mmfile_unmap(&sa->ftxt);
-	    mmfile_free(&sa->fidx);
-	}
-    /* map index file */
-    if (ret == 0 && flcp != NULL && (ret = mmfile_init(&sa->flcp, flcp)) == 0)
-	if ((ret = mmfile_map_shared_rd(&sa->flcp)) != 0) {
-	    mmfile_free(&sa->flcp);
-	    mmfile_unmap(&sa->fidx);
-	    mmfile_free(&sa->fidx);
-	    mmfile_unmap(&sa->ftxt);
-	    mmfile_free(&sa->fidx);
-	}
+
+    /* initialize mmfile */
+    if ((ret = mmfile_init(&sa->ftxt, ftxt)) != 0)
+	goto bail0;
+    if ((ret = mmfile_init(&sa->fidx, fidx)) != 0)
+	goto bail1;
+    if ((ret = mmfile_init(&sa->flcp, flcp)) != 0)
+	goto bail2;
+
+    /* map file */
+    if ((ret = mmfile_map_shared_rd(&sa->ftxt)) != 0)
+	goto bail3;
+    if ((ret = mmfile_map_shared_rd(&sa->fidx)) != 0)
+	goto bail4;
+    if (mmfile_path(&sa->flcp) != NULL) {
+	if ((ret = mmfile_map_shared_rd(&sa->flcp)) != 0)
+	    goto bail5;
+    }
+
+    return 0;
+
+bail5:
+    mmfile_unmap(&sa->fidx);
+bail4:
+    mmfile_unmap(&sa->ftxt);
+bail3:
+    mmfile_free(&sa->flcp);
+bail2:
+    mmfile_free(&sa->fidx);
+bail1:
+    mmfile_free(&sa->ftxt);
+bail0:
     return ret;
 }
 
@@ -92,7 +92,7 @@ int sfxa_free(sfxa_t *sa)
 {
     int ret = 0;
     /* unmap index file */
-    if (mmfile_path(&sa->flcp) != NULL && (ret = mmfile_unmap(&sa->fidx)) != 0)
+    if (mmfile_ptr(&sa->flcp) != NULL && (ret = mmfile_unmap(&sa->flcp)) != 0)
 	return ret;
     mmfile_free(&sa->flcp);
     /* unmap index file */

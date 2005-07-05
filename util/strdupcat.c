@@ -1,5 +1,5 @@
 /***********************************************************************
- * $Id: strdupcat.c,v 1.1 2005/02/02 10:39:30 aki Exp $
+ * $Id: strdupcat.c,v 1.2 2005/07/05 05:12:57 aki Exp $
  *
  * string utility
  * Copyright (C) 2004 RIKEN. All rights reserved.
@@ -25,25 +25,11 @@
 # include <config.h>
 #endif
 
-#include "strdupcat.h"
+#include <stdlib.h>
+#include <stddef.h>
+#include <string.h>
 
-#if STDC_HEADERS
-# include <stdlib.h>
-# include <stddef.h>
-#else
-# if HAVE_STDLIB_H
-#  include <stdlib.h>
-# endif
-#endif
-#if HAVE_STRING_H
-# if !STDC_HEADERS && HAVE_MEMORY_H
-#  include <memory.h>
-# endif
-# include <string.h>
-#endif
-#if HAVE_STRINGS_H
-# include <strings.h>
-#endif
+#include "strdupcat.h"
 
 /*======================================================================
  * string handler

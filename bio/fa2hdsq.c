@@ -1,5 +1,5 @@
 /***********************************************************************
- * $Id: fa2hdsq.c,v 1.2 2005/06/16 09:59:44 aki Exp $
+ * $Id: fa2hdsq.c,v 1.3 2005/07/05 05:12:53 aki Exp $
  *
  * Fasta to header/sequence separator
  * Copyright (C) 2005 RIKEN. All rights reserved.
@@ -26,27 +26,30 @@
 #endif
 
 #include <stdio.h>
-#if STDC_HEADERS
-# include <stdlib.h>
-# include <stddef.h>
-#else
-# if HAVE_STDLIB_H
-#  include <stdlib.h>
-# endif
-#endif
-
-#include <parsefa.h>
-
+#include <stdlib.h>
+#include <stddef.h>
+#include <stdint.h>
 #include <ctype.h>
 #include <errno.h>
+#include <string.h>
+
+#include <dirname.h>
 #include <getopt.h>
 #include <progname.h>
-#include <string.h>
 #include <xalloc.h>
+
+#include <parsefa.h>
+#include <ofiles.h>
 
 #include <cmap.h>
 #include <msg.h>
 #include <strdupcat.h>
+
+/*======================================================================
+ * macro definitions
+ *======================================================================*/
+
+#define DIGITOF_INT64_T	20
 
 /*======================================================================
  * type definitions
@@ -58,15 +61,16 @@ typedef struct opts_type {
     FILE	    *fhdrout;	    /* output file for header */
     FILE	    *fhdxout;	    /* output file for header */
     FILE	    *fseqout;	    /* output file for sequence */
-    char	    *hdr_suffix;
-    char	    *hdx_suffix;
-    char	    *seq_suffix;
+    char	    *hdr_ext;
+    char	    *hdx_ext;
+    char	    *seq_ext;
     char	    *opt_b;
+    int		    opt_S;	    /* split size */
+    int		    opt_d;	    /* digits of file number extension */
     int		    opt_v;	    /* verbose level */
     unsigned int    opt_h: 1;
     unsigned int    opt_V: 1;
     unsigned int    opt_I: 1;
-    unsigned int    opt_L: 1;
 } opts_t;
 
 /*======================================================================
@@ -85,9 +89,10 @@ static opts_t opts = {
     ".seq",
     NULL,
     /* numerals */
+    INT32_MAX,
+    0,
     0,
     /* binary flags */
-    0,
     0,
     0,
     0
@@ -98,7 +103,6 @@ static opts_t opts = {
  *======================================================================*/
 
 static void process_file(const char *file);
-static void process_stdin(void);
 static void show_version(void);
 static void show_help(void);
 
@@ -109,119 +113,38 @@ static void show_help(void);
 /* process files */
 static void process_file(const char *file)
 {
-    char *fhdrout_name = NULL;
-    char *fhdxout_name = NULL;
-    char *fseqout_name = NULL;
+    const char *ifname = (file ? file : "stdin");
+    const char *ofname = (opts.opt_b ? basename(opts.opt_b) : basename(ifname));
+    ofnames_t ofnames;
+    ofiles_t ofiles;
 
-    if (opts.opt_v) msg(MSGLVL_INFO, "processing '%s'...", file);
-
-    {
-	char *name = xstrdup(file);
-	char *base = basename(name);
-	fhdrout_name = strdupcat(base, opts.hdr_suffix);
-	fhdxout_name = strdupcat(base, opts.hdx_suffix);
-	fseqout_name = strdupcat(base, opts.seq_suffix);
-	free(name), name = NULL;
-    }
+    if (opts.opt_v) msg(MSGLVL_INFO, "processing '%s'...", ifname);
 
     /* open files */
-    if (freopen(file, "r", stdin) == NULL) {
+    if (file && (freopen(file, "r", stdin) == NULL)) {
 	msg(MSGLVL_ERR, "cannot open input file '%s':", file);
 	exit(EXIT_FAILURE);
     }
-    if ((opts.fhdrout = fopen(fhdrout_name, "w")) == NULL) {
-	msg(MSGLVL_ERR, "cannot open .hdr output file '%s':", fhdrout_name);
-	exit(EXIT_FAILURE);
-    }
-    if ((opts.fhdxout = fopen(fhdxout_name, "wb")) == NULL) {
-	msg(MSGLVL_ERR, "cannot open .hdx output file '%s':", fhdxout_name);
-	exit(EXIT_FAILURE);
-    }
-    if ((opts.fseqout = fopen(fseqout_name, "wb")) == NULL) {
-	msg(MSGLVL_ERR, "cannot open .seq output file '%s':", fseqout_name);
-	exit(EXIT_FAILURE);
-    }
+    ofnames_init(&ofnames, ofname,
+	    opts.hdr_ext, opts.hdx_ext, opts.seq_ext, opts.opt_d);
+    ofiles_open(&ofiles, &ofnames, 0);
 
-    parsefa_param_t param = {
-	opts.cmap, opts.fseqout, opts.fhdxout, opts.fhdrout, opts.opt_I
-    };
+    parsefa_param_t param = {opts.cmap, opts.opt_S, opts.opt_I};
 
     /* parse fasta */
 #if SIZEOF_OFF_T < 8
-    parse_fasta32(&param);
+    parse_fasta32(&ofiles, &ofnames, &param);
 #else /* SIZEOF_OFF_T */
-    if (opts.opt_L) {
-	parse_fasta64(&param);
+    if (opts.opt_S == 0) {
+	parse_fasta64(&ofiles, &ofnames, &param);
     } else {
-	parse_fasta32(&param);
+	parse_fasta32(&ofiles, &ofnames, &param);
     }
 #endif /* SIZEOF_OFF_T */
 
     /* close files */
-    fclose(opts.fseqout), opts.fseqout = NULL;
-    fclose(opts.fhdxout), opts.fhdxout = NULL;
-    fclose(opts.fhdrout), opts.fhdrout = NULL;
-
-    free(fseqout_name), fseqout_name = NULL;
-    free(fhdxout_name), fhdxout_name = NULL;
-    free(fhdrout_name), fhdrout_name = NULL;
-
-    if (opts.opt_v) msg(MSGLVL_INFO, "...done.");
-}
-
-/* process files */
-static void process_stdin(void)
-{
-    char *file = ((opts.opt_b == NULL) ? "stdin" : basename(opts.opt_b));
-    char *fhdrout_name = NULL;
-    char *fhdxout_name = NULL;
-    char *fseqout_name = NULL;
-
-    if (opts.opt_v) msg(MSGLVL_INFO, "processing '%s'...", file);
-
-    {
-	fhdrout_name = strdupcat(file, opts.hdr_suffix);
-	fhdxout_name = strdupcat(file, opts.hdx_suffix);
-	fseqout_name = strdupcat(file, opts.seq_suffix);
-    }
-
-    /* open files */
-    if ((opts.fhdrout = fopen(fhdrout_name, "w")) == NULL) {
-	msg(MSGLVL_ERR, "cannot open .hdr output file '%s':", fhdrout_name);
-	exit(EXIT_FAILURE);
-    }
-    if ((opts.fhdxout = fopen(fhdxout_name, "wb")) == NULL) {
-	msg(MSGLVL_ERR, "cannot open .hdx output file '%s':", fhdxout_name);
-	exit(EXIT_FAILURE);
-    }
-    if ((opts.fseqout = fopen(fseqout_name, "wb")) == NULL) {
-	msg(MSGLVL_ERR, "cannot open .seq output file '%s':", fseqout_name);
-	exit(EXIT_FAILURE);
-    }
-
-    parsefa_param_t param = {
-	opts.cmap, opts.fseqout, opts.fhdxout, opts.fhdrout, opts.opt_I
-    };
-
-    /* parse fasta */
-#if SIZEOF_OFF_T < 8
-    parse_fasta32(&param);
-#else /* SIZEOF_OFF_T */
-    if (opts.opt_L) {
-	parse_fasta64(&param);
-    } else {
-	parse_fasta32(&param);
-    }
-#endif /* SIZEOF_OFF_T */
-
-    /* close files */
-    fclose(opts.fseqout), opts.fseqout = NULL;
-    fclose(opts.fhdxout), opts.fhdxout = NULL;
-    fclose(opts.fhdrout), opts.fhdrout = NULL;
-
-    free(fseqout_name), fseqout_name = NULL;
-    free(fhdrout_name), fhdrout_name = NULL;
-    free(fhdxout_name), fhdxout_name = NULL;
+    ofiles_close(&ofiles);
+    ofnames_free(&ofnames);
 
     if (opts.opt_v) msg(MSGLVL_INFO, "...done.");
 }
@@ -229,7 +152,16 @@ static void process_stdin(void)
 /* show version number */
 static void show_version(void)
 {
-    fprintf(stdout, "fa2hdsq (%s) %s\n", PACKAGE, VERSION);
+    static char fmt[] =
+	"fa2hdsq (%s) %s\n"
+	"\n"
+	"Copyright (C) 2004-2005 RIKEN. All rights reserved.\n"
+	"This program comes with ABSOLUTELY NO WARRANTY.\n"
+	"You may redistribute copies of this program under the terms of the\n"
+	"GNU General Public License.\n"
+	"For more information about these matters, see the file named COPYING.\n"
+	;
+    fprintf(stdout, fmt, PACKAGE, VERSION);
 }
 
 /* show help */
@@ -237,38 +169,21 @@ static void show_help(void)
 {
     static char fmt[] =
 	"This is fa2hdsq, FASTA format to header/sequence separator program.\n"
-	"Copyright (C) 2004-2005 RIKEN. All rights reserved.\n"
-	"This program comes with ABSOLUTELY NO WARRANTY.\n"
-	"You may redistribute copies of this program under the terms of the\n"
-	"GNU General Public License.\n"
-	"For more information about these matters, see the file named COPYING.\n"
 	"\n"
 	"Usage: %s [options] [<file> ...]\n"
 	"Options:\n"
-#ifdef HAVE_GETOPT_LONG
-	"  -h, --help             display this message\n"
-	"  -V, --version          print version number, and exit\n"
-	"  -v, --verbose          verbose output\n"
-	"  -I, --ignore-case      ignore case\n"
-# if SIZEOF_OFF_T >= 8
-	"  -L, --large-index      large sequence index\n"
-# endif /* SIZEOF_OFF_T */
-	"  -M, --map=<file>       character mapping file\n"
-	"  -b, --basename=<name>  base name for newly created file (for stdin)\n"
-#else
-	"  -h           display this message\n"
-	"  -V           print version number, and exit\n"
-	"  -v           verbose output\n"
-	"  -I           ignore case\n"
-# if SIZEOF_OFF_T >= 8
-	"  -L           large sequence index\n"
-# endif /* SIZEOF_OFF_T */
-	"  -M <file>    character mapping file\n"
-	"  -b <name>    base name for newly created file (for stdin)\n"
-#endif
-	"Report bugs to %s.\n"
+	"  -h, --help               display this message\n"
+	"  -V, --version            print version number, and exit\n"
+	"  -v, --verbose            verbose output\n"
+	"  -I, --ignore-case        ignore case\n"
+	"  -S, --split-size=<size>  split size of sequence file\n"
+	"                             (default: 2GB (max), 0 for large index)\n"
+	"  -M, --map=<file>         character mapping file\n"
+	"  -b, --basename=<name>    base name for newly created file (for stdin)\n"
+	"  -d, --digits=<n>         digits of file number extension\n"
+	"Report bugs to <%s>.\n"
 	;
-    fprintf(stdout, fmt, program_name, PACKAGE_BUGREPORT);
+    fprintf(stdout, fmt, base_name(program_name), PACKAGE_BUGREPORT);
 }
 
 /* main */
@@ -282,30 +197,19 @@ int main(int argc, char **argv)
     /* manage options */
     for (;;) {
 	int opt;
-#ifdef HAVE_GETOPT_LONG
 	int opt_index = 0;
 	static struct option long_opts[] = {
 	    {"help",	    no_argument,	NULL, 'h'},
 	    {"version",	    no_argument,	NULL, 'V'},
 	    {"verbose",	    no_argument,	NULL, 'v'},
 	    {"ignore-case", no_argument,	NULL, 'I'},
-#if SIZEOF_OFF_T >= 8
-	    {"large-index", no_argument,	NULL, 'L'},
-#endif /* SIZEOF_OFF_T */
+	    {"split-size",  required_argument,	NULL, 'S'},
 	    {"map",	    required_argument,	NULL, 'M'},
 	    {"basename",    required_argument,	NULL, 'b'},
+	    {"digits",	    required_argument,  NULL, 'd'},
 	    {0, 0, 0, 0}
 	};
-#if SIZEOF_OFF_T < 8
-	const char *opt_fmt = "hVvIM:b:";
-#else /* SIZEOF_OFF_T */
-	const char *opt_fmt = "hVvILM:b:";
-#endif /* SIZEOF_OFF_T */
-
-	opt = getopt_long(argc, argv, opt_fmt, long_opts, &opt_index);
-#else
-	opt = getopt(argc, argv, opt_fmt);
-#endif
+	opt = getopt_long(argc, argv, "hVvIS:M:b:d:", long_opts, &opt_index);
 	if (opt == -1)
 	    break;
 
@@ -314,11 +218,10 @@ int main(int argc, char **argv)
 	    case 'V': opts.opt_V = 1; break;
 	    case 'v': ++opts.opt_v; break;
 	    case 'I': opts.opt_I = 1; break;
-#if SIZEOF_OFF_T >= 8
-	    case 'L': opts.opt_L = 1; break;
-#endif /* SIZEOF_OFF_T */
+	    case 'S': opts.opt_S = atoi(optarg); break;
 	    case 'M': opts.opt_M = xstrdup(optarg); break;
 	    case 'b': opts.opt_b = xstrdup(optarg); break;
+	    case 'd': opts.opt_d = atoi(optarg); break;
 	    default: show_help(); exit(EXIT_FAILURE);
 	}
     }
@@ -338,13 +241,22 @@ int main(int argc, char **argv)
 	opts.cmap = &cm;
     }
 
+    /* check argments */
+    if (opts.opt_S < 0) {
+	msg(MSGLVL_ERR, "Split size cannot be negative value.");
+	exit(EXIT_FAILURE);
+    }
+    if (opts.opt_v && opts.opt_S < 1000) {
+	msg(MSGLVL_WARNING, "Split size is very small. Use with caution.");
+    }
+
     /* process files */
     if (optind < argc) {
 	for (; optind < argc; ++optind) {
 	    process_file(argv[optind]);
 	}
     } else {
-	process_stdin();
+	process_file(NULL);
     }
 
     /* finalize */

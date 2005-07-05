@@ -1,5 +1,5 @@
 /***********************************************************************
- * $Id: annotidx.c,v 1.2 2005/06/16 09:59:44 aki Exp $
+ * $Id: annotidx.c,v 1.3 2005/07/05 05:12:53 aki Exp $
  *
  * Annotate index.
  * Copyright (C) 2004,2005 RIKEN. All rights reserved.
@@ -26,29 +26,19 @@
 #endif
 
 #include <stdio.h>
-#if STDC_HEADERS
-# include <stdlib.h>
-# include <stddef.h>
-#else
-# if HAVE_STDLIB_H
-#  include <stdlib.h>
-# endif
-#endif
-
-#ifndef STDINT_H_INCLUDED
-# define STDINT_H_INCLUDED 1
-#  include <stdint.h>
-#endif
-
-#include <mmfile.h>
-#include <msg.h>
-
+#include <stdlib.h>
+#include <stddef.h>
+#include <stdint.h>
 #include <ctype.h>
 #include <errno.h>
+
 #include <dirname.h>
 #include <getopt.h>
 #include <progname.h>
 #include <xalloc.h>
+
+#include <mmfile.h>
+#include <msg.h>
 
 /*======================================================================
  * type definitions
@@ -76,7 +66,6 @@ typedef struct opts_type {
     unsigned int    opt_h : 1;
     unsigned int    opt_u : 1;
     unsigned int    opt_V : 1;
-    unsigned int    opt_z : 1;
     unsigned int    opt_L : 1;
     mmfile_t	    fhdr;	/* header text file */
     mmfile_t	    fhdx;	/* header index file */
@@ -88,7 +77,6 @@ typedef struct opts_type {
 
 static opts_t opts = {
     NULL,
-    0,
     0,
     0,
     0,
@@ -139,7 +127,7 @@ static void annotate_index(const char *fpath)
 		    int32_t idx = strtol(line, &endp, 10);
 		    if (!errno) {
 			hdx32_elem_t *elem;
-			elem = bsearch_hdx32(idx + (opts.opt_z ? 1 : 0));
+			elem = bsearch_hdx32(idx);
 			if (elem != NULL) {
 			    line[read - 1] = '\0';  /* truncate delimiter */
 			    while (*endp != '\0' && isspace(*endp))
@@ -163,7 +151,7 @@ static void annotate_index(const char *fpath)
 		    int64_t idx = strtoll(line, &endp, 10);
 		    if (!errno) {
 			hdx64_elem_t *elem;
-			elem = bsearch_hdx64(idx + (opts.opt_z ? 1 : 0));
+			elem = bsearch_hdx64(idx);
 			if (elem != NULL) {
 			    line[read - 1] = '\0';  /* truncate delimiter */
 			    while (*endp != '\0' && isspace(*endp))
@@ -231,7 +219,16 @@ static hdx64_elem_t *bsearch_hdx64(const int64_t idx)
 /* show version number */
 static void show_version(void)
 {
-    fprintf(stdout, "annotidx (%s) %s\n", PACKAGE, VERSION);
+    static char fmt[] =
+	"annotidx (%s) %s\n"
+	"\n"
+	"Copyright (C) 2005 RIKEN. All rights reserved.\n"
+	"This program comes with ABSOLUTELY NO WARRANTY.\n"
+	"You may redistribute copies of this program under the terms of the\n"
+	"GNU General Public License.\n"
+	"For more information about these matters, see the file named COPYING.\n"
+	;
+    fprintf(stdout, fmt, PACKAGE, VERSION);
 }
 
 /* show help */
@@ -239,32 +236,17 @@ static void show_help(void)
 {
     static char fmt[] =
 	"This is annotidx, index annotation program.\n"
-	"Copyright (C) 2005 RIKEN. All rights reserved.\n"
-	"This program comes with ABSOLUTELY NO WARRANTY.\n"
-	"You may redistribute copies of this program under the terms of the\n"
-	"GNU General Public License.\n"
-	"For more information about these matters, see the file named COPYING.\n"
 	"\n"
 	"Usage: %s [options] <text_file> <index_file> [<index> ...]\n"
 	"Options:\n"
-#ifdef HAVE_GETOPT_LONG
 	"  -h, --help           display this message\n"
 	"  -V, --version        print version number\n"
 	"  -v, --verbose        verbose output\n"
 	"  -o, --output=<file>  file to output\n"
-	"  -z, --zero-based     zero based index (default: 1-based)\n"
 	"  -L, --large-index    large header index\n"
-#else
-	"  -h         display this message\n"
-	"  -V         print version number\n"
-	"  -v         verbose output\n"
-	"  -o <file>  file to output\n"
-	"  -z         zero based index (default: 1-based)\n"
-	"  -L         large header index\n"
-#endif
-	"Report bugs to %s.\n"
+	"Report bugs to <%s>.\n"
 	;
-    fprintf(stdout, fmt, program_name, PACKAGE_BUGREPORT);
+    fprintf(stdout, fmt, base_name(program_name), PACKAGE_BUGREPORT);
 }
 
 /* main */
@@ -276,22 +258,17 @@ int main(int argc, char **argv)
     /* manage options */
     for (;;) {
 	int opt;
-#ifdef HAVE_GETOPT_LONG
 	int opt_index = 0;
 	static struct option long_opts[] = {
 	    {"help",	    no_argument,	NULL, 'h'},
 	    {"version",	    no_argument,	NULL, 'V'},
 	    {"verbose",	    no_argument,	NULL, 'v'},
 	    {"output",	    required_argument,	NULL, 'o'},
-	    {"zero-based",  no_argument,	NULL, 'z'},
 	    {"large-index", no_argument,	NULL, 'L'},
 	    {0, 0, 0, 0}
 	};
 
-	opt = getopt_long(argc, argv, "hVvo:zL", long_opts, &opt_index);
-#else
-	opt = getopt(argc, argv, "hVvo:zL");
-#endif
+	opt = getopt_long(argc, argv, "hVvo:L", long_opts, &opt_index);
 	if (opt == -1)
 	    break;
 
@@ -300,7 +277,6 @@ int main(int argc, char **argv)
 	    case 'V': opts.opt_V = 1; break;
 	    case 'v': ++opts.opt_v; break;
 	    case 'o': opts.opt_o = xstrdup(optarg); break;
-	    case 'z': opts.opt_z = 1; break;
 	    case 'L': opts.opt_L = 1; break;
 	    default: show_help(); exit(EXIT_FAILURE);
 	}

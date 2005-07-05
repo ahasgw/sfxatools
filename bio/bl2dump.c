@@ -1,5 +1,5 @@
 /***********************************************************************
- * $Id: bl2dump.c,v 1.1 2005/06/11 06:23:09 aki Exp $
+ * $Id: bl2dump.c,v 1.2 2005/07/05 05:12:53 aki Exp $
  *
  * Blast2 database dump
  * Copyright (C) 2005 RIKEN. All rights reserved.
@@ -26,27 +26,23 @@
 #endif
 
 #include <stdio.h>
-#if STDC_HEADERS
-# include <stdlib.h>
-# include <stddef.h>
-#else
-# if HAVE_STDLIB_H
-#  include <stdlib.h>
-# endif
-#endif
-
+#include <stdlib.h>
+#include <stddef.h>
+#include <stdint.h>
 #include <errno.h>
+#include <inttypes.h>
+#include <string.h>
+
+#include <netinet/in.h>
+
+#include <dirname.h>
 #include <getopt.h>
 #include <progname.h>
-#include <string.h>
-#include <stdint.h>
-#include <inttypes.h>
-#include <netinet/in.h>
 #include <xalloc.h>
 
 #include <cmap.h>
-#include <msg.h>
 #include <mmfile.h>
+#include <msg.h>
 
 /*
  * Format of the pin/nin file:
@@ -200,7 +196,7 @@ static void read_indfile(void * const top, ofs_t *ofs)
     }
     info.max_len = ntohl(*((uint32_t *)ptr)), ptr += sizeof(uint32_t);
 
-    ofs->def = (const int32_t*)ptr;
+    ofs->def = (const uint32_t*)ptr;
     ofs->seq = ofs->def + info.max_cnt + 1;
     ofs->amb = (info.dumpflag ? NULL : ofs->seq + info.max_cnt + 1);
 }
@@ -214,7 +210,7 @@ static void print_indinfo(const info_t *info)
     printf("## db title:\t[%s]\n", info->title);
     printf("## date/time:\t[%s]\n", info->date);
     printf("## max count:\t%d\n", info->max_cnt);
-    printf("## total len:\t%lld\n", info->tot_len);
+    printf("## total len:\t%lld\n", (long long)info->tot_len);
     printf("## max len:\t%d\n", info->max_len);
 }
 
@@ -225,7 +221,7 @@ static void print_protein(const char * const hdr, const char * const seq, ofs_t 
     for (i = 0; i < info.max_cnt; ++i) {
 	uint32_t d = ntohl(*ofs->def++);
 	uint32_t s = ntohl(*ofs->seq++), nexts = ntohl(*ofs->seq);
-	const unsigned char *dstr = hdr + d;
+	const unsigned char *dstr = (const unsigned char * const)hdr + d;
 	dstr += 7;
 	int dlen = get_cnt(&dstr);
 	uint32_t slen = nexts - s;
@@ -261,7 +257,7 @@ static void print_nucleotide(const char * const hdr, const char * const seq, ofs
 	uint32_t d = ntohl(*ofs->def++);
 	uint32_t s = ntohl(*ofs->seq++), nexts = ntohl(*ofs->seq);
 	uint32_t a = ntohl(*ofs->amb++);
-	const unsigned char *dstr = hdr + d;
+	const unsigned char *dstr = (const unsigned char * const)hdr + d;
 	dstr += 7;
 	int dlen = get_cnt(&dstr);
 	uint32_t alen = nexts - a;
@@ -482,7 +478,16 @@ static void mkmap_NCBI4na(cmap_t *cmap)
 /* show version number */
 static void show_version(void)
 {
-    fprintf(stdout, "bl2dump (%s) %s\n", PACKAGE, VERSION);
+    static char fmt[] =
+	"bl2dump (%s) %s\n"
+	"\n"
+	"Copyright (C) 2005 RIKEN. All rights reserved.\n"
+	"This program comes with ABSOLUTELY NO WARRANTY.\n"
+	"You may redistribute copies of this program under the terms of the\n"
+	"GNU General Public License.\n"
+	"For more information about these matters, see the file named COPYING.\n"
+	;
+    fprintf(stdout, fmt, PACKAGE, VERSION);
 }
 
 /* show help */
@@ -490,25 +495,15 @@ static void show_help(void)
 {
     static char fmt[] =
 	"This is bl2dump, Blast2 database dump rogram.\n"
-	"Copyright (C) 2005 RIKEN. All rights reserved.\n"
-	"This program comes with ABSOLUTELY NO WARRANTY.\n"
-	"You may redistribute copies of this program under the terms of the\n"
-	"GNU General Public License.\n"
-	"For more information about these matters, see the file named COPYING.\n"         "\n"
+	"\n"
 	"Usage: %s [options] <(.pin|.nin)_file>\n"
 	"Options:\n"
-#ifdef HAVE_GETOPT_LONG
 	"  -h, --help               display this message\n"
 	"  -V, --version            print version number, and exit\n"
 	"  -v, --verbose            verbose output\n"
-#else
-	"  -h             display this message\n"
-	"  -V             print version number, and exit\n"
-	"  -v             verbose output\n"
-#endif
-	"Report bugs to %s.\n"
+	"Report bugs to <%s>.\n"
 	;
-    fprintf(stdout, fmt, program_name, PACKAGE_BUGREPORT);
+    fprintf(stdout, fmt, base_name(program_name), PACKAGE_BUGREPORT);
 }
 
 /* main */
@@ -520,7 +515,6 @@ int main(int argc, char **argv)
     /* manage options */
     for (;;) {
 	int opt;
-#ifdef HAVE_GETOPT_LONG
 	int opt_index = 0;
 	static struct option long_opts[] = {
 	    {"help",        no_argument,        NULL, 'h'},
@@ -530,9 +524,6 @@ int main(int argc, char **argv)
 	};
 
 	opt = getopt_long(argc, argv, "hVv", long_opts, &opt_index);
-#else
-	opt = getopt(argc, argv, "hVv");
-#endif
 	if (opt == -1)
 	    break;
 

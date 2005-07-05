@@ -1,7 +1,7 @@
 /***********************************************************************
- * $Id: parsefa.h,v 1.2 2005/07/05 05:12:54 aki Exp $
+ * $Id: bldpath.h,v 1.1 2005/07/05 05:12:56 aki Exp $
  *
- * parsefa header file
+ * bldpath header file
  * Copyright (C) 2005 RIKEN. All rights reserved.
  * Written by Aki Hasegawa <aki@gsc.riken.jp>.
  *
@@ -20,35 +20,19 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  ***********************************************************************/
 
-#ifndef PARSEFA_H
-#define PARSEFA_H 1
+#ifndef BLDPATH_H
+#define BLDPATH_H 1
 
 #ifndef CONFIG_H_INCLUDED
 # define CONFIG_H_INCLUDED 1
 # include <config.h>
 #endif
 
-#include <cmap.h>
-#include <ofiles.h>
-
-/*======================================================================
- * type definitions
- *======================================================================*/
-
-typedef struct parsefa_param_type {
-    cmap_t	    *cmap;
-    int		    split_size;
-    unsigned int    ignore_case: 1;
-} parsefa_param_t;
-
 /*======================================================================
  * function declarations
  *======================================================================*/
 
-int parse_fasta32(ofiles_t *ofiles, const ofnames_t *ofnames, const parsefa_param_t *param);
+char *bldpathtmpl(const char *fmt, const char *path, const char *ext, int col);
+char *bldpath(const char *tmpl, int num);
 
-#if SIZEOF_OFF_T >= 8
-int parse_fasta64(ofiles_t *ofiles, const ofnames_t *ofnames, const parsefa_param_t *param);
-#endif
-
-#endif /* PARSEFA_H */
+#endif /* BLDPATH_H */
