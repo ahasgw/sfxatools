@@ -1,7 +1,7 @@
 /***********************************************************************
- * $Id: sfxa.c,v 1.11 2005/07/05 07:33:26 aki Exp $
+ * $Id: sfxasrch.c,v 1.1 2005/08/01 09:04:49 aki Exp $
  *
- * sfxa
+ * sfxasrch
  * Copyright (C) 2005 RIKEN. All rights reserved.
  * Written by Aki Hasegawa <aki@gsc.riken.jp>.
  *
@@ -40,6 +40,7 @@
 #include <progname.h>
 #include <xalloc.h>
 
+#include "region.h"
 #include "sfxa.h"
 #include "search.h"
 #include "cmap.h"
@@ -80,6 +81,7 @@ typedef struct opts_type {
     unsigned int    opt_h: 1;	/* help flag */
     unsigned int    opt_V: 1;	/* version flag */
     unsigned int    opt_d: 1;	/* dump suffix array */
+    unsigned int    opt_q: 1;	/* quiet */
     output_param_t  opt_F;
 } opts_t;
 
@@ -97,6 +99,7 @@ static opts_t opts = {
     0,			/* h: help flag */
     0,			/* V: version flag */
     0,			/* d: dump suffix array */
+    0,			/* q: quiet */
     /* others */
     {
 	NULL,
@@ -105,7 +108,8 @@ static opts_t opts = {
 	DEFAULT_F_IDX,
 	DEFAULT_F_SFX,
 	DEFAULT_F_PRE,
-	DEFAULT_F_CHOP
+	DEFAULT_F_CHOP,
+	0
     }
 };
 
@@ -113,6 +117,7 @@ static opts_t opts = {
  * prototypes
  *======================================================================*/
 
+inline static int get_max_digit(unsigned long long n);
 static int search_pattern(const sfxa_t *sfxa, const char *pattern, int patlen);
 static int dump_suffix_array(const sfxa_t *sfxa);
 static void show_version(void);
@@ -122,94 +127,65 @@ static void show_help(void);
  * function definitions
  *======================================================================*/
 
+inline static int get_max_digit(unsigned long long n)
+{
+    char buf[64];
+    snprintf(buf, 64, "%llu", n);
+    return strlen(buf);
+}
+
 /* search pattern using suffix array */
 static int search_pattern(const sfxa_t *sfxa, const char *pattern, int patlen)
 {
     int ret = 0;
-    off_t len = mmfile_len(&sfxa->ftxt);
-#if SIZEOF_OFF_T < 8
-    if (len <= (INT32_MAX / sizeof(int32_t))) {
-	range32_t result;
-	search32(mmfile_ptr(&sfxa->ftxt), mmfile_ptr(&sfxa->fidx),
-		(int32_t)len, pattern, patlen, &result);
-	if (opts.opt_F.hdr) {
-	    printf("# '%*s' (%d)\n",
-		    patlen, pattern, result.end - result.beg + 1);
-	}
-	output32(mmfile_ptr(&sfxa->ftxt), mmfile_ptr(&sfxa->fidx),
-		(int32_t)len, result.beg, result.end, &opts.opt_F);
-    } else {
-	msg(MSGLVL_WARNING, "Cannot search. File too large");
-	ret = errno = EFBIG;
+    region_t result;
+
+    if ((ret = region_init(&result, sfxa)) != 0)
+	return ret;
+
+#if 0
+    fprintf(stderr, "sizeof(range32_t): %u\n", sizeof(range32_t));
+    fprintf(stderr, "sizeof(range64_t): %u\n", sizeof(range64_t));
+#endif
+
+    if ((ret = region_search_regexp(&result, pattern, patlen, NULL)) != 0) {
+	msg(MSGLVL_WARNING, "Cannot search:");
+	return ret;
     }
-#else /* SIZEOF_OFF_T >= 8 */
-    if (len <= INT32_MAX) {
-	range32_t result;
-	search32(mmfile_ptr(&sfxa->ftxt), mmfile_ptr(&sfxa->fidx),
-		(int32_t)len, pattern, patlen, &result);
-	if (opts.opt_F.hdr) {
-	    printf("# '%*s' (%d)\n",
-		    patlen, pattern, result.end - result.beg + 1);
-	}
-	output32(mmfile_ptr(&sfxa->ftxt), mmfile_ptr(&sfxa->fidx),
-		(int32_t)len, result.beg, result.end, &opts.opt_F);
-    } else if (len <= (INT64_MAX / sizeof(int64_t))) {
-	range64_t result;
-	search64(mmfile_ptr(&sfxa->ftxt), mmfile_ptr(&sfxa->fidx),
-		(int64_t)len, pattern, patlen, &result);
-	if (opts.opt_F.hdr) {
-	    printf("# '%*s' (%lld)\n",
-		    patlen, pattern, result.end - result.beg + 1);
-	}
-	output64(mmfile_ptr(&sfxa->ftxt), mmfile_ptr(&sfxa->fidx),
-		(int64_t)len, result.beg, result.end, &opts.opt_F);
-    } else {
-	msg(MSGLVL_WARNING, "Cannot search. File too large");
-	ret = errno = EFBIG;
+
+#if 0
+    if (opts.opt_F.hdr) {
+	printf("# '%*s' (%llu)\n",
+		patlen, pattern, (unsigned long long)(region_cnt(&result)));
     }
-#endif /* SIZEOF_OFF_T >= 8 */
-    return ret;
+#endif
+
+    fprintf(stderr, "print: mbuf_size: %u\n", mbuf_size(result.ranges));
+
+    if (!opts.opt_q) {
+	opts.opt_F.max_digit = get_max_digit(sfxa_txt_len(sfxa));
+	if ((ret = region_print(&result, output32, output64, &opts.opt_F)) != 0)
+	    return ret;
+    }
+
+    region_free(&result);
+    return 0;
 }
 
 static int dump_suffix_array(const sfxa_t *sfxa)
 {
     int ret = 0;
-    off_t len = mmfile_len(&sfxa->ftxt);
+    region_t result;
+    
+    if ((ret = region_init(&result, sfxa)) != 0)
+	return ret;
 
-#if SIZEOF_OFF_T < 8
-    if (len > (INT32_MAX / sizeof(int32_t))) {	/* check the size */
-	errno = EFBIG;
-	msg(MSGLVL_WARNING, "Cannot dump:");
-	return errno;
-    }
-    if (opts.opt_F.hdr)
-	printf("## txt: '%s', idx:'%s', size:%d\n"
-		"--- dump begin ---\n",
-		mmfile_path(&sfxa->ftxt), mmfile_path(&sfxa->fidx), len);
-    output32(mmfile_ptr(&sfxa->ftxt), mmfile_ptr(&sfxa->fidx),
-	    (int32_t)len, 0, (int32_t)len - 1, &opts.opt_F);
-#else /* SIZEOF_OFF_T >= 8 */
-    if (len > (INT64_MAX / sizeof(int64_t))) {	/* check the size */
-	errno = EFBIG;
-	msg(MSGLVL_WARNING, "Cannot dump:");
-	return errno;
-    }
-    if (opts.opt_F.hdr)
-	printf("## txt: '%s', idx:'%s', size:%lld\n"
-		"--- dump begin ---\n",
-		mmfile_path(&sfxa->ftxt), mmfile_path(&sfxa->fidx),
-		(long long)len);
-    if (len <= INT32_MAX) {
-	output32(mmfile_ptr(&sfxa->ftxt), mmfile_ptr(&sfxa->fidx),
-		(int32_t)len, 0, (int32_t)len - 1, &opts.opt_F);
-    } else {
-	output64(mmfile_ptr(&sfxa->ftxt), mmfile_ptr(&sfxa->fidx),
-		(int64_t)len, 0, (int64_t)len - 1, &opts.opt_F);
-    }
-#endif /* SIZEOF_OFF_T >= 8 */
-    if (opts.opt_v)
-	printf("--- dump end ---\n");
-    return ret;
+    opts.opt_F.max_digit = get_max_digit(sfxa_txt_len(sfxa));
+    if ((ret = region_dump(&result, output32, output64, &opts.opt_F)) != 0)
+	return ret;
+
+    region_free(&result);
+    return 0;
 }
 
 /* parse suboption F */
@@ -217,9 +193,14 @@ static void parse_subopt_F(char **optionp)
 {
     char *val;
     int op;
-    enum {HDR = 0, NOHDR, POS, NOPOS, IDX, NOIDX, SFX, NOSFX, PRE, NOPRE, CHOP, NOCHOP};
+    enum {
+	HDR = 0, NOHDR, POS, NOPOS, IDX, NOIDX, SFX, NOSFX,
+	PRE, NOPRE, CHOP, NOCHOP
+    };
     static char *subop[] = {
-	"hdr", "nohdr", "pos", "nopos", "idx", "noidx", "sfx", "nosfx", "pre", "nopre", "chop", "nochop", NULL};
+	"hdr", "nohdr", "pos", "nopos", "idx", "noidx", "sfx", "nosfx",
+	"pre", "nopre", "chop", "nochop", NULL
+    };
     while ((op = getsubopt(optionp, subop, &val)) != -1) {
 	switch (op) {
 	    case HDR:	opts.opt_F.hdr = 1; break;
@@ -253,13 +234,17 @@ static void parse_subopt_F(char **optionp)
 	    default: break;
 	}
     }
+    opts.opt_q = ((opts.opt_F.hdr == 0 && opts.opt_F.pos == 0
+		&& opts.opt_F.idx == 0 && opts.opt_F.sfx == 0
+//		&& opts.opt_F.pre <= 0
+		) ? 1 : 0);
 }
 
 /* show version number */
 static void show_version(void)
 {
     static char fmt[] =
-	"sfxa (%s) %s\n"
+	"sfxasrch (%s) %s\n"
 	"\n"
 	"Copyright (C) 2005 RIKEN. All rights reserved.\n"
 	"This program comes with ABSOLUTELY NO WARRANTY.\n"
@@ -274,7 +259,7 @@ static void show_version(void)
 static void show_help(void)
 {
     static char fmt[] =
-	"This is sfxa, suffix array search program.\n"
+	"This is sfxasrch, suffix array search program.\n"
 	"\n"
 	"Usage: %s [options] <text_file> <index_file> [pattern ...]\n"
 	"Options:\n"
@@ -283,6 +268,7 @@ static void show_help(void)
 	"  -v, --verbose        verbose output\n"
 	"  -o, --output=<file>  file to output\n"
 	"  -d, --dump           dump suffix array\n"
+	"  -q, --quiet          output quietly\n"
 	"  -M, --map=<file>     character mapping file\n"
 	"  -F, --format=<comma_separated_subopts>  formatting parameters\n"
 	"        [no]hdr        [do not] print information header\n"
@@ -317,12 +303,13 @@ int main(int argc, char **argv)
 	    {"verbose",	    no_argument,	NULL, 'v'},
 	    {"output",      required_argument,	NULL, 'o'},
 	    {"dump",	    no_argument,	NULL, 'd'},
+	    {"quiet",	    no_argument,	NULL, 'q'},
 	    {"map",	    required_argument,	NULL, 'M'},
 	    {"format",      required_argument,	NULL, 'F'},
 	    {0, 0, 0, 0}
 	};
 
-	opt = getopt_long(argc, argv, "hVvo:dM:F:", long_opts, &opt_index);
+	opt = getopt_long(argc, argv, "hVvo:dqM:F:", long_opts, &opt_index);
 	if (opt == -1)
 	    break;
 
@@ -332,6 +319,7 @@ int main(int argc, char **argv)
 	    case 'v': ++opts.opt_v; break;
 	    case 'o': opts.opt_o = xstrdup(optarg); break;
 	    case 'd': opts.opt_d = 1; break;
+	    case 'q': opts.opt_q = 1; break;
 	    case 'M': opts.opt_M = xstrdup(optarg); break;
 	    case 'F': parse_subopt_F(&optarg); break;
 	    default: show_help(); exit(EXIT_FAILURE);
@@ -363,7 +351,8 @@ int main(int argc, char **argv)
     {
 	char *ftxt = argv[optind++];
 	char *fidx = argv[optind++];
-	if (sfxa_init(&sa, ftxt, fidx, NULL) != 0) {
+	if (sfxa_init(&sa, ftxt, fidx, NULL) != 0
+		|| sfxa_open(&sa) != 0) {
 	    msg(MSGLVL_ERR, "Cannot open suffix array:");
 	    exit(EXIT_FAILURE);
 	}
@@ -379,14 +368,9 @@ int main(int argc, char **argv)
 
     /* print information header */
     if (opts.opt_F.hdr) {
-	off_t len = mmfile_len(&sa.ftxt);
-#if SIZEOF_OFF_T < 8
-	printf("## txt: '%s', idx:'%s', size:%d\n",
-		mmfile_path(&sa.ftxt), mmfile_path(&sa.fidx), len);
-#else /* SIZEOF_OFF_T >= 8 */
-	printf("## txt: '%s', idx:'%s', size:%lld\n",
-		mmfile_path(&sa.ftxt), mmfile_path(&sa.fidx), len);
-#endif /* SIZEOF_OFF_T >= 8 */
+	printf("## txt: '%s', idx:'%s', size:%llu\n",
+		sfxa_txt_path(&sa), sfxa_idx_path(&sa), 
+		(unsigned long long)sfxa_txt_len(&sa));
     }
 
     /* search the pattern */
@@ -413,7 +397,7 @@ int main(int argc, char **argv)
 	    }
 
 	    if (ret != 0) {
-		msg(MSGLVL_ERR, "failed:");
+		msg(MSGLVL_ERR, "Failed:");
 		exit(EXIT_FAILURE);
 	    }
 
@@ -422,10 +406,8 @@ int main(int argc, char **argv)
     }
 
     /* close suffix array */
-    if (sfxa_free(&sa) != 0) {
-	msg(MSGLVL_ERR, "Cannot close suffix array:");
-	exit(EXIT_FAILURE);
-    }
+    sfxa_close(&sa);
+    sfxa_free(&sa);
 
     /* finalize */
     if (opts.opt_M) { cmap_free(&cm); free(opts.opt_M), opts.opt_M = NULL; }

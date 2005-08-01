@@ -1,4 +1,4 @@
-## $Id: Makefile.am,v 1.4 2005/07/05 05:12:56 aki Exp $
+## $Id: Makefile.am,v 1.5 2005/08/01 09:04:50 aki Exp $
 ##
 ## Makefile for util directory of sfxatools.
 ## Copyright (C) 2004, 2005 RIKEN. All rights reserved.
@@ -22,14 +22,14 @@
 
 MAINTAINERCLEANFILES = Makefile.in
 
-AM_CPPFLAGS = -I$(top_srcdir)/util -I$(top_srcdir)/libgnu
+AM_CPPFLAGS = -I$(top_srcdir)/libgnu
 AM_CFLAGS = -DNDEBUG
 
 noinst_LIBRARIES = libutil.a
 libutil_a_SOURCES = \
 	cmap.c cmap.h \
+	mbuf.c mbuf.h \
 	mmfile.c mmfile.h \
 	msg.c msg.h \
 	bldpath.c bldpath.h \
-	sfxa.c sfxa.h \
 	strdupcat.c strdupcat.h

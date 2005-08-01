@@ -1,5 +1,5 @@
 /***********************************************************************
- * $Id: mmfile.h,v 1.3 2005/07/05 07:33:27 aki Exp $
+ * $Id: mmfile.h,v 1.4 2005/08/01 09:04:50 aki Exp $
  *
  * Header file for mmfile functions
  * Copyright (C) 2005 RIKEN. All rights reserved.
@@ -68,10 +68,10 @@ int mmfile_init(mmfile_t *mf, const char *path);
 void mmfile_free(mmfile_t *mf);
 void mmfile_delete(mmfile_t *mf);
 
-const char *mmfile_path(const mmfile_t *mf);
-void *mmfile_ptr(const mmfile_t *mf);
-off_t mmfile_len(const mmfile_t *mf);
-int mmfile_fileno(const mmfile_t *mf);
+inline static const char *mmfile_path(const mmfile_t *mf);
+inline static void *mmfile_ptr(const mmfile_t *mf);
+inline static off_t mmfile_len(const mmfile_t *mf);
+inline static int mmfile_fileno(const mmfile_t *mf);
 int mmfile_truncate(mmfile_t *mf, off_t len);
 
 int mmfile_map_shared_rd(mmfile_t *mf);
@@ -84,6 +84,22 @@ int mmfile_unmap(mmfile_t *mf);
 #ifndef NDEBUG
 void mmfile_print(const mmfile_t *mf, const char *comment);
 #endif
+
+/*======================================================================
+ * inline function definitions
+ *======================================================================*/
+
+inline static const char *mmfile_path(const mmfile_t *mf)
+{ return mf->path; }
+
+inline static void *mmfile_ptr(const mmfile_t *mf)
+{ return mf->ptr; }
+
+inline static off_t mmfile_len(const mmfile_t *mf)
+{ return mf->sz; }
+
+inline static int mmfile_fileno(const mmfile_t *mf)
+{ return mf->fd; }
 
 #ifdef __cplusplus
 } /* extern "C" */
