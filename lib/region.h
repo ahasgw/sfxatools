@@ -1,5 +1,5 @@
 /***********************************************************************
- * $Id: region.h,v 1.1 2005/08/01 09:04:48 aki Exp $
+ * $Id: region.h,v 1.2 2005/08/01 11:24:37 aki Exp $
  *
  * region header file
  * Copyright (C) 2005 RIKEN. All rights reserved.
@@ -82,9 +82,7 @@ typedef struct region_print32_arg_type {
     const int32_t	*idx;
     void		*param;
     int32_t		len;
-#if 1
     int32_t		adj;	    /* adjustment for the idx */
-#endif
 } region_print32_arg_t;
 
 typedef void (*region_print32_f)(int32_t pos, const region_print32_arg_t *arg);
@@ -94,9 +92,7 @@ typedef struct region_print64_arg_type {
     const int64_t	*idx;
     void		*param;
     int64_t		len;
-#if 1
     int64_t		adj;	    /* adjustment for the idx */
-#endif
 } region_print64_arg_t;
 
 typedef void (*region_print64_f)(int64_t pos, const region_print64_arg_t *arg);

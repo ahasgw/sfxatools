@@ -1,5 +1,5 @@
 /***********************************************************************
- * $Id: search.c,v 1.1 2005/08/01 09:04:48 aki Exp $
+ * $Id: search.c,v 1.2 2005/08/01 11:24:37 aki Exp $
  *
  * search
  * Copyright (C) 2005 RIKEN. All rights reserved.
@@ -335,11 +335,7 @@ static int search_interval(const char ch, searchXX_arg_t *arg, rangeXX_t *range_
 	    }
 
 	}
-#if 0
-	++(range_io->ofst);
-#else
-	range_io->ofst += 1;	/* for bitfield */
-#endif
+	range_io->ofst += 1;
     }
     return (range_io->beg <= range_io->end);
 }

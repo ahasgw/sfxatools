@@ -1,5 +1,5 @@
 /***********************************************************************
- * $Id: region.c,v 1.1 2005/08/01 09:04:48 aki Exp $
+ * $Id: region.c,v 1.2 2005/08/01 11:24:37 aki Exp $
  *
  * region
  * Copyright (C) 2005 RIKEN. All rights reserved.
@@ -23,10 +23,6 @@
 #ifndef CONFIG_H_INCLUDED
 # define CONFIG_H_INCLUDED 1
 # include <config.h>
-#endif
-
-#ifndef NDEBUG
-# include <stdio.h>
 #endif
 
 #include <stdlib.h>

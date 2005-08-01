@@ -1,5 +1,5 @@
 /***********************************************************************
- * $Id: sfxasrch.c,v 1.1 2005/08/01 09:04:49 aki Exp $
+ * $Id: sfxasrch.c,v 1.2 2005/08/01 11:24:37 aki Exp $
  *
  * sfxasrch
  * Copyright (C) 2005 RIKEN. All rights reserved.
@@ -160,7 +160,9 @@ static int search_pattern(const sfxa_t *sfxa, const char *pattern, int patlen)
     }
 #endif
 
+#if 0
     fprintf(stderr, "print: mbuf_size: %u\n", mbuf_size(result.ranges));
+#endif
 
     if (!opts.opt_q) {
 	opts.opt_F.max_digit = get_max_digit(sfxa_txt_len(sfxa));

@@ -1,5 +1,5 @@
 /***********************************************************************
- * $Id: parser.y,v 1.1 2005/08/01 09:04:48 aki Exp $
+ * $Id: parser.y,v 1.2 2005/08/01 11:24:37 aki Exp $
  *
  * search
  * Copyright (C) 2005 RIKEN. All rights reserved.
@@ -134,7 +134,7 @@ inline static int search(parser_arg_t *pa, mbuf_t *ranges_in,
     int ret = 0;
     unsigned long j;
     
-#if 1
+#if 0
     print_piece(p);
 #endif
     
@@ -144,7 +144,7 @@ inline static int search(parser_arg_t *pa, mbuf_t *ranges_in,
 
     for (j = 1; j <= p->most; ++j)
     {
-#if 1
+#if 0
 	fprintf(stderr, "%s %lu: mbuf_size: %llu\n",
 		(j <= p->least ? "least" : "most"), j,
 		(unsigned long long)mbuf_size(ranges_in));
@@ -250,7 +250,9 @@ int yylex(YYSTYPE *lvalp, void *arg)
     parser_arg_t *pa = (parser_arg_t *)arg;
     char c = *(pa->ptr++);
     int ret = 0;
-//printf("*** yylex() read [%c] ***\n", c);
+#if 0
+printf("*** yylex() read [%c] ***\n", c);
+#endif
 
     if (c == '\0')
 	return 0;
@@ -340,11 +342,11 @@ int yylex(YYSTYPE *lvalp, void *arg)
 int yyerror(const char *s)
 {
     errno = EINVAL;
-//    msg(MSGLVL_ERR, "%d: %s at '%s':", yylineno, s, yytext);
     msg(MSGLVL_ERR, "%s:", s);
     return 1;
 }
 
+#if 1
 void print_piece(const piece_t *p)
 {
     fprintf(stderr, "[\n");
@@ -354,6 +356,7 @@ void print_piece(const piece_t *p)
 	    p->least, p->most, (p->tail ? "$" : ""));
     fprintf(stderr, "]\n");
 }
+#endif
 
 void set_piece(piece_t *p, mbuf_t *ranges, syms_t syms, int head, int tail)
 {
