@@ -1,5 +1,5 @@
 /***********************************************************************
- * $Id: mmfile.c,v 1.3 2005/07/05 07:33:27 aki Exp $
+ * $Id: mmfile.c,v 1.4 2005/08/01 09:04:50 aki Exp $
  *
  * Memory mapped file
  * Copyright (C) 2005 RIKEN. All rights reserved.
@@ -100,30 +100,6 @@ void mmfile_delete(mmfile_t *mf)
 /*----------------------------------------------------------------------
  * accessor
  *----------------------------------------------------------------------*/
-
-/* get file path */
-const char *mmfile_path(const mmfile_t *mf)
-{
-    return mf->path;
-}
-
-/* get mmapped pointer */
-void *mmfile_ptr(const mmfile_t *mf)
-{
-    return mf->ptr;
-}
-
-/* get mmapped length */
-off_t mmfile_len(const mmfile_t *mf)
-{
-    return mf->sz;
-}
-
-/* get file descriptor */
-int mmfile_fileno(const mmfile_t *mf)
-{
-    return mf->fd;
-}
 
 /* truncate a file to a specified length */
 int mmfile_truncate(mmfile_t *mf, off_t len)

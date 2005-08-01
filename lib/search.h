@@ -1,5 +1,5 @@
 /***********************************************************************
- * $Id: search.h,v 1.5 2005/07/05 07:33:26 aki Exp $
+ * $Id: search.h,v 1.1 2005/08/01 09:04:48 aki Exp $
  *
  * search header file
  * Copyright (C) 2005 RIKEN. All rights reserved.
@@ -29,14 +29,9 @@
 # include <config.h>
 #endif
 
-#ifndef STDINT_H_INCLUDED
-# define STDINT_H_INCLUDED 1
-# include <stdint.h>
-#endif
-
-#ifndef RANGE_H_INCLUDED
-# define RANGE_H_INCLUDED 1
-# include "range.h"
+#ifndef REGION_H_INCLUDED
+# define REGION_H_INCLUDED 1
+# include "region.h"
 #endif
 
 #ifdef __cplusplus
@@ -47,12 +42,12 @@ extern "C" {
  * function declarations
  *======================================================================*/
 
-int search32(const char *txt, const int32_t *idx, const int32_t len,
-	const char *pattern, size_t patlen, range32_t *result);
+int search32(region_t *re, const char *pattern, size_t patlen, const char *opt_alphabet);
+int search_regexp32(region_t *re, const char *pattern, size_t patlen, const char *opt_alphabet);
 
 #if SIZEOF_OFF_T >= 8
-int search64(const char *txt, const int64_t *idx, const int64_t len,
-	const char *pattern, size_t patlen, range64_t *result);
+int search64(region_t *re, const char *pattern, size_t patlen, const char *opt_alphabet);
+int search_regexp64(region_t *re, const char *pattern, size_t patlen, const char *opt_alphabet);
 #endif
 
 #ifdef __cplusplus

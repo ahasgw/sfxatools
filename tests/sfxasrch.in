@@ -1,8 +1,8 @@
 #! @SHELL@
 #
-# $Id: sfxa.in,v 1.1 2005/02/02 10:39:30 aki Exp $
+# $Id: sfxasrch.in,v 1.1 2005/08/01 09:04:49 aki Exp $
 #
-# sfxa
+# sfxasrch
 # Copyright (C) 2005 RIKEN. All rights reserved.
 # Written by Aki Hasegawa <aki@gsc.riken.jp>.
 #
@@ -22,4 +22,4 @@
                                                                                 
 # @configure_input@
 
-exec '@abs_top_builddir@/src/sfxa' ${1+"$@"}
+exec '@abs_top_builddir@/src/sfxasrch' ${1+"$@"}

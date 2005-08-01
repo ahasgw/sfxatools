@@ -1,7 +1,7 @@
 /***********************************************************************
- * $Id: range.h,v 1.3 2005/07/05 07:33:26 aki Exp $
+ * $Id: region.h,v 1.1 2005/08/01 09:04:48 aki Exp $
  *
- * range header file
+ * region header file
  * Copyright (C) 2005 RIKEN. All rights reserved.
  * Written by Aki Hasegawa <aki@gsc.riken.jp>.
  *
@@ -20,9 +20,9 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  ***********************************************************************/
 
-#ifndef RANGE_H
-#define RANGE_H 1
-#define RANGE_H_INCLUDED 1
+#ifndef REGION_H
+#define REGION_H 1
+#define REGION_H_INCLUDED 1
 
 #ifndef CONFIG_H_INCLUDED
 # define CONFIG_H_INCLUDED 1
@@ -34,6 +34,15 @@
 # include <stdint.h>
 #endif
 
+#ifndef SFXA_H_INCLUDED
+# define SFXA_H_INCLUDED 1
+# include "sfxa.h"
+#endif
+#ifndef MBUF_H_INCLUDED
+# define MBUF_H_INCLUDED 1
+# include "mbuf.h"
+#endif
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -42,40 +51,72 @@ extern "C" {
  * type definitions
  *======================================================================*/
 
-struct range32_type;
-
 typedef struct range32_type {
-    struct range32_type	*next;
-    struct range32_type	*prev;
     int32_t		beg;
     int32_t		end;
+    unsigned int	ofst: 30;
+    unsigned int	head: 1;
+    unsigned int	tail: 1;
 } range32_t;
 
-#if SIZEOF_OFF_T >= 8
-struct range64_type;
-
 typedef struct range64_type {
-    struct range64_type	*next;
-    struct range64_type	*prev;
     int64_t		beg;
     int64_t		end;
+    unsigned int	ofst: 30;
+    unsigned int	head: 1;
+    unsigned int	tail: 1;
 } range64_t;
+
+typedef union range_type {
+    range32_t		r32;
+    range64_t		r64;
+} range_t;
+
+typedef struct region_type {
+    const sfxa_t	*sa;
+    mbuf_t		*ranges;
+} region_t;
+
+typedef struct region_print32_arg_type {
+    const char		*txt;
+    const int32_t	*idx;
+    void		*param;
+    int32_t		len;
+#if 1
+    int32_t		adj;	    /* adjustment for the idx */
 #endif
+} region_print32_arg_t;
+
+typedef void (*region_print32_f)(int32_t pos, const region_print32_arg_t *arg);
+
+typedef struct region_print64_arg_type {
+    const char		*txt;
+    const int64_t	*idx;
+    void		*param;
+    int64_t		len;
+#if 1
+    int64_t		adj;	    /* adjustment for the idx */
+#endif
+} region_print64_arg_t;
+
+typedef void (*region_print64_f)(int64_t pos, const region_print64_arg_t *arg);
 
 /*======================================================================
  * function declarations
  *======================================================================*/
 
-range32_t *range32_union(range32_t *r1, range32_t *r2);
-range32_t *range32_isect(range32_t *r1, range32_t *r2);
+int region_init(region_t *re, const sfxa_t *sa);
+void region_free(region_t *re);
 
-#if SIZEOF_OFF_T >= 8
-range64_t *range64_union(range64_t *r1, range64_t *r2);
-range64_t *range64_isect(range64_t *r1, range64_t *r2);
-#endif
+int region_search_regexp(region_t *re, const char *pattern, size_t patlen, const char *opt_alphabet);
+
+int region_print(const region_t *re,
+	region_print32_f pf32, region_print64_f pf64, void *arg);
+int region_dump(const region_t *re,
+	        region_print32_f pf32, region_print64_f pf64, void *param);
 
 #ifdef __cplusplus
 } /* extern "C" */
 #endif
 
-#endif /* RANGE_H */
+#endif /* REGION_H */

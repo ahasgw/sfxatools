@@ -1,6 +1,6 @@
-# $Id: sfxa.at,v 1.2 2005/03/17 12:50:14 aki Exp $
+# $Id: sfxasrch.at,v 1.1 2005/08/01 09:04:49 aki Exp $
 #
-# Test for sfxa.
+# Test for sfxasrch.
 # Copyright (C) 2004 RIKEN. All rights reserved.
 # Written by Aki Hasegawa <aki@gsc.riken.jp>.
 #
@@ -18,25 +18,25 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
 
-AT_BANNER([[Tests for sfxa.]])
+AT_BANNER([[Tests for sfxasrch.]])
 
 AT_SETUP([The file not existing.])
 AT_KEYWORDS([non-existent-file])
 AT_CHECK([rm deleteme], ignore, ignore, ignore)
-AT_CHECK([sfxa deleteme], ignore, ignore, ignore)
+AT_CHECK([sfxasrch deleteme], ignore, ignore, ignore)
 AT_CLEANUP
 
 #AT_SETUP([The file of length zero.])
 #AT_KEYWORDS([zero-length-file])
 #AT_DATA([data.fa], [[]])
-#AT_CHECK([sfxa data.fa], ignore, ignore, ignore)
+#AT_CHECK([sfxasrch data.fa], ignore, ignore, ignore)
 #AT_CLEANUP
 #
 #AT_SETUP([Badly formatted file 1.])
 #AT_DATA([data.txt],
 #[[This is a sample text file.
 #]])
-#AT_CHECK([sfxa data.txt], ignore, ignore, ignore)
+#AT_CHECK([sfxasrch data.txt], ignore, ignore, ignore)
 #AT_CLEANUP
 #
 #AT_SETUP([Badly formatted file 2.])
@@ -44,12 +44,12 @@ AT_CLEANUP
 #[[This is a sample text file
 #that have two lines.
 #]])
-#AT_CHECK([sfxa data.txt], ignore, ignore, ignore)
+#AT_CHECK([sfxasrch data.txt], ignore, ignore, ignore)
 #AT_CLEANUP
 #
 #AT_SETUP([Defiline only file.])
 #AT_DATA([data.txt],
 #[[>def abc
 #]])
-#AT_CHECK([sfxa data.txt], ignore, ignore, ignore)
+#AT_CHECK([sfxasrch data.txt], ignore, ignore, ignore)
 #AT_CLEANUP

@@ -1,5 +1,5 @@
 /***********************************************************************
- * $Id: output.h,v 1.6 2005/07/05 07:33:26 aki Exp $
+ * $Id: output.h,v 1.7 2005/08/01 09:04:49 aki Exp $
  *
  * output header file
  * Copyright (C) 2005 RIKEN. All rights reserved.
@@ -34,6 +34,14 @@
 # include <stdint.h>
 #endif
 
+/*
+#ifndef REGION_H_INCLUDED
+# define REGION_H_INCLUDED 1
+# include "region.h"
+#endif
+*/
+#include "region.h"
+
 #ifndef CMAP_H_INCLUDED
 # define CMAP_H_INCLUDED 1
 # include "cmap.h"
@@ -55,18 +63,17 @@ typedef struct output_param_type {
     int	    sfx;    /* length of suffix column */
     int	    pre;    /* length of substring ahead of the suffix */
     int	    chop;   /* whether chop suffix beyond character '\0' */
+    int	    max_digit;
 } output_param_t;
 
 /*======================================================================
  * function declarations
  *======================================================================*/
 
-int output32(const char *txt, const int32_t *idx, const int32_t len,
-	const int32_t beg, const int32_t end, const output_param_t *param);
+void output32(int32_t pos, const region_print32_arg_t *arg);
 
 #if SIZEOF_OFF_T >= 8
-int output64(const char *txt, const int64_t *idx, const int64_t len,
-	const int64_t beg, const int64_t end, const output_param_t *param);
+void output64(int64_t pos, const region_print64_arg_t *arg);
 #endif
 
 #ifdef __cplusplus

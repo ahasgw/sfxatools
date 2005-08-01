@@ -301,7 +301,7 @@ at_stderr=$at_suite_dir/at-stderr
 at_times_file=$at_suite_dir/at-times
 
 # List of the tested programs.
-at_tested='mksfxa mklcpa sfxa fa2hdsq annotidx bl2dump'
+at_tested='mksfxa mklcpa sfxasrch fa2hdsq annotidx bl2dump'
 # List of the all the test groups.
 at_groups_all=' banner-1 1 2 banner-2 3 banner-3 4 banner-4 5 6 banner-5 banner-6'
 # As many dots as there are digits in the last test group number.
@@ -312,7 +312,7 @@ at_format='.'
 at_help_all='1;mksfxa.at:23;The file not existing.;non-existent-file;
 2;mksfxa.at:29;The file of length zero.;zero-length-file;
 3;mklcpa.at:23;The file not existing.;non-existent-file;
-4;sfxa.at:23;The file not existing.;non-existent-file;
+4;sfxasrch.at:23;The file not existing.;non-existent-file;
 5;fa2hdsq.at:23;The file not existing.;non-existent-file;
 6;fa2hdsq.at:29;The file of length zero.;zero-length-file;
 '
@@ -341,7 +341,7 @@ do
 	;;
 
     --version | -V )
-	echo "$as_me (SfxaTools 0.1.2)"
+	echo "$as_me (SfxaTools 0.2.0)"
 	exit 0
 	;;
 
@@ -497,7 +497,7 @@ fi
 # List of tests.
 if $at_list_p; then
   cat <<_ATEOF
-SfxaTools 0.1.2 test suite test groups:
+SfxaTools 0.2.0 test suite test groups:
 
  NUM: FILENAME:LINE      TEST-GROUP-NAME
       KEYWORDS
@@ -579,13 +579,13 @@ exec 5>$at_suite_log
 # Banners and logs.
 cat <<\_ASBOX
 ## --------------------------- ##
-## SfxaTools 0.1.2 test suite. ##
+## SfxaTools 0.2.0 test suite. ##
 ## --------------------------- ##
 _ASBOX
 {
   cat <<\_ASBOX
 ## --------------------------- ##
-## SfxaTools 0.1.2 test suite. ##
+## SfxaTools 0.2.0 test suite. ##
 ## --------------------------- ##
 _ASBOX
   echo
@@ -969,27 +969,27 @@ $at_traceon
     ;;
 
 
-  banner-3 ) # Banner 3. sfxa.at:21
+  banner-3 ) # Banner 3. sfxasrch.at:21
     cat <<\_ATEOF
 
-Tests for sfxa.
+Tests for sfxasrch.
 
 _ATEOF
     ;;
 
-  4 ) # 4. sfxa.at:23: The file not existing.
-    at_setup_line='sfxa.at:23'
+  4 ) # 4. sfxasrch.at:23: The file not existing.
+    at_setup_line='sfxasrch.at:23'
     at_desc='The file not existing.'
     $at_quiet $ECHO_N "  4: The file not existing.                       $ECHO_C"
     at_xfail=no
     (
-      echo "4. sfxa.at:23: testing ..."
+      echo "4. sfxasrch.at:23: testing ..."
       $at_traceon
 
 
 $at_traceoff
-echo "sfxa.at:25: rm deleteme"
-echo sfxa.at:25 >$at_check_line_file
+echo "sfxasrch.at:25: rm deleteme"
+echo sfxasrch.at:25 >$at_check_line_file
 ( $at_traceon; rm deleteme ) >$at_stdout 2>$at_stder1
 at_status=$?
 grep '^ *+' $at_stder1 >&2
@@ -1011,9 +1011,9 @@ fi
 $at_traceon
 
 $at_traceoff
-echo "sfxa.at:26: sfxa deleteme"
-echo sfxa.at:26 >$at_check_line_file
-( $at_traceon; sfxa deleteme ) >$at_stdout 2>$at_stder1
+echo "sfxasrch.at:26: sfxasrch deleteme"
+echo sfxasrch.at:26 >$at_check_line_file
+( $at_traceon; sfxasrch deleteme ) >$at_stdout 2>$at_stder1
 at_status=$?
 grep '^ *+' $at_stder1 >&2
 grep -v '^ *+' $at_stder1 >$at_stderr
@@ -1442,7 +1442,7 @@ _ASBOX
   echo "Please send \`$as_me.log' and all information you think might help:"
   echo
   echo "   To: <aki@gsc.riken.jp>"
-  echo "   Subject: [SfxaTools 0.1.2] $as_me:$at_fail_list${at_fail_list:+ failed${at_xpass_list:+,}}$at_xpass_list${at_xpass_list:+ passed unexpectedly}"
+  echo "   Subject: [SfxaTools 0.2.0] $as_me:$at_fail_list${at_fail_list:+ failed${at_xpass_list:+,}}$at_xpass_list${at_xpass_list:+ passed unexpectedly}"
   echo
   if test $at_debug_p = false; then
     echo

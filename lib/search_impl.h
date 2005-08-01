@@ -1,7 +1,7 @@
 /***********************************************************************
- * $Id: sfxa.h,v 1.2 2005/07/05 07:33:28 aki Exp $
+ * $Id: search_impl.h,v 1.1 2005/08/01 09:04:48 aki Exp $
  *
- * Header file for sfxa
+ * search implement header file
  * Copyright (C) 2005 RIKEN. All rights reserved.
  * Written by Aki Hasegawa <aki@gsc.riken.jp>.
  *
@@ -20,18 +20,18 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  ***********************************************************************/
 
-#ifndef SFXA_H
-#define SFXA_H 1
-#define SFXA_H_INCLUDED 1
+#ifndef SEARCH_IMPL_H
+#define SEARCH_IMPL_H 1
+#define SEARCH_IMPL_H_INCLUDED 1
 
 #ifndef CONFIG_H_INCLUDED
 # define CONFIG_H_INCLUDED 1
 # include <config.h>
 #endif
 
-#ifndef MMFILE_H_INCLUDED
-# define MMFILE_H_INCLUDED 1
-# include <mmfile.h>
+#ifndef MBUF_H_INCLUDED
+# define MBUF_H_INCLUDED 1
+# include "mbuf.h"
 #endif
 
 #ifdef __cplusplus
@@ -42,24 +42,29 @@ extern "C" {
  * type definitions
  *======================================================================*/
 
-/* suffix array data type */
-typedef struct sfxa_type {
-    mmfile_t        ftxt;
-    mmfile_t        fidx;
-    mmfile_t        flcp;
-} sfxa_t;
+typedef enum head_tail_type { none, head, tail } head_tail_t;
+
+typedef int (*search_f)(const mbuf_t *, mbuf_t *, void *, const mbuf_t *, head_tail_t);
+
+typedef struct parser_arg_type {
+    const mbuf_t    *ranges_in;
+    mbuf_t	    *ranges_out;
+    mbuf_t	    *chs;
+    const char	    *alphabet;
+    void	    *search_arg;
+    search_f	    search_func;
+    unsigned long   repeat_max;
+    /* for lexical scanner */
+    const char	    *ptr;
+    int		    state;
+} parser_arg_t;
 
 /*======================================================================
  * function declarations
  *======================================================================*/
 
-sfxa_t *sfxa_new(const char *ftxt, const char *fidx, const char *flcp);
-int sfxa_init(sfxa_t *sa, const char *ftxt, const char *fidx, const char *flcp);
-int sfxa_free(sfxa_t *sa);
-int sfxa_delete(sfxa_t *sa);
-
 #ifdef __cplusplus
 } /* extern "C" */
 #endif
 
-#endif /* SFXA_H */
+#endif /* SEARCH_IMPL_H */

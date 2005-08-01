@@ -1,4 +1,4 @@
-## $Id: Makefile.am,v 1.3 2005/07/05 05:12:53 aki Exp $
+## $Id: Makefile.am,v 1.4 2005/08/01 09:04:47 aki Exp $
 ##
 ## Makefile for the bio directory of biotuils.
 ## Copyright (C) 2004 RIKEN. All rights reserved.
@@ -52,12 +52,16 @@ fa2hdsq_LDADD += $(top_builddir)/libgnu/libgnu.a
 ## bl2dump
 bin_PROGRAMS += bl2dump
 bl2dump_SOURCES = bl2dump.c
-bl2dump_LDADD = $(top_builddir)/util/libutil.a $(top_builddir)/libgnu/libgnu.a
+bl2dump_LDADD = 
+bl2dump_LDADD += $(top_builddir)/util/libutil.a
+bl2dump_LDADD += $(top_builddir)/libgnu/libgnu.a
 
 ## annotidx
 bin_PROGRAMS += annotidx
 annotidx_SOURCES = annotidx.c
-annotidx_LDADD = $(top_builddir)/util/libutil.a $(top_builddir)/libgnu/libgnu.a
+annotidx_LDADD = 
+annotidx_LDADD += $(top_builddir)/util/libutil.a
+annotidx_LDADD += $(top_builddir)/libgnu/libgnu.a
 
 ## data
 pkgdata_DATA += $(top_srcdir)/bio/NCBIstdaa.map

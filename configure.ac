@@ -1,4 +1,4 @@
-# $Id: configure.ac,v 1.8 2005/07/05 05:12:53 aki Exp $
+# $Id: configure.ac,v 1.9 2005/08/01 09:04:47 aki Exp $
 # vi: set tabstop=8 shiftwidth=8 noexpandtab:
 #
 # Makefile for the toplevel directory of sfxatools.
@@ -20,7 +20,7 @@
 # Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
 
 AC_PREREQ(2.59)
-AC_INIT([SfxaTools], [0.1.2], [aki@gsc.riken.jp], [sfxatools])
+AC_INIT([SfxaTools], [0.2.0], [aki@gsc.riken.jp], [sfxatools])
 AC_CONFIG_AUX_DIR(config)
 AC_CONFIG_SRCDIR([config.h.in])
 AC_CONFIG_TESTDIR(tests)
@@ -34,6 +34,7 @@ AC_SUBST(ac_aux_dir)
 # Checks for programs.
 AC_PROG_LN_S
 AC_PROG_RANLIB
+AC_PROG_YACC
 
 AC_CHECK_PROGS(HELP2MAN, help2man)
 AM_MISSING_PROG(AUTOM4TE, autom4te)
@@ -74,12 +75,13 @@ AC_CHECK_FUNCS(msync)
 AC_CONFIG_FILES(Makefile)
 AC_CONFIG_FILES(libgnu/Makefile)
 AC_CONFIG_FILES(util/Makefile)
+AC_CONFIG_FILES(lib/Makefile)
 AC_CONFIG_FILES(src/Makefile)
 AC_CONFIG_FILES(bio/Makefile)
 AC_CONFIG_FILES(tests/Makefile)
 AC_CONFIG_FILES(tests/mksfxa, [chmod +x tests/mksfxa])
 AC_CONFIG_FILES(tests/mklcpa, [chmod +x tests/mklcpa])
-AC_CONFIG_FILES(tests/sfxa, [chmod +x tests/sfxa])
+AC_CONFIG_FILES(tests/sfxasrch, [chmod +x tests/sfxasrch])
 AC_CONFIG_FILES(tests/fa2hdsq, [chmod +x tests/fa2hdsq])
 AC_CONFIG_FILES(tests/annotidx, [chmod +x tests/annotidx])
 AC_CONFIG_FILES(tests/bl2dump, [chmod +x tests/bl2dump])

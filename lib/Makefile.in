@@ -34,12 +34,10 @@ POST_INSTALL = :
 NORMAL_UNINSTALL = :
 PRE_UNINSTALL = :
 POST_UNINSTALL = :
-bin_PROGRAMS = mksfxa$(EXEEXT) mklcpa$(EXEEXT) sfxasrch$(EXEEXT)
-@IS_SIZEOF_OFF_T_EQ_8_TRUE@am__append_1 = sort.o64
-@IS_SIZEOF_OFF_T_EQ_8_TRUE@am__append_2 = lcp.o64
-@IS_SIZEOF_OFF_T_EQ_8_TRUE@am__append_3 = output.o64
-subdir = src
-DIST_COMMON = $(srcdir)/Makefile.am $(srcdir)/Makefile.in
+@IS_SIZEOF_OFF_T_EQ_8_TRUE@am__append_1 = search.o64
+subdir = lib
+DIST_COMMON = $(srcdir)/Makefile.am $(srcdir)/Makefile.in parser.c \
+	parser.h
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/libgnu/m4/alloca.m4 \
 	$(top_srcdir)/libgnu/m4/assert.m4 \
@@ -107,25 +105,15 @@ am__configure_deps = $(am__aclocal_m4_deps) $(CONFIGURE_DEPENDENCIES) \
 mkinstalldirs = $(install_sh) -d
 CONFIG_HEADER = $(top_builddir)/config.h
 CONFIG_CLEAN_FILES =
-am__installdirs = "$(DESTDIR)$(bindir)"
-binPROGRAMS_INSTALL = $(INSTALL_PROGRAM)
-PROGRAMS = $(bin_PROGRAMS)
-am_mklcpa_OBJECTS = mklcpa.$(OBJEXT) lcp.$(OBJEXT)
-mklcpa_OBJECTS = $(am_mklcpa_OBJECTS)
-@IS_SIZEOF_OFF_T_EQ_8_TRUE@am__DEPENDENCIES_1 = lcp.o64
-mklcpa_DEPENDENCIES = $(am__DEPENDENCIES_1) \
-	$(top_builddir)/util/libutil.a $(top_builddir)/libgnu/libgnu.a
-am_mksfxa_OBJECTS = mksfxa.$(OBJEXT) sort.$(OBJEXT)
-mksfxa_OBJECTS = $(am_mksfxa_OBJECTS)
-@IS_SIZEOF_OFF_T_EQ_8_TRUE@am__DEPENDENCIES_2 = sort.o64
-mksfxa_DEPENDENCIES = $(am__DEPENDENCIES_2) \
-	$(top_builddir)/util/libutil.a $(top_builddir)/libgnu/libgnu.a
-am_sfxasrch_OBJECTS = sfxasrch.$(OBJEXT) output.$(OBJEXT)
-sfxasrch_OBJECTS = $(am_sfxasrch_OBJECTS)
-@IS_SIZEOF_OFF_T_EQ_8_TRUE@am__DEPENDENCIES_3 = output.o64
-sfxasrch_DEPENDENCIES = $(am__DEPENDENCIES_3) \
-	$(top_builddir)/lib/libsfxa.a $(top_builddir)/util/libutil.a \
-	$(top_builddir)/libgnu/libgnu.a
+LIBRARIES = $(noinst_LIBRARIES)
+AR = ar
+ARFLAGS = cru
+libsfxa_a_AR = $(AR) $(ARFLAGS)
+@IS_SIZEOF_OFF_T_EQ_8_TRUE@am__DEPENDENCIES_1 = search.o64
+libsfxa_a_DEPENDENCIES = $(am__DEPENDENCIES_1)
+am_libsfxa_a_OBJECTS = parser.$(OBJEXT) region.$(OBJEXT) \
+	search.$(OBJEXT) sfxa.$(OBJEXT)
+libsfxa_a_OBJECTS = $(am_libsfxa_a_OBJECTS)
 DEFAULT_INCLUDES = -I. -I$(srcdir) -I$(top_builddir)
 depcomp = $(SHELL) $(top_srcdir)/config/depcomp
 am__depfiles_maybe = depfiles
@@ -133,8 +121,9 @@ COMPILE = $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) \
 	$(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS)
 CCLD = $(CC)
 LINK = $(CCLD) $(AM_CFLAGS) $(CFLAGS) $(AM_LDFLAGS) $(LDFLAGS) -o $@
-SOURCES = $(mklcpa_SOURCES) $(mksfxa_SOURCES) $(sfxasrch_SOURCES)
-DIST_SOURCES = $(mklcpa_SOURCES) $(mksfxa_SOURCES) $(sfxasrch_SOURCES)
+YACCCOMPILE = $(YACC) $(YFLAGS) $(AM_YFLAGS)
+SOURCES = $(libsfxa_a_SOURCES)
+DIST_SOURCES = $(libsfxa_a_SOURCES)
 ETAGS = etags
 CTAGS = ctags
 DISTFILES = $(DIST_COMMON) $(DIST_SOURCES) $(TEXINFOS) $(EXTRA_DIST)
@@ -231,21 +220,23 @@ sysconfdir = @sysconfdir@
 target_alias = @target_alias@
 MAINTAINERCLEANFILES = Makefile.in
 SUFFIXES = .o64
-AM_CPPFLAGS = -I$(top_srcdir)/lib -I$(top_srcdir)/util -I$(top_srcdir)/libgnu
+AM_CPPFLAGS = -I$(top_srcdir)/util -I$(top_srcdir)/libgnu
 AM_CFLAGS = -DNDEBUG
-mksfxa_SOURCES = mksfxa.c sort.c sort.h
-mksfxa_LDADD = $(am__append_1) $(top_builddir)/util/libutil.a \
-	$(top_builddir)/libgnu/libgnu.a
-mklcpa_SOURCES = mklcpa.c lcp.c lcp.h
-mklcpa_LDADD = $(am__append_2) $(top_builddir)/util/libutil.a \
-	$(top_builddir)/libgnu/libgnu.a
-sfxasrch_SOURCES = sfxasrch.c output.c output.h
-sfxasrch_LDADD = $(am__append_3) $(top_builddir)/lib/libsfxa.a \
-	$(top_builddir)/util/libutil.a $(top_builddir)/libgnu/libgnu.a
-all: all-am
+AM_YFLAGS = -d
+BUILT_SOURCES = parser.h
+noinst_LIBRARIES = libsfxa.a
+libsfxa_a_SOURCES = \
+	parser.y \
+	region.c region.h \
+	search.c search.h search_impl.h \
+	sfxa.c sfxa.h
+
+libsfxa_a_LIBADD = $(am__append_1)
+all: $(BUILT_SOURCES)
+	$(MAKE) $(AM_MAKEFLAGS) all-am
 
 .SUFFIXES:
-.SUFFIXES: .o64 .c .o .obj
+.SUFFIXES: .o64 .c .o .obj .y
 $(srcdir)/Makefile.in:  $(srcdir)/Makefile.am  $(am__configure_deps)
 	@for dep in $?; do \
 	  case '$(am__configure_deps)' in \
@@ -255,9 +246,9 @@ $(srcdir)/Makefile.in:  $(srcdir)/Makefile.am  $(am__configure_deps)
 	      exit 1;; \
 	  esac; \
 	done; \
-	echo ' cd $(top_srcdir) && $(AUTOMAKE) --gnu  src/Makefile'; \
+	echo ' cd $(top_srcdir) && $(AUTOMAKE) --gnu  lib/Makefile'; \
 	cd $(top_srcdir) && \
-	  $(AUTOMAKE) --gnu  src/Makefile
+	  $(AUTOMAKE) --gnu  lib/Makefile
 .PRECIOUS: Makefile
 Makefile: $(srcdir)/Makefile.in $(top_builddir)/config.status
 	@case '$?' in \
@@ -275,38 +266,18 @@ $(top_srcdir)/configure:  $(am__configure_deps)
 	cd $(top_builddir) && $(MAKE) $(AM_MAKEFLAGS) am--refresh
 $(ACLOCAL_M4):  $(am__aclocal_m4_deps)
 	cd $(top_builddir) && $(MAKE) $(AM_MAKEFLAGS) am--refresh
-install-binPROGRAMS: $(bin_PROGRAMS)
-	@$(NORMAL_INSTALL)
-	test -z "$(bindir)" || $(mkdir_p) "$(DESTDIR)$(bindir)"
-	@list='$(bin_PROGRAMS)'; for p in $$list; do \
-	  p1=`echo $$p|sed 's/$(EXEEXT)$$//'`; \
-	  if test -f $$p \
-	  ; then \
-	    f=`echo "$$p1" | sed 's,^.*/,,;$(transform);s/$$/$(EXEEXT)/'`; \
-	   echo " $(INSTALL_PROGRAM_ENV) $(binPROGRAMS_INSTALL) '$$p' '$(DESTDIR)$(bindir)/$$f'"; \
-	   $(INSTALL_PROGRAM_ENV) $(binPROGRAMS_INSTALL) "$$p" "$(DESTDIR)$(bindir)/$$f" || exit 1; \
-	  else :; fi; \
-	done
 
-uninstall-binPROGRAMS:
-	@$(NORMAL_UNINSTALL)
-	@list='$(bin_PROGRAMS)'; for p in $$list; do \
-	  f=`echo "$$p" | sed 's,^.*/,,;s/$(EXEEXT)$$//;$(transform);s/$$/$(EXEEXT)/'`; \
-	  echo " rm -f '$(DESTDIR)$(bindir)/$$f'"; \
-	  rm -f "$(DESTDIR)$(bindir)/$$f"; \
-	done
-
-clean-binPROGRAMS:
-	-test -z "$(bin_PROGRAMS)" || rm -f $(bin_PROGRAMS)
-mklcpa$(EXEEXT): $(mklcpa_OBJECTS) $(mklcpa_DEPENDENCIES) 
-	@rm -f mklcpa$(EXEEXT)
-	$(LINK) $(mklcpa_LDFLAGS) $(mklcpa_OBJECTS) $(mklcpa_LDADD) $(LIBS)
-mksfxa$(EXEEXT): $(mksfxa_OBJECTS) $(mksfxa_DEPENDENCIES) 
-	@rm -f mksfxa$(EXEEXT)
-	$(LINK) $(mksfxa_LDFLAGS) $(mksfxa_OBJECTS) $(mksfxa_LDADD) $(LIBS)
-sfxasrch$(EXEEXT): $(sfxasrch_OBJECTS) $(sfxasrch_DEPENDENCIES) 
-	@rm -f sfxasrch$(EXEEXT)
-	$(LINK) $(sfxasrch_LDFLAGS) $(sfxasrch_OBJECTS) $(sfxasrch_LDADD) $(LIBS)
+clean-noinstLIBRARIES:
+	-test -z "$(noinst_LIBRARIES)" || rm -f $(noinst_LIBRARIES)
+parser.h: parser.c
+	@if test ! -f $@; then \
+	  rm -f parser.c; \
+	  $(MAKE) parser.c; \
+	else :; fi
+libsfxa.a: $(libsfxa_a_OBJECTS) $(libsfxa_a_DEPENDENCIES) 
+	-rm -f libsfxa.a
+	$(libsfxa_a_AR) libsfxa.a $(libsfxa_a_OBJECTS) $(libsfxa_a_LIBADD)
+	$(RANLIB) libsfxa.a
 
 mostlyclean-compile:
 	-rm -f *.$(OBJEXT)
@@ -314,12 +285,10 @@ mostlyclean-compile:
 distclean-compile:
 	-rm -f *.tab.c
 
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/lcp.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/mklcpa.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/mksfxa.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/output.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/sfxasrch.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/sort.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/parser.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/region.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/search.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/sfxa.Po@am__quote@
 
 .c.o:
 @am__fastdepCC_TRUE@	if $(COMPILE) -MT $@ -MD -MP -MF "$(DEPDIR)/$*.Tpo" -c -o $@ $<; \
@@ -334,6 +303,27 @@ distclean-compile:
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	source='$<' object='$@' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(COMPILE) -c `$(CYGPATH_W) '$<'`
+
+.y.c:
+	$(YACCCOMPILE) $<
+	if test -f y.tab.h; then \
+	  to=`echo "$*_H" | sed \
+                -e 'y/abcdefghijklmnopqrstuvwxyz/ABCDEFGHIJKLMNOPQRSTUVWXYZ/' \
+                -e 's/[^ABCDEFGHIJKLMNOPQRSTUVWXYZ]/_/g'`; \
+	  sed -e "/^#/!b" -e "s/Y_TAB_H/$$to/g" -e "s|y\.tab\.h|$*.h|" \
+            y.tab.h >$*.ht; \
+	  rm -f y.tab.h; \
+	  if cmp -s $*.ht $*.h; then \
+	    rm -f $*.ht ;\
+	  else \
+	    mv $*.ht $*.h; \
+	  fi; \
+	fi
+	if test -f y.output; then \
+	  mv y.output $*.output; \
+	fi
+	sed '/^#/ s|y\.tab\.c|$@|' y.tab.c >$@t && mv $@t $@
+	rm -f y.tab.c
 uninstall-info-am:
 
 ID: $(HEADERS) $(SOURCES) $(LISP) $(TAGS_FILES)
@@ -412,13 +402,12 @@ distdir: $(DISTFILES)
 	  fi; \
 	done
 check-am: all-am
-check: check-am
-all-am: Makefile $(PROGRAMS)
+check: $(BUILT_SOURCES)
+	$(MAKE) $(AM_MAKEFLAGS) check-am
+all-am: Makefile $(LIBRARIES)
 installdirs:
-	for dir in "$(DESTDIR)$(bindir)"; do \
-	  test -z "$$dir" || $(mkdir_p) "$$dir"; \
-	done
-install: install-am
+install: $(BUILT_SOURCES)
+	$(MAKE) $(AM_MAKEFLAGS) install-am
 install-exec: install-exec-am
 install-data: install-data-am
 uninstall: uninstall-am
@@ -442,11 +431,15 @@ distclean-generic:
 maintainer-clean-generic:
 	@echo "This command is intended for maintainers to use"
 	@echo "it deletes files that may require special tools to rebuild."
+	-rm -f parser.c
+	-rm -f parser.h
+	-test -z "$(BUILT_SOURCES)" || rm -f $(BUILT_SOURCES)
 	-test -z "$(MAINTAINERCLEANFILES)" || rm -f $(MAINTAINERCLEANFILES)
 @IS_SIZEOF_OFF_T_EQ_8_FALSE@clean-local:
 clean: clean-am
 
-clean-am: clean-binPROGRAMS clean-generic clean-local mostlyclean-am
+clean-am: clean-generic clean-local clean-noinstLIBRARIES \
+	mostlyclean-am
 
 distclean: distclean-am
 	-rm -rf ./$(DEPDIR)
@@ -466,7 +459,7 @@ info-am:
 
 install-data-am:
 
-install-exec-am: install-binPROGRAMS
+install-exec-am:
 
 install-info: install-info-am
 
@@ -491,18 +484,18 @@ ps: ps-am
 
 ps-am:
 
-uninstall-am: uninstall-binPROGRAMS uninstall-info-am
+uninstall-am: uninstall-info-am
 
-.PHONY: CTAGS GTAGS all all-am check check-am clean clean-binPROGRAMS \
-	clean-generic clean-local ctags distclean distclean-compile \
-	distclean-generic distclean-tags distdir dvi dvi-am html \
-	html-am info info-am install install-am install-binPROGRAMS \
+.PHONY: CTAGS GTAGS all all-am check check-am clean clean-generic \
+	clean-local clean-noinstLIBRARIES ctags distclean \
+	distclean-compile distclean-generic distclean-tags distdir dvi \
+	dvi-am html html-am info info-am install install-am \
 	install-data install-data-am install-exec install-exec-am \
 	install-info install-info-am install-man install-strip \
 	installcheck installcheck-am installdirs maintainer-clean \
 	maintainer-clean-generic mostlyclean mostlyclean-compile \
 	mostlyclean-generic pdf pdf-am ps ps-am tags uninstall \
-	uninstall-am uninstall-binPROGRAMS uninstall-info-am
+	uninstall-am uninstall-info-am
 
 .c.o64:
 @am__fastdepCC_TRUE@	if $(COMPILE) -DSIZEOF_INTXX_T=8 -MT $@ -MD -MP -MF "$(DEPDIR)/$*.Tpo" -c -o $@ $<; \

@@ -1,5 +1,5 @@
 /***********************************************************************
- * $Id: sfxa.c,v 1.3 2005/07/05 07:33:28 aki Exp $
+ * $Id: sfxa.c,v 1.1 2005/08/01 09:04:48 aki Exp $
  *
  * sfxa
  * Copyright (C) 2005 RIKEN. All rights reserved.
@@ -27,20 +27,16 @@
 
 #include <stdlib.h>
 #include <stddef.h>
+#include <stdint.h>
 #include <assert.h>
+#include <errno.h>
 #include <limits.h>
 
 #include "sfxa.h"
 
-#include "mmfile.h"
-
 /*======================================================================
  * public function definitions
  *======================================================================*/
-
-/*----------------------------------------------------------------------
- * ctor & dtor
- *----------------------------------------------------------------------*/
 
 sfxa_t *sfxa_new(const char *ftxt, const char *fidx, const char *flcp)
 {
@@ -54,6 +50,8 @@ int sfxa_init(sfxa_t *sa, const char *ftxt, const char *fidx, const char *flcp)
 {
     int ret = 0;
 
+    sa->idxbits = SFXA_IDXBITS_UNKNOWN;
+
     /* initialize mmfile */
     if ((ret = mmfile_init(&sa->ftxt, ftxt)) != 0)
 	goto bail0;
@@ -62,24 +60,8 @@ int sfxa_init(sfxa_t *sa, const char *ftxt, const char *fidx, const char *flcp)
     if ((ret = mmfile_init(&sa->flcp, flcp)) != 0)
 	goto bail2;
 
-    /* map file */
-    if ((ret = mmfile_map_shared_rd(&sa->ftxt)) != 0)
-	goto bail3;
-    if ((ret = mmfile_map_shared_rd(&sa->fidx)) != 0)
-	goto bail4;
-    if (mmfile_path(&sa->flcp) != NULL) {
-	if ((ret = mmfile_map_shared_rd(&sa->flcp)) != 0)
-	    goto bail5;
-    }
-
     return 0;
 
-bail5:
-    mmfile_unmap(&sa->fidx);
-bail4:
-    mmfile_unmap(&sa->ftxt);
-bail3:
-    mmfile_free(&sa->flcp);
 bail2:
     mmfile_free(&sa->fidx);
 bail1:
@@ -88,28 +70,78 @@ bail0:
     return ret;
 }
 
-int sfxa_free(sfxa_t *sa)
+void sfxa_free(sfxa_t *sa)
+{
+    mmfile_free(&sa->flcp);
+    mmfile_free(&sa->fidx);
+    mmfile_free(&sa->ftxt);
+}
+
+void sfxa_delete(sfxa_t *sa)
+{
+    sfxa_free(sa);
+    free(sa);
+}
+
+int sfxa_open(sfxa_t *sa)
+{
+    int ret = 0;
+    off_t len = 0;
+
+    /* map text file */
+    if ((ret = mmfile_map_shared_rd(&sa->ftxt)) != 0)
+	return ret;
+
+    /* idxbits */
+    len = mmfile_len(&sa->ftxt);
+#if SIZEOF_OFF_T < 8
+    if (len <= (INT32_MAX / sizeof(int32_t))) {
+	sa->idxbits = SFXA_IDXBITS_32;
+    } else {
+	ret = errno = EFBIG;
+	goto bail1;
+    }
+#else
+    if (len <= INT32_MAX) {
+	sa->idxbits = SFXA_IDXBITS_32;
+    } else if (len <= (INT64_MAX / sizeof(int64_t))) {
+	sa->idxbits = SFXA_IDXBITS_64;
+    } else {
+	ret = errno = EFBIG;
+	goto bail1;
+    }
+#endif
+
+    /* map other files */
+    if ((ret = mmfile_map_shared_rd(&sa->fidx)) != 0)
+	goto bail1;
+    if (mmfile_path(&sa->flcp) != NULL) {
+	if ((ret = mmfile_map_shared_rd(&sa->flcp)) != 0)
+	    goto bail2;
+    }
+
+    return 0;	/* return sfxa_open with success */
+
+/* failed to open or file was too large */
+
+bail2:
+    mmfile_unmap(&sa->fidx);
+bail1:
+    mmfile_unmap(&sa->ftxt);
+    return ret;
+}
+
+int sfxa_close(sfxa_t *sa)
 {
     int ret = 0;
     /* unmap index file */
     if (mmfile_ptr(&sa->flcp) != NULL && (ret = mmfile_unmap(&sa->flcp)) != 0)
 	return ret;
-    mmfile_free(&sa->flcp);
     /* unmap index file */
     if ((ret = mmfile_unmap(&sa->fidx)) != 0)
 	return ret;
-    mmfile_free(&sa->fidx);
     /* unmap text file */
     if ((ret = mmfile_unmap(&sa->ftxt)) != 0)
 	return ret;
-    mmfile_free(&sa->ftxt);
-    return ret;
-}
-
-int sfxa_delete(sfxa_t *sa)
-{
-    int ret = sfxa_free(sa);
-    if (ret == 0)
-	free(sa);
     return ret;
 }

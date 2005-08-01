@@ -1,5 +1,5 @@
 /***********************************************************************
- * $Id: output.c,v 1.6 2005/07/05 07:33:26 aki Exp $
+ * $Id: output.c,v 1.7 2005/08/01 09:04:48 aki Exp $
  *
  * output
  * Copyright (C) 2005 RIKEN. All rights reserved.
@@ -37,7 +37,6 @@
 
 #include "output.h"
 
-#include "mmfile.h"
 #include "msg.h"
 #include <minmax.h>
 
@@ -48,126 +47,84 @@
 #if SIZEOF_INTXX_T < 8
 # define intXX_t	    int32_t
 # define outputXX	    output32
-# define outputXX_arg_type  output32_arg_type
-# define DIGITOF_INTXX_T    11
+# define region_printXX_arg_t  region_print32_arg_t
 #else
 # define intXX_t	    int64_t
 # define outputXX	    output64
-# define outputXX_arg_type  output64_arg_type
-# define DIGITOF_INTXX_T    20
+# define region_printXX_arg_t  region_print64_arg_t
 #endif
-
-/*======================================================================
- * type definitions
- *======================================================================*/
-
-typedef struct outputXX_arg_type {
-    const char		    *txt;
-    const intXX_t	    *idx;
-    intXX_t		    len;
-
-    const output_param_t    *param;
-    int			    max_digit;
-} outputXX_arg_t;
 
 /*======================================================================
  * prototypes
  *======================================================================*/
 
-inline static int get_max_digit(const intXX_t n);
-static void print_line(const outputXX_arg_t *arg, const intXX_t x);
-static void print_suffix(const outputXX_arg_t *arg, const intXX_t x);
+static void print_suffix(const region_printXX_arg_t *arg, const intXX_t x);
 
 /*======================================================================
  * function definitions
  *======================================================================*/
 
-/* outputXX */
-int outputXX(const char *txt, const intXX_t *idx, const intXX_t len,
-	const intXX_t beg, const intXX_t end, const output_param_t *param)
+void outputXX(intXX_t pos, const region_printXX_arg_t *arg)
 {
-    intXX_t x;
-    outputXX_arg_t arg;
+    int col = 0;
+    const char *sep = " ";
+    output_param_t *param;
+#if SIZEOF_INTXX_T < 8
+    static char fmt[] = "%*" PRId32;
+#else
+    static char fmt[] = "%*" PRId64;
+#endif
 
-    if (beg < 0 || end < 0)
-	return (errno = EINVAL);
+    assert(arg != NULL);
+    assert(arg->param != NULL);
 
-    arg.txt = txt;
-    arg.idx = idx;
-    arg.len = len;
-    arg.param = param;
-    arg.max_digit = get_max_digit(len);
+    param = (output_param_t *)arg->param;
 
-    for (x = beg; x <= end; ++x) {
-	print_line(&arg, x);
+    if (param->idx) {			/* index */
+	if (col++) printf("%s", sep);
+	printf(fmt, param->max_digit, arg->idx[pos] + arg->adj);
     }
-    return 0;
+
+    if (param->pos) {			/* index position */
+	if (col++) printf("%s", sep);
+	printf(fmt, param->max_digit, pos);
+    }
+
+#if 0
+    if (param->pre) {
+	if (col++) printf("%s", sep);
+	print_prefix(arg, arg->idx[pos]);
+    }
+#endif
+
+    if (param->sfx) {			/* suffix */
+	if (col++) printf("%s", sep);
+	print_suffix(arg, arg->idx[pos] + arg->adj);
+    }
+
+    printf("\n");
 }
 
 /*======================================================================
  * private function definitions
  *======================================================================*/
 
-inline static int get_max_digit(const intXX_t n)
+static void print_suffix(const region_printXX_arg_t *arg, const intXX_t x)
 {
-    char buf[DIGITOF_INTXX_T + 1];
-    sprintf(buf, "%lld", (long long)n);
-    return strlen(buf);
-}
-
-static void print_line(const outputXX_arg_t *arg, const intXX_t x)
-{
-    int col = 0;
-    const char *sep = " ";
-#if SIZEOF_INTXX_T < 8
-    static char fmt[] = "%0*" PRId32;
-#else
-    static char fmt[] = "%0*" PRId64;
-#endif
-
-    assert(arg != NULL);
-    assert(arg->param != NULL);
-
-    if (arg->param->idx) {
-	if (col++) printf("%s", sep);
-	printf(fmt, arg->max_digit, arg->idx[x]);
-    }
-
-    if (arg->param->pos) {
-	if (col++) printf("%s", sep);
-	printf(fmt, arg->max_digit, x);
-    }
-
-#if 0
-    if (arg->param->pre) {
-	if (col++) printf("%s", sep);
-	print_prefix(arg, arg->idx[x]);
-    }
-#endif
-
-    if (arg->param->sfx) {
-	if (col++) printf("%s", sep);
-	print_suffix(arg, arg->idx[x]);
-    }
-
-    printf("\n");
-}
-
-static void print_suffix(const outputXX_arg_t *arg, const intXX_t x)
-{
+    output_param_t *param = (output_param_t *)arg->param;
     const char *cp = arg->txt + x;
-    const char *end = MIN(cp + arg->param->sfx, arg->txt + arg->len);
+    const char *end = MIN(cp + param->sfx, arg->txt + arg->len);
 
-    if (arg->param->sfx < 0)
+    if (param->sfx < 0)
 	return;
 
-    if (arg->param->cmap == NULL) {
+    if (param->cmap == NULL) {
 	/* without cmap */
 	for (; cp < end; ++cp) {
 	    char c = *cp;
 	    if (c == '\0') {
 		putchar('\\'); putchar('0');
-		if (arg->param->chop) {
+		if (param->chop) {
 		    ++cp; break;
 		}
 	    }
@@ -185,11 +142,11 @@ static void print_suffix(const outputXX_arg_t *arg, const intXX_t x)
     } else {
 	/* with cmap */
 	for (; cp < end; ++cp) {
-	    char c = cmap_num2char(arg->param->cmap, *cp);
+	    char c = cmap_num2char(param->cmap, *cp);
 #if 0
 	    if (c == '\0') {
 		putchar('\\'); putchar('0');
-		if (arg->param->chop) {
+		if (param->chop) {
 		    ++cp; break;
 		}
 	    }
@@ -200,7 +157,7 @@ static void print_suffix(const outputXX_arg_t *arg, const intXX_t x)
 		else {
 		    putchar('\\'); putchar('0');
 		}
-		if (arg->param->chop) {
+		if (param->chop) {
 		    ++cp; break;
 		}
 	    }

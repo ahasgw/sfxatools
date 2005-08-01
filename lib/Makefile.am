@@ -1,7 +1,7 @@
-## $Id: Makefile.am,v 1.4 2005/08/01 09:04:48 aki Exp $
+## $Id: Makefile.am,v 1.1 2005/08/01 09:04:48 aki Exp $
 ##
-## Makefile for the src directory of sfxatools.
-## Copyright (C) 2004 RIKEN. All rights reserved.
+## Makefile for lib directory of sfxatools.
+## Copyright (C) 2004, 2005 RIKEN. All rights reserved.
 ## Written by Aki Hasegawa <aki@gsc.riken.jp>.
 ##
 ## This program is free software; you can redistribute it and/or modify
@@ -17,7 +17,7 @@
 ## You should have received a copy of the GNU General Public License
 ## along with this program; if not, write to the Free Software
 ## Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
-
+                                                                                
 ## Process this file with automake to produce Makefile.in
 
 MAINTAINERCLEANFILES = Makefile.in
@@ -31,42 +31,22 @@ SUFFIXES = .o64
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(COMPILE) -DSIZEOF_INTXX_T=8 -c -o $@ $<
 
-
-bin_PROGRAMS = 
-
-AM_CPPFLAGS = -I$(top_srcdir)/lib -I$(top_srcdir)/util -I$(top_srcdir)/libgnu
+AM_CPPFLAGS = -I$(top_srcdir)/util -I$(top_srcdir)/libgnu
 AM_CFLAGS = -DNDEBUG
+AM_YFLAGS = -d
 
-## mksfxa
-bin_PROGRAMS += mksfxa
-mksfxa_SOURCES = mksfxa.c sort.c sort.h
-mksfxa_LDADD = 
-if IS_SIZEOF_OFF_T_EQ_8
-mksfxa_LDADD += sort.o64
-endif
-mksfxa_LDADD += $(top_builddir)/util/libutil.a
-mksfxa_LDADD += $(top_builddir)/libgnu/libgnu.a
+BUILT_SOURCES = parser.h
 
-## mklcpa
-bin_PROGRAMS += mklcpa
-mklcpa_SOURCES = mklcpa.c lcp.c lcp.h
-mklcpa_LDADD = 
+noinst_LIBRARIES = libsfxa.a
+libsfxa_a_SOURCES = \
+	parser.y \
+	region.c region.h \
+	search.c search.h search_impl.h \
+	sfxa.c sfxa.h
+libsfxa_a_LIBADD = 
 if IS_SIZEOF_OFF_T_EQ_8
-mklcpa_LDADD += lcp.o64
+libsfxa_a_LIBADD += search.o64
 endif
-mklcpa_LDADD += $(top_builddir)/util/libutil.a
-mklcpa_LDADD += $(top_builddir)/libgnu/libgnu.a
-
-## sfxasrch
-bin_PROGRAMS += sfxasrch
-sfxasrch_SOURCES = sfxasrch.c output.c output.h
-sfxasrch_LDADD = 
-if IS_SIZEOF_OFF_T_EQ_8
-sfxasrch_LDADD += output.o64
-endif
-sfxasrch_LDADD += $(top_builddir)/lib/libsfxa.a
-sfxasrch_LDADD += $(top_builddir)/util/libutil.a
-sfxasrch_LDADD += $(top_builddir)/libgnu/libgnu.a
 
 if IS_SIZEOF_OFF_T_EQ_8
 clean-local:
