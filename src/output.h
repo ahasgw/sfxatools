@@ -1,5 +1,5 @@
 /***********************************************************************
- * $Id: output.h,v 1.7 2005/08/01 09:04:49 aki Exp $
+ * $Id: output.h,v 1.8 2005/08/01 11:24:37 aki Exp $
  *
  * output header file
  * Copyright (C) 2005 RIKEN. All rights reserved.
@@ -34,14 +34,10 @@
 # include <stdint.h>
 #endif
 
-/*
 #ifndef REGION_H_INCLUDED
 # define REGION_H_INCLUDED 1
 # include "region.h"
 #endif
-*/
-#include "region.h"
-
 #ifndef CMAP_H_INCLUDED
 # define CMAP_H_INCLUDED 1
 # include "cmap.h"
