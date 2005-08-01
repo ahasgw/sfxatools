@@ -1,5 +1,5 @@
 /***********************************************************************
- * $Id: bl2dump.c,v 1.3 2005/07/05 07:33:25 aki Exp $
+ * $Id: bl2dump.c,v 1.4 2005/08/01 10:36:24 aki Exp $
  *
  * Blast2 database dump
  * Copyright (C) 2005 RIKEN. All rights reserved.
@@ -167,35 +167,39 @@ static int get_cnt(const unsigned char **p)
 /* read index file */
 static void read_indfile(void * const top, ofs_t *ofs)
 {
-    void *ptr = top;
-    const char *cp = NULL;
+    union {
+	void *v;
+	char *c;
+	unsigned char *uc;
+	uint32_t *u32;
+	uint64_t *u64;
+    } ptr;
 
-    info.version = ntohl(*(uint32_t *)ptr), ptr += sizeof(uint32_t);
-    info.dumpflag = ntohl(*((uint32_t *)ptr)), ptr += sizeof(uint32_t);
-    info.titlelen = ntohl(*((uint32_t *)ptr)), ptr += sizeof(uint32_t);
-    cp = (const char *)ptr;
-    info.title = strndup(cp, info.titlelen),
-	cp += info.titlelen, ptr = (void *)cp;
-    info.datelen = ntohl(*((uint32_t *)ptr)), ptr += sizeof(uint32_t);
-    cp = (const char *)ptr;
-    info.date = strndup(cp, info.datelen),
-	cp += info.datelen, ptr = (void *)cp;
+    ptr.v = top;
+
+    info.version = ntohl(*ptr.u32++);
+    info.dumpflag = ntohl(*ptr.u32++);
+    info.titlelen = ntohl(*ptr.u32++);
+    info.title = strndup(ptr.c, info.titlelen), ptr.c += info.titlelen;
+    info.datelen = ntohl(*ptr.u32++);
+    info.date = strndup(ptr.c, info.datelen), ptr.c += info.datelen;
 
     /* align to 4 bytes boundary */
-    ptrdiff_t off = ptr - top;
-    if (off & 0x03)
-	off += 0x03UL, off &= ~0x03UL, ptr = top + off;
-
-    info.max_cnt = ntohl(*((uint32_t *)ptr)), ptr += sizeof(uint32_t);
-    if (info.version < 4) {
-	info.tot_len = ntohl(*((uint32_t *)ptr)), ptr += sizeof(uint32_t);
-    } else {
-	info.tot_len = read_uint64el((unsigned char *)ptr),
-	    ptr += sizeof(uint64_t);
+    ptrdiff_t off = ptr.c - (char *)top;
+    if (off & 0x03) {
+	off += 0x03UL, off &= ~0x03UL, ptr.c = (char *)top + off;
     }
-    info.max_len = ntohl(*((uint32_t *)ptr)), ptr += sizeof(uint32_t);
 
-    ofs->def = (const uint32_t*)ptr;
+    info.max_cnt = ntohl(*ptr.u32++);
+    if (info.version < 4) {
+	info.tot_len = ntohl(*ptr.u32++);
+    } else {
+	info.tot_len = read_uint64el(ptr.uc),
+	    ptr.u64++;
+    }
+    info.max_len = ntohl(*ptr.u32++);
+
+    ofs->def = ptr.u32;
     ofs->seq = ofs->def + info.max_cnt + 1;
     ofs->amb = (info.dumpflag ? NULL : ofs->seq + info.max_cnt + 1);
 }
@@ -220,7 +224,7 @@ static void print_protein(const char * const hdr, const char * const seq, ofs_t 
     for (i = 0; i < info.max_cnt; ++i) {
 	uint32_t d = ntohl(*ofs->def++);
 	uint32_t s = ntohl(*ofs->seq++), nexts = ntohl(*ofs->seq);
-	const unsigned char *dstr = (const unsigned char * const)hdr + d;
+	const unsigned char *dstr = (const unsigned char *)hdr + d;
 	dstr += 7;
 	int dlen = get_cnt(&dstr);
 	uint32_t slen = nexts - s;
@@ -256,7 +260,7 @@ static void print_nucleotide(const char * const hdr, const char * const seq, ofs
 	uint32_t d = ntohl(*ofs->def++);
 	uint32_t s = ntohl(*ofs->seq++), nexts = ntohl(*ofs->seq);
 	uint32_t a = ntohl(*ofs->amb++);
-	const unsigned char *dstr = (const unsigned char * const)hdr + d;
+	const unsigned char *dstr = (const unsigned char *)hdr + d;
 	dstr += 7;
 	int dlen = get_cnt(&dstr);
 	uint32_t alen = nexts - a;

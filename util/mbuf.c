@@ -1,5 +1,5 @@
 /***********************************************************************
- * $Id: mbuf.c,v 1.1 2005/08/01 09:04:50 aki Exp $
+ * $Id: mbuf.c,v 1.2 2005/08/01 10:36:55 aki Exp $
  *
  * Memory buffer utility.
  * Copyright (C) 2004 RIKEN. All rights reserved.
@@ -164,10 +164,11 @@ size_t mbuf_replace(mbuf_t *mp, size_t at, size_t m, const void *p, size_t n)
 	} else {    /* (n < m) */
 	    mp->cnt -= (m - n);
 	}
-	memmove(mp->ptr + at + n, mp->ptr + at + m, mp->cnt - (at + m));
+	memmove((char*)mp->ptr + at + n, (char*)mp->ptr + at + m,
+		mp->cnt - (at + m));
     }
     if (n > 0 && p != NULL)
-	memcpy(mp->ptr + at, p, n);
+	memcpy((char*)mp->ptr + at, p, n);
 
     return n;
 }
@@ -190,7 +191,7 @@ size_t mbuf_push_back(mbuf_t *mp, const void *p, size_t n)
 	    if (mbuf_resize(mp, mp->cnt + n) != 0)
 		return 0;
 	}
-	memcpy(mp->ptr + mp->cnt, p, n);
+	memcpy((char*)mp->ptr + mp->cnt, p, n);
 	mp->cnt += n;
     }
     return n;
@@ -214,7 +215,7 @@ size_t mbuf_push_front(mbuf_t *mp, const void *p, size_t n)
 	    if (mbuf_resize(mp, mp->cnt + n) != 0)
 		return 0;
 	}
-	memmove(mp->ptr + n, mp->ptr, mp->cnt);
+	memmove((char*)mp->ptr + n, mp->ptr, mp->cnt);
 	memcpy(mp->ptr, p, n);
 	mp->cnt += n;
     }
@@ -232,7 +233,7 @@ size_t mbuf_pop_front(mbuf_t *mp, size_t n)
 {
     size_t m = MIN(mp->cnt, n);
     mp->cnt -= m;
-    memmove(mp->ptr, mp->ptr + m, mp->cnt);
+    memmove(mp->ptr, (char*)mp->ptr + m, mp->cnt);
     return m;
 }
 
