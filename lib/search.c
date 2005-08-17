@@ -1,5 +1,5 @@
 /***********************************************************************
- * $Id: search.c,v 1.3 2005/08/17 10:11:42 aki Exp $
+ * $Id: search.c,v 1.4 2005/08/17 10:27:29 aki Exp $
  *
  * search
  * Copyright (C) 2005 RIKEN. All rights reserved.
@@ -38,7 +38,6 @@
 #include <string.h>
 
 #include "search.h"
-#include "search_impl.h"
 
 #include "regexp.h"
 #include "u32stk.h"
@@ -81,6 +80,12 @@ typedef struct searchXX_arg_type {
     const intXX_t   *idx;
     intXX_t	    len;
 } searchXX_arg_t;
+
+typedef enum head_tail_type {
+    none,
+    head,
+    tail
+} head_tail_t;
 
 /*======================================================================
  * prototypes
