@@ -228,7 +228,7 @@ libsfxa_a_SOURCES = \
 	output.c output.h \
 	regexp.c regexp.h \
 	region.c region.h \
-	search.c search.h search_impl.h \
+	search.c search.h \
 	sfxa.c sfxa.h \
 	sort.c sort.h
 

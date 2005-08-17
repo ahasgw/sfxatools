@@ -1,4 +1,4 @@
-## $Id: Makefile.am,v 1.2 2005/08/17 10:11:41 aki Exp $
+## $Id: Makefile.am,v 1.3 2005/08/17 10:27:29 aki Exp $
 ##
 ## Makefile for lib directory of sfxatools.
 ## Copyright (C) 2004, 2005 RIKEN. All rights reserved.
@@ -40,7 +40,7 @@ libsfxa_a_SOURCES = \
 	output.c output.h \
 	regexp.c regexp.h \
 	region.c region.h \
-	search.c search.h search_impl.h \
+	search.c search.h \
 	sfxa.c sfxa.h \
 	sort.c sort.h
 libsfxa_a_LIBADD = 
