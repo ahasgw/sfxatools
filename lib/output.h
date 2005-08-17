@@ -1,5 +1,5 @@
 /***********************************************************************
- * $Id: output.h,v 1.8 2005/08/01 11:24:37 aki Exp $
+ * $Id: output.h,v 1.1 2005/08/17 10:11:42 aki Exp $
  *
  * output header file
  * Copyright (C) 2005 RIKEN. All rights reserved.
@@ -34,10 +34,6 @@
 # include <stdint.h>
 #endif
 
-#ifndef REGION_H_INCLUDED
-# define REGION_H_INCLUDED 1
-# include "region.h"
-#endif
 #ifndef CMAP_H_INCLUDED
 # define CMAP_H_INCLUDED 1
 # include "cmap.h"
@@ -62,14 +58,36 @@ typedef struct output_param_type {
     int	    max_digit;
 } output_param_t;
 
+typedef struct output32_arg_type {
+    const char		*txt;
+    const int32_t	*idx;
+    void		*param;
+    int32_t		len;
+    int32_t		adj;        /* adjustment for the idx */
+} output32_arg_t;
+
+typedef void (*output32_f)(int32_t pos, const output32_arg_t *arg);
+
+#if SIZEOF_OFF_T >= 8
+typedef struct output64_arg_type {
+    const char		*txt;
+    const int64_t	*idx;
+    void		*param;
+    int64_t		len;
+    int64_t		adj;        /* adjustment for the idx */
+} output64_arg_t;
+
+typedef void (*output64_f)(int64_t pos, const output64_arg_t *arg);
+#endif
+
 /*======================================================================
  * function declarations
  *======================================================================*/
 
-void output32(int32_t pos, const region_print32_arg_t *arg);
+void output32(int32_t pos, const output32_arg_t *arg);
 
 #if SIZEOF_OFF_T >= 8
-void output64(int64_t pos, const region_print64_arg_t *arg);
+void output64(int64_t pos, const output64_arg_t *arg);
 #endif
 
 #ifdef __cplusplus

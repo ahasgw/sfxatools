@@ -1,5 +1,5 @@
 /***********************************************************************
- * $Id: region.c,v 1.2 2005/08/01 11:24:37 aki Exp $
+ * $Id: region.c,v 1.3 2005/08/17 10:11:42 aki Exp $
  *
  * region
  * Copyright (C) 2005 RIKEN. All rights reserved.
@@ -25,6 +25,10 @@
 # include <config.h>
 #endif
 
+#if 1
+#  include <stdio.h>
+#endif
+
 #include <stdlib.h>
 #include <stddef.h>
 #include <assert.h>
@@ -36,6 +40,13 @@
 #include "search.h"
 
 #include <minmax.h>
+
+/*======================================================================
+ * prototypes
+ *======================================================================*/
+
+static int range32_compar(const void *r1, const void *r2);
+static int range64_compar(const void *r1, const void *r2);
 
 /*======================================================================
  * public function definitions
@@ -68,42 +79,155 @@ int region_init(region_t *re, const sfxa_t *sa)
 void region_free(region_t *re)
 {
     assert(re != NULL);
-    mbuf_delete(re->ranges);
+    if (re->ranges)
+	mbuf_delete(re->ranges);
     re->sa = NULL;
 }
 
 int region_search(region_t *re, const char *pattern, size_t patlen, const char *opt_alphabet)
 {
+    int ret = 0;
+
     if (sfxa_idxbits(re->sa) == SFXA_IDXBITS_UNKNOWN)
 	return errno = EINVAL;	    /* sa is not open */
 
     if (sfxa_idxbits(re->sa) == SFXA_IDXBITS_32) {
-	search32(re, pattern, patlen, opt_alphabet);
+	ret = search32(re, pattern, patlen, opt_alphabet);
 #if SIZEOF_OFF_T >= 8
     } else {	/* SFXA_IDXBITS_64 */
-	search64(re, pattern, patlen, opt_alphabet);
+	ret = search64(re, pattern, patlen, opt_alphabet);
 #endif /* SIZEOF_OFF_T >= 8 */
     }
-    return 0;
+    return ret;
 }
 
-int region_search_regexp(region_t *re, const char *pattern, size_t patlen, const char *opt_alphabet)
+int region_search_regexp(region_t *re, const char *pattern, size_t patlen, const char *opt_alphabet, unsigned long rep_max)
 {
+    int ret = 0;
+
     if (sfxa_idxbits(re->sa) == SFXA_IDXBITS_UNKNOWN)
 	return errno = EINVAL;	    /* sa is not open */
 
     if (sfxa_idxbits(re->sa) == SFXA_IDXBITS_32) {
-	search_regexp32(re, pattern, patlen, opt_alphabet);
+	ret = search_regexp32(re, pattern, patlen, opt_alphabet, rep_max);
 #if SIZEOF_OFF_T >= 8
     } else {	/* SFXA_IDXBITS_64 */
-	search_regexp64(re, pattern, patlen, opt_alphabet);
+	ret = search_regexp64(re, pattern, patlen, opt_alphabet, rep_max);
+#endif /* SIZEOF_OFF_T >= 8 */
+    }
+    return ret;
+}
+
+int region_narrow_down(region_t *re)
+{
+    if (re == NULL || re->sa == NULL || re->ranges == NULL)
+	return errno = EINVAL;
+    if (sfxa_idxbits(re->sa) == SFXA_IDXBITS_UNKNOWN)
+	return errno = EINVAL;	    /* sa is not open */
+    if (sfxa_idxbits(re->sa) == SFXA_IDXBITS_32) {
+	size_t range_cnt = mbuf_size(re->ranges) / sizeof(range32_t);
+	if (range_cnt > 1) {
+	    range32_t *rp_beg = mbuf_ptr(re->ranges);
+	    range32_t *rp_end = rp_beg + range_cnt;
+	    range32_t *rp0, *rp;
+
+	    /* sort original */
+	    qsort(mbuf_ptr(re->ranges), range_cnt, sizeof(range32_t), &range32_compar);
+	    /* merge ranges */
+	    for (rp0 = rp_beg, rp = rp0 + 1; rp < rp_end; ++rp) {
+		if (rp0->end < rp->end) {
+		    if (rp->beg <= rp0->end + 1) {
+			rp0->end = rp->end;
+		    } else {
+			*++rp0 = *rp;
+		    }
+		}
+	    }
+	    /* shrink wrap */
+	    mbuf_resize(re->ranges, (rp0 - rp_beg + 1) * sizeof(range32_t));
+	}
+#if SIZEOF_OFF_T >= 8
+    } else {	/* SFXA_IDXBITS_64 */
+	size_t range_cnt = mbuf_size(re->ranges) / sizeof(range64_t);
+	if (range_cnt > 1) {
+	    range64_t *rp_beg = mbuf_ptr(re->ranges);
+	    range64_t *rp_end = rp_beg + range_cnt;
+	    range64_t *rp0, *rp;
+
+	    /* sort original */
+	    qsort(mbuf_ptr(re->ranges), range_cnt, sizeof(range64_t), &range64_compar);
+	    /* merge ranges */
+	    for (rp0 = rp_beg, rp = rp0 + 1; rp < rp_end; ++rp) {
+		if (rp0->end < rp->end) {
+		    if (rp->beg <= rp0->end + 1) {
+			rp0->end = rp->end;
+		    } else {
+			*++rp0 = *rp;
+		    }
+		}
+	    }
+	    /* shrink wrap */
+	    mbuf_resize(re->ranges, (rp0 - rp_beg + 1) * sizeof(range64_t));
+	}
 #endif /* SIZEOF_OFF_T >= 8 */
     }
     return 0;
 }
 
-int region_print(const region_t *re,
-	region_print32_f pf32, region_print64_f pf64, void *param)
+static int range32_compar(const void *r1, const void *r2)
+{
+    int32_t d1 = (((range32_t*)r1)->beg - ((range32_t*)r2)->beg);
+    int32_t d2 = (((range32_t*)r2)->end - ((range32_t*)r1)->end);
+    return (d1 == 0) ? d2 : d1;
+
+}
+#if SIZEOF_OFF_T >= 8
+static int range64_compar(const void *r1, const void *r2)
+{
+    int64_t d1 = (((range64_t*)r1)->beg - ((range64_t*)r2)->beg);
+    int64_t d2 = (((range64_t*)r2)->end - ((range64_t*)r1)->end);
+    if (d1 != 0)
+	return (d1 > 0) ? 1 : -1;
+    else if (d2 != 0)
+	return (d2 > 0) ? 1 : -1;
+    return 0;
+}
+#endif /* SIZEOF_OFF_T >= 8 */
+
+size_t region_count(const region_t *re)
+{
+    size_t num = 0;
+
+    if (re == NULL || re->sa == NULL || re->ranges == NULL)
+	return errno = EINVAL, 0;
+    if (sfxa_idxbits(re->sa) == SFXA_IDXBITS_UNKNOWN)
+	return errno = EINVAL, 0;    /* sa is not open */
+
+    if (sfxa_idxbits(re->sa) == SFXA_IDXBITS_32) {
+	size_t range_cnt = mbuf_size(re->ranges) / sizeof(range32_t);
+	const range32_t *rp_beg = mbuf_ptr(re->ranges);
+	const range32_t *rp_end = rp_beg + range_cnt;
+	const range32_t *rp;
+
+	for (rp = rp_beg; rp < rp_end; ++rp) {
+	    num += rp->end - rp->beg + 1;
+	}
+#if SIZEOF_OFF_T >= 8
+    } else {	/* SFXA_IDXBITS_64 */
+	size_t range_cnt = mbuf_size(re->ranges) / sizeof(range64_t);
+	const range64_t *rp_beg = mbuf_ptr(re->ranges);
+	const range64_t *rp_end = rp_beg + range_cnt;
+	const range64_t *rp;
+
+	for (rp = rp_beg; rp < rp_end; ++rp) {
+	    num += rp->end - rp->beg + 1;
+	}
+#endif /* SIZEOF_OFF_T >= 8 */
+    }
+    return num;
+}
+
+int region_print(const region_t *re, void *param)
 {
     if (re == NULL || re->sa == NULL || re->ranges == NULL)
 	return errno = EINVAL;
@@ -112,7 +236,8 @@ int region_print(const region_t *re,
 	return errno = EINVAL;	    /* sa is not open */
 
     if (sfxa_idxbits(re->sa) == SFXA_IDXBITS_32) {
-	region_print32_arg_t arg;
+	output32_f pf32 = output32;
+	output32_arg_t arg;
 	arg.txt = sfxa_txt_ptr(re->sa);
 	arg.idx = sfxa_idx_ptr(re->sa);
 	arg.len = sfxa_txt_len(re->sa);
@@ -154,7 +279,8 @@ int region_print(const region_t *re,
 	}
 #if SIZEOF_OFF_T >= 8
     } else {	/* SFXA_IDXBITS_64 */
-	region_print64_arg_t arg;
+	output64_f pf64 = output64;
+	output64_arg_t arg;
 	arg.txt = sfxa_txt_ptr(re->sa);
 	arg.idx = sfxa_idx_ptr(re->sa);
 	arg.len = sfxa_txt_len(re->sa);
@@ -199,8 +325,7 @@ int region_print(const region_t *re,
     return 0;
 }
 
-int region_dump(const region_t *re,
-	region_print32_f pf32, region_print64_f pf64, void *param)
+int region_dump(const region_t *re, void *param)
 {
     if (re == NULL || re->sa == NULL || re->ranges == NULL)
 	return errno = EINVAL;
@@ -209,7 +334,8 @@ int region_dump(const region_t *re,
 	return errno = EINVAL;	    /* sa is not open */
 
     if (sfxa_idxbits(re->sa) == SFXA_IDXBITS_32) {
-	region_print32_arg_t arg;
+	output32_f pf32 = output32;
+	output32_arg_t arg;
 	arg.txt = sfxa_txt_ptr(re->sa);
 	arg.idx = sfxa_idx_ptr(re->sa);
 	arg.len = sfxa_txt_len(re->sa);
@@ -228,7 +354,8 @@ int region_dump(const region_t *re,
 	}
 #if SIZEOF_OFF_T >= 8
     } else {	/* SFXA_IDXBITS_64 */
-	region_print64_arg_t arg;
+	output64_f pf64 = output64;
+	output64_arg_t arg;
 	arg.txt = sfxa_txt_ptr(re->sa);
 	arg.idx = sfxa_idx_ptr(re->sa);
 	arg.len = sfxa_txt_len(re->sa);

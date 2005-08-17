@@ -1,5 +1,5 @@
 /***********************************************************************
- * $Id: sort.c,v 1.5 2005/07/05 07:33:27 aki Exp $
+ * $Id: sort.c,v 1.1 2005/08/17 10:11:43 aki Exp $
  *
  * sort
  * Copyright (C) 2005 RIKEN. All rights reserved.
@@ -130,6 +130,9 @@ int sortXX(const char *txt, intXX_t *idx, const intXX_t len)
     intXX_t count[ALPH_SIZE * ALPH_SIZE];
     intXX_t count_sum[ALPH_SIZE * ALPH_SIZE + 1];
     intXX_t start2[ALPH_SIZE * ALPH_SIZE + 1];
+
+    if (len <= 1)	    /* already sorted */
+	return 0;
 
     /* bin sort */
     for (i = 0; i < ALPH_SIZE * ALPH_SIZE; ++i)

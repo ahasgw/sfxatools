@@ -1,7 +1,7 @@
 /***********************************************************************
- * $Id: lcp.h,v 1.3 2005/07/05 07:33:25 aki Exp $
+ * $Id: sort.h,v 1.1 2005/08/17 10:11:43 aki Exp $
  *
- * lcp header file
+ * sort header file
  * Copyright (C) 2005 RIKEN. All rights reserved.
  * Written by Aki Hasegawa <aki@gsc.riken.jp>.
  *
@@ -20,9 +20,9 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  ***********************************************************************/
 
-#ifndef LCP_H
-#define LCP_H 1
-#define LCP_H_INCLUDED 1
+#ifndef SORT_H
+#define SORT_H 1
+#define SORT_H_INCLUDED 1
 
 #ifndef CONFIG_H_INCLUDED
 # define CONFIG_H_INCLUDED 1
@@ -42,14 +42,14 @@ extern "C" {
  * function declarations
  *======================================================================*/
 
-int lcp32(const char *txt, const int32_t *idx, int32_t *lcp, const int32_t len);
+int sort32(const char *txt, int32_t *idx, const int32_t len);
 
 #if SIZEOF_OFF_T >= 8
-int lcp64(const char *txt, const int64_t *idx, int64_t *lcp, const int64_t len);
+int sort64(const char *txt, int64_t *idx, const int64_t len);
 #endif
 
 #ifdef __cplusplus
 } /* extern "C" */
 #endif
 
-#endif /* LCP_H */
+#endif /* SORT_H */

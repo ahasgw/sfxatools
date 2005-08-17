@@ -1,5 +1,5 @@
 /***********************************************************************
- * $Id: mksfxa.c,v 1.6 2005/07/05 07:33:26 aki Exp $
+ * $Id: mksfxa.c,v 1.7 2005/08/17 10:11:43 aki Exp $
  *
  * mksfxa
  * Copyright (C) 2005 RIKEN. All rights reserved.
@@ -38,9 +38,7 @@
 #include <progname.h>
 #include <xalloc.h>
 
-#include "sort.h"
-
-#include "mmfile.h"
+#include "sfxa.h"
 #include "msg.h"
 #include "strdupcat.h"
 #include <minmax.h>
@@ -90,11 +88,8 @@ static const char * const g_default_ext = ".idx";
  * prototypes
  *======================================================================*/
 
-static int process_file(const char *path);
-static int mmap_infile(mmfile_t *mf, const char *path);
-static int mmap_outfile(mmfile_t *mf, const char *path, off_t infile_len);
-static char *build_outfile_name(const char *path);
-static off_t calc_outfile_len(const off_t infile_len);
+static int process_file(const char *txtpath);
+static char *build_idxfile_name(const char *path);
 static void show_version(void);
 static void show_help(void);
 
@@ -103,84 +98,32 @@ static void show_help(void);
  *======================================================================*/
 
 /* input from files */
-static int process_file(const char *path)
+static int process_file(const char *txtpath)
 {
     int ret = 0;
-    mmfile_t fin;
-    mmfile_t fout;
-    off_t infile_len;
+    char *idxpath;
+    sfxa_t sa;
 
-    if ((ret = mmap_infile(&fin, path)) != 0)
-	return ret;
-    infile_len = mmfile_len(&fin);
-    if ((ret = mmap_outfile(&fout, path, infile_len)) != 0)
-	return ret;
-
-#if SIZEOF_OFF_T < 8
-    if (infile_len <= (INT32_MAX / sizeof(int32_t))) {
-	sort32(mmfile_ptr(&fin), mmfile_ptr(&fout), (int32_t)infile_len);
-    } else {
-	msg(MSGLVL_WARNING, "Cannot open. File too large");
-    }
-#elif SIZEOF_OFF_T >= 8
-    if (infile_len <= INT32_MAX) {
-	sort32(mmfile_ptr(&fin), mmfile_ptr(&fout), (int32_t)infile_len);
-    } else if (infile_len <= (INT64_MAX / sizeof(int64_t))) {
-	sort64(mmfile_ptr(&fin), mmfile_ptr(&fout), (int64_t)infile_len);
-    } else {
-	msg(MSGLVL_WARNING, "Cannot open. File too large");
-    }
-#endif
-
-    if ((ret = mmfile_unmap(&fout)) != 0)
-	return ret;
-    if ((ret = mmfile_unmap(&fin)) != 0)
-	return ret;
-
-    mmfile_free(&fout);
-    mmfile_free(&fin);
-    return ret;
-}
-
-static int mmap_infile(mmfile_t *mf, const char *path)
-{
-    int ret = 0;
-    if ((ret = mmfile_init(mf, path)) == 0)
-	if ((ret = mmfile_map_shared_rd(mf)) != 0)
-	    mmfile_free(mf);
-    return ret;
-}
-
-static int mmap_outfile(mmfile_t *mf, const char *path, off_t infile_len)
-{
-    char *out_path;
-    off_t outfile_len;
-    int ret = 0;
-
-    if ((outfile_len = calc_outfile_len(infile_len)) < 0)
-	return (errno = EFBIG);
-    if ((out_path = build_outfile_name(path)) == NULL)
+    if ((idxpath = build_idxfile_name(txtpath)) == NULL)
 	return (errno = EEXIST);
-    if ((ret = mmfile_init(mf, out_path)) != 0)
-	goto bail1;
-    if ((ret = mmfile_map_shared_rw(mf, outfile_len)) != 0)
-	goto bail2;
-    return ret;
 
-bail2:
-    mmfile_free(mf);
-bail1:
-    free(out_path), out_path = NULL;
-    return ret;
+    if ((ret = sfxa_init(&sa, txtpath, idxpath, NULL)) != 0)
+	return ret;
+
+    if ((ret = sfxa_build_idx(&sa)) != 0)
+	return ret;
+
+    free(idxpath), idxpath = NULL;
+    return 0;
 }
 
-static char *build_outfile_name(const char *path)
+static char *build_idxfile_name(const char *path)
 {
 #if 0
     char *base = base_name(path);
-    char *out_path = strdupcat(base, (opts.opt_x ? opts.opt_x : g_default_ext));
+    char *newpath = strdupcat(base, (opts.opt_x ? opts.opt_x : g_default_ext));
 #else
-    char *out_path = NULL;
+    char *newpath = NULL;
     char *base = strdup(base_name(path));
     if (base != NULL) {
 	int n;
@@ -193,36 +136,14 @@ static char *build_outfile_name(const char *path)
 		if (--n == 0)			    /* truncate */
 		    *cp = '\0';
 	}
-	out_path = strdupcat(base, (opts.opt_x ? opts.opt_x : g_default_ext));
+	newpath = strdupcat(base, (opts.opt_x ? opts.opt_x : g_default_ext));
 	free(base);
 
-	if (strcmp(out_path, base_name(path)) == 0) /* if they have same name */
-	    free(out_path), out_path = NULL;
+	if (strcmp(newpath, base_name(path)) == 0) /* if they have same name */
+	    free(newpath), newpath = NULL;
     }
 #endif
-    return out_path;
-}
-
-static off_t calc_outfile_len(const off_t infile_len)
-{
-    off_t outfile_len = -1;
-    assert(infile_len >= 0);
-#if SIZEOF_OFF_T < 8
-    if (infile_len <= (INT32_MAX / sizeof(int32_t))) {
-	outfile_len = infile_len * sizeof(int32_t);
-    }
-#elif SIZEOF_OFF_T >= 8
-    if (infile_len <= INT32_MAX) {
-	outfile_len = infile_len * sizeof(int32_t);
-    } else if (infile_len <= (INT64_MAX / sizeof(int64_t))) {
-	outfile_len = infile_len * sizeof(int64_t);
-    }
-#endif
-#if SIZEOF_OFF_T > SIZEOF_SIZE_T
-    if (outfile_len > (SIZE_MAX / 2))	/* This should be ENOMEM? */
-	return -1;			/* Is the close(fd) required? */
-#endif
-    return outfile_len;
+    return newpath;
 }
 
 /* show version number */

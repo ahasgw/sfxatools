@@ -1,5 +1,5 @@
 /***********************************************************************
- * $Id: parsefa.c,v 1.4 2005/07/05 07:33:25 aki Exp $
+ * $Id: parsefa.c,v 1.5 2005/08/17 10:11:40 aki Exp $
  *
  * parsefa
  * Copyright (C) 2005 RIKEN. All rights reserved.
@@ -47,7 +47,6 @@
 
 #include "cmap.h"
 #include "msg.h"
-#include "strdupcat.h"
 #include <minmax.h>
 
 /*======================================================================

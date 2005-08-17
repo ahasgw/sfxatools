@@ -1,5 +1,5 @@
 /***********************************************************************
- * $Id: output.c,v 1.7 2005/08/01 09:04:48 aki Exp $
+ * $Id: output.c,v 1.1 2005/08/17 10:11:42 aki Exp $
  *
  * output
  * Copyright (C) 2005 RIKEN. All rights reserved.
@@ -47,28 +47,29 @@
 #if SIZEOF_INTXX_T < 8
 # define intXX_t	    int32_t
 # define outputXX	    output32
-# define region_printXX_arg_t  region_print32_arg_t
+# define outputXX_arg_t	    output32_arg_t
 #else
 # define intXX_t	    int64_t
 # define outputXX	    output64
-# define region_printXX_arg_t  region_print64_arg_t
+# define outputXX_arg_t	    output64_arg_t
 #endif
 
 /*======================================================================
  * prototypes
  *======================================================================*/
 
-static void print_suffix(const region_printXX_arg_t *arg, const intXX_t x);
+static void print_suffix(const outputXX_arg_t *arg, const intXX_t x);
 
 /*======================================================================
  * function definitions
  *======================================================================*/
 
-void outputXX(intXX_t pos, const region_printXX_arg_t *arg)
+void outputXX(intXX_t pos, const outputXX_arg_t *arg)
 {
     int col = 0;
     const char *sep = " ";
-    output_param_t *param;
+    output_param_t *param;  /* param should be replaced with format string */
+			    /* c.f. glibc's register_print_function() */
 #if SIZEOF_INTXX_T < 8
     static char fmt[] = "%*" PRId32;
 #else
@@ -81,35 +82,35 @@ void outputXX(intXX_t pos, const region_printXX_arg_t *arg)
     param = (output_param_t *)arg->param;
 
     if (param->idx) {			/* index */
-	if (col++) printf("%s", sep);
+	if (col++) fputs(sep, stdout);
 	printf(fmt, param->max_digit, arg->idx[pos] + arg->adj);
     }
 
     if (param->pos) {			/* index position */
-	if (col++) printf("%s", sep);
+	if (col++) fputs(sep, stdout);
 	printf(fmt, param->max_digit, pos);
     }
 
 #if 0
     if (param->pre) {
-	if (col++) printf("%s", sep);
+	if (col++) fputs(sep, stdout);
 	print_prefix(arg, arg->idx[pos]);
     }
 #endif
 
     if (param->sfx) {			/* suffix */
-	if (col++) printf("%s", sep);
+	if (col++) fputs(sep, stdout);
 	print_suffix(arg, arg->idx[pos] + arg->adj);
     }
 
-    printf("\n");
+    putchar('\n');
 }
 
 /*======================================================================
  * private function definitions
  *======================================================================*/
 
-static void print_suffix(const region_printXX_arg_t *arg, const intXX_t x)
+static void print_suffix(const outputXX_arg_t *arg, const intXX_t x)
 {
     output_param_t *param = (output_param_t *)arg->param;
     const char *cp = arg->txt + x;
@@ -176,5 +177,5 @@ static void print_suffix(const region_printXX_arg_t *arg, const intXX_t x)
     }
 
     if (cp < arg->txt + arg->len)
-	printf("...");
+	fputs("...", stdout);
 }

@@ -35,7 +35,8 @@ POST_INSTALL = :
 NORMAL_UNINSTALL = :
 PRE_UNINSTALL = :
 POST_UNINSTALL = :
-bin_PROGRAMS = fa2hdsq$(EXEEXT) bl2dump$(EXEEXT) annotidx$(EXEEXT)
+bin_PROGRAMS = fa2hdsq$(EXEEXT) bl2dump$(EXEEXT) annotidx$(EXEEXT) \
+	psps$(EXEEXT)
 @IS_SIZEOF_OFF_T_EQ_8_TRUE@am__append_1 = parsefa.o64
 subdir = bio
 DIST_COMMON = $(srcdir)/Makefile.am $(srcdir)/Makefile.in
@@ -123,6 +124,10 @@ fa2hdsq_OBJECTS = $(am_fa2hdsq_OBJECTS)
 @IS_SIZEOF_OFF_T_EQ_8_TRUE@am__DEPENDENCIES_1 = parsefa.o64
 fa2hdsq_DEPENDENCIES = $(am__DEPENDENCIES_1) \
 	$(top_builddir)/util/libutil.a $(top_builddir)/libgnu/libgnu.a
+am_psps_OBJECTS = psps.$(OBJEXT) prosite.$(OBJEXT)
+psps_OBJECTS = $(am_psps_OBJECTS)
+psps_DEPENDENCIES = $(top_builddir)/lib/libsfxa.a \
+	$(top_builddir)/util/libutil.a $(top_builddir)/libgnu/libgnu.a
 DEFAULT_INCLUDES = -I. -I$(srcdir) -I$(top_builddir)
 depcomp = $(SHELL) $(top_srcdir)/config/depcomp
 am__depfiles_maybe = depfiles
@@ -130,9 +135,10 @@ COMPILE = $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) \
 	$(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS)
 CCLD = $(CC)
 LINK = $(CCLD) $(AM_CFLAGS) $(CFLAGS) $(AM_LDFLAGS) $(LDFLAGS) -o $@
-SOURCES = $(annotidx_SOURCES) $(bl2dump_SOURCES) $(fa2hdsq_SOURCES)
+SOURCES = $(annotidx_SOURCES) $(bl2dump_SOURCES) $(fa2hdsq_SOURCES) \
+	$(psps_SOURCES)
 DIST_SOURCES = $(annotidx_SOURCES) $(bl2dump_SOURCES) \
-	$(fa2hdsq_SOURCES)
+	$(fa2hdsq_SOURCES) $(psps_SOURCES)
 am__vpath_adj_setup = srcdirstrip=`echo "$(srcdir)" | sed 's|.|.|g'`;
 am__vpath_adj = case $$p in \
     $(srcdir)/*) f=`echo "$$p" | sed "s|^$$srcdirstrip/||"`;; \
@@ -203,7 +209,6 @@ STDBOOL_H = @STDBOOL_H@
 STDINT_H = @STDINT_H@
 STRIP = @STRIP@
 VERSION = @VERSION@
-YACC = @YACC@
 ac_aux_dir = @ac_aux_dir@
 ac_ct_CC = @ac_ct_CC@
 ac_ct_RANLIB = @ac_ct_RANLIB@
@@ -240,7 +245,7 @@ EXTRA_DIST = NCBIstdaa.map NCBI2na.map
 SUFFIXES = .o64
 pkgdata_DATA = $(top_srcdir)/bio/NCBIstdaa.map \
 	$(top_srcdir)/bio/NCBI2na.map
-AM_CPPFLAGS = -I$(top_srcdir)/util -I$(top_srcdir)/libgnu
+AM_CPPFLAGS = -I$(top_srcdir)/lib -I$(top_srcdir)/util -I$(top_srcdir)/libgnu
 AM_CFLAGS = -DNDEBUG
 fa2hdsq_SOURCES = fa2hdsq.c ofiles.c ofiles.h parsefa.c parsefa.h
 fa2hdsq_LDADD = $(am__append_1) $(top_builddir)/util/libutil.a \
@@ -251,6 +256,9 @@ bl2dump_LDADD = $(top_builddir)/util/libutil.a \
 annotidx_SOURCES = annotidx.c
 annotidx_LDADD = $(top_builddir)/util/libutil.a \
 	$(top_builddir)/libgnu/libgnu.a
+psps_SOURCES = psps.c prosite.c prosite.h
+psps_LDADD = $(top_builddir)/lib/libsfxa.a \
+	$(top_builddir)/util/libutil.a $(top_builddir)/libgnu/libgnu.a
 all: all-am
 
 .SUFFIXES:
@@ -316,6 +324,9 @@ bl2dump$(EXEEXT): $(bl2dump_OBJECTS) $(bl2dump_DEPENDENCIES)
 fa2hdsq$(EXEEXT): $(fa2hdsq_OBJECTS) $(fa2hdsq_DEPENDENCIES) 
 	@rm -f fa2hdsq$(EXEEXT)
 	$(LINK) $(fa2hdsq_LDFLAGS) $(fa2hdsq_OBJECTS) $(fa2hdsq_LDADD) $(LIBS)
+psps$(EXEEXT): $(psps_OBJECTS) $(psps_DEPENDENCIES) 
+	@rm -f psps$(EXEEXT)
+	$(LINK) $(psps_LDFLAGS) $(psps_OBJECTS) $(psps_LDADD) $(LIBS)
 
 mostlyclean-compile:
 	-rm -f *.$(OBJEXT)
@@ -328,6 +339,8 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/fa2hdsq.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/ofiles.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/parsefa.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/prosite.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/psps.Po@am__quote@
 
 .c.o:
 @am__fastdepCC_TRUE@	if $(COMPILE) -MT $@ -MD -MP -MF "$(DEPDIR)/$*.Tpo" -c -o $@ $<; \

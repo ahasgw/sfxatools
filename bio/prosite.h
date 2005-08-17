@@ -1,7 +1,7 @@
 /***********************************************************************
- * $Id: sort.h,v 1.4 2005/07/05 07:33:27 aki Exp $
+ * $Id: prosite.h,v 1.1 2005/08/17 10:11:40 aki Exp $
  *
- * sort header file
+ * prosite header file
  * Copyright (C) 2005 RIKEN. All rights reserved.
  * Written by Aki Hasegawa <aki@gsc.riken.jp>.
  *
@@ -20,19 +20,18 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  ***********************************************************************/
 
-#ifndef SORT_H
-#define SORT_H 1
-#define SORT_H_INCLUDED 1
+#ifndef PROSITE_H
+#define PROSITE_H 1
+#define PROSITE_H_INCLUDED 1
 
+#if 0
 #ifndef CONFIG_H_INCLUDED
 # define CONFIG_H_INCLUDED 1
 # include <config.h>
 #endif
-
-#ifndef STDINT_H_INCLUDED
-# define STDINT_H_INCLUDED 1
-# include <stdint.h>
 #endif
+
+#include "mbuf.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -42,14 +41,10 @@ extern "C" {
  * function declarations
  *======================================================================*/
 
-int sort32(const char *txt, int32_t *idx, const int32_t len);
-
-#if SIZEOF_OFF_T >= 8
-int sort64(const char *txt, int64_t *idx, const int64_t len);
-#endif
+int prosite_to_regex(const char *pat, mbuf_t *re);
 
 #ifdef __cplusplus
 } /* extern "C" */
 #endif
 
-#endif /* SORT_H */
+#endif /* PROSITE_H */

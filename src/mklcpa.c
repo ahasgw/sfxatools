@@ -1,5 +1,5 @@
 /***********************************************************************
- * $Id: mklcpa.c,v 1.6 2005/07/05 07:33:26 aki Exp $
+ * $Id: mklcpa.c,v 1.7 2005/08/17 10:11:43 aki Exp $
  *
  * mklcpa
  * Copyright (C) 2005 RIKEN. All rights reserved.
@@ -38,9 +38,7 @@
 #include <progname.h>
 #include <xalloc.h>
 
-#include "lcp.h"
-
-#include "mmfile.h"
+#include "sfxa.h"
 #include "msg.h"
 #include "strdupcat.h"
 #include <minmax.h>
@@ -91,8 +89,6 @@ static const char * const g_default_ext = ".lcp";
  *======================================================================*/
 
 static int process_file(const char *txtpath, const char *idxpath);
-static int mmap_rofile(mmfile_t *mf, const char *path);
-static int mmap_rwfile(mmfile_t *mf, const char *path, off_t infile_len);
 static char *build_lcpafile_name(const char *path);
 static void show_version(void);
 static void show_help(void);
@@ -105,77 +101,20 @@ static void show_help(void);
 static int process_file(const char *txtpath, const char *idxpath)
 {
     int ret = 0;
-    mmfile_t ftxt;
-    mmfile_t fidx;
-    mmfile_t flcp;
-    off_t txtfile_len;
-    off_t idxfile_len;
-
-    if ((ret = mmap_rofile(&ftxt, txtpath)) != 0)
-	return ret;
-    if ((ret = mmap_rofile(&fidx, idxpath)) != 0)
-	return ret;
-    txtfile_len = mmfile_len(&ftxt);
-    idxfile_len = mmfile_len(&fidx);
-    if ((ret = mmap_rwfile(&flcp, idxpath, idxfile_len)) != 0)
-	return ret;
-
-#if SIZEOF_OFF_T < 8
-    if (txtfile_len <= (INT32_MAX / sizeof(int32_t))) {
-	lcp32(mmfile_ptr(&ftxt), mmfile_ptr(&fidx), mmfile_ptr(&flcp), (int32_t)txtfile_len);
-    } else {
-	msg(MSGLVL_WARNING, "Cannot open. File too large");
-    }
-#elif SIZEOF_OFF_T >= 8
-    if (txtfile_len <= INT32_MAX) {
-	lcp32(mmfile_ptr(&ftxt), mmfile_ptr(&fidx), mmfile_ptr(&flcp), (int32_t)txtfile_len);
-    } else if (txtfile_len <= (INT64_MAX / sizeof(int64_t))) {
-	lcp64(mmfile_ptr(&ftxt), mmfile_ptr(&fidx), mmfile_ptr(&flcp), (int64_t)txtfile_len);
-    } else {
-	msg(MSGLVL_WARNING, "Cannot open. File too large");
-    }
-#endif
-
-    if ((ret = mmfile_unmap(&flcp)) != 0)
-	return ret;
-    if ((ret = mmfile_unmap(&fidx)) != 0)
-	return ret;
-    if ((ret = mmfile_unmap(&ftxt)) != 0)
-	return ret;
-
-    mmfile_free(&flcp);
-    mmfile_free(&fidx);
-    mmfile_free(&ftxt);
-    return ret;
-}
-
-static int mmap_rofile(mmfile_t *mf, const char *path)
-{
-    int ret = 0;
-    if ((ret = mmfile_init(mf, path)) == 0)
-	if ((ret = mmfile_map_shared_rd(mf)) != 0)
-	    mmfile_free(mf);
-    return ret;
-}
-
-static int mmap_rwfile(mmfile_t *mf, const char *path, off_t file_len)
-{
     char *lcppath;
-    int ret = 0;
+    sfxa_t sa;
 
-    if ((lcppath = build_lcpafile_name(path)) == NULL)
+    if ((lcppath = build_lcpafile_name(txtpath)) == NULL)
 	return (errno = EEXIST);
-    if ((ret = mmfile_init(mf, lcppath)) != 0)
-	goto bail1;
-    if ((ret = mmfile_map_shared_rw(mf, file_len)) != 0)
-	goto bail2;
-    return ret;
 
-bail2:
-    mmfile_free(mf);
-bail1:
+    if ((ret = sfxa_init(&sa, txtpath, idxpath, lcppath)) != 0)
+	return ret;
+
+    if ((ret = sfxa_build_lcp(&sa)) != 0)
+	return ret;
+
     free(lcppath), lcppath = NULL;
-    return ret;
+    return 0;
 }
 
 static char *build_lcpafile_name(const char *path)

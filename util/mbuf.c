@@ -1,5 +1,5 @@
 /***********************************************************************
- * $Id: mbuf.c,v 1.2 2005/08/01 10:36:55 aki Exp $
+ * $Id: mbuf.c,v 1.3 2005/08/17 10:11:45 aki Exp $
  *
  * Memory buffer utility.
  * Copyright (C) 2004 RIKEN. All rights reserved.
@@ -52,6 +52,24 @@
 
 inline static size_t clp2(size_t x);
 
+/*----------------------------------------------------------------------
+ * Least power of 2 greater than or equal to x
+ * H. S. Warren, Jr., Hacker's Delight, pp.48.
+ *----------------------------------------------------------------------*/
+inline static size_t clp2(size_t x)
+{
+    --x;
+    x |= (x >> 1);
+    x |= (x >> 2);
+    x |= (x >> 4);
+    x |= (x >> 8);
+    x |= (x >> 16);
+#if SIZEOF_SIZE_T >= 8
+    x |= (x >> 32);
+#endif
+    return x + 1;
+}
+
 /*======================================================================
  * memory buffer functions
  *======================================================================*/
@@ -59,10 +77,10 @@ inline static size_t clp2(size_t x);
 mbuf_t *mbuf_new(const void *p, size_t n)
 {
     mbuf_t *mp = (mbuf_t*)malloc(sizeof(mbuf_t));
-    if (mp == NULL)
+    if (mp != NULL && mbuf_init(mp, p, n) != 0) {
+	free(mp);
 	return NULL;
-    if (mbuf_init(mp, p, n) != 0)
-	return NULL;
+    }
     return mp;
 }
 
@@ -88,6 +106,12 @@ void mbuf_free(mbuf_t *mp)
     mp->cnt = 0;
 }
 
+void mbuf_delete(mbuf_t *mp)
+{
+    mbuf_free(mp);
+    free(mp);
+}
+
 size_t mbuf_assign(mbuf_t *dest, const mbuf_t *src)
 {
     if (dest == src)
@@ -103,16 +127,10 @@ size_t mbuf_append(mbuf_t *dest, const mbuf_t *src)
     return mbuf_push_back(dest, mbuf_ptr(src), mbuf_size(src));
 }
 
-void mbuf_delete(mbuf_t *mp)
-{
-    mbuf_free(mp);
-    free(mp);
-}
-
 int mbuf_reserve(mbuf_t *mp, size_t n)
 {
     n = clp2(MAX(n, mp->cnt));
-    if (n != mp->max) {
+    if (n != mp->max) {	    /* != enables shrink wrap */
 	void *p = (void*)realloc(mp->ptr, n);
 	if (p == NULL)
 	    return errno;
@@ -125,12 +143,12 @@ int mbuf_reserve(mbuf_t *mp, size_t n)
 int mbuf_resize(mbuf_t *mp, size_t n)
 {
     void *p;
-    n = clp2(n);
-    if ((p = (void*)realloc(mp->ptr, n)) == NULL) {
+    size_t m = clp2(n);
+    if ((p = (void*)realloc(mp->ptr, m)) == NULL) {
 	return errno;
     }
     mp->ptr = p;
-    mp->max = n;
+    mp->max = m;
     mp->cnt = MIN(mp->cnt, n);
     return 0;
 }
@@ -235,26 +253,4 @@ size_t mbuf_pop_front(mbuf_t *mp, size_t n)
     mp->cnt -= m;
     memmove(mp->ptr, (char*)mp->ptr + m, mp->cnt);
     return m;
-}
-
-/*----------------------------------------------------------------------
- * private functions
- *----------------------------------------------------------------------*/
-
-/*
- * Least power of 2 greater than or equal to x
- * H. S. Warren, Jr., Hacker's Delight, pp.48.
- */
-inline static size_t clp2(size_t x)
-{
-    --x;
-    x |= (x >> 1);
-    x |= (x >> 2);
-    x |= (x >> 4);
-    x |= (x >> 8);
-    x |= (x >> 16);
-#if SIZEOF_SIZE_T >= 8
-    x |= (x >> 32);
-#endif
-    return x + 1;
 }

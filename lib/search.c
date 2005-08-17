@@ -1,5 +1,5 @@
 /***********************************************************************
- * $Id: search.c,v 1.2 2005/08/01 11:24:37 aki Exp $
+ * $Id: search.c,v 1.3 2005/08/17 10:11:42 aki Exp $
  *
  * search
  * Copyright (C) 2005 RIKEN. All rights reserved.
@@ -25,7 +25,10 @@
 # include <config.h>
 #endif
 
-#include <stdio.h>
+#ifndef NDEBUG
+# include <stdio.h>
+#endif
+
 #include <stdlib.h>
 #include <stddef.h>
 #include <stdint.h>
@@ -36,6 +39,10 @@
 
 #include "search.h"
 #include "search_impl.h"
+
+#include "regexp.h"
+#include "u32stk.h"
+#include "ptrstk.h"
 
 #include <minmax.h>
 
@@ -79,14 +86,16 @@ typedef struct searchXX_arg_type {
  * prototypes
  *======================================================================*/
 
-extern int yyparse(void *arg);
-
 static int bf_searchXX_1(const mbuf_t *ranges_in, mbuf_t *ranges_out,
-	void *arg, const char ch);
+	void *arg, const char ch, head_tail_t ht);
 static int bf_searchXX(const mbuf_t *ranges_in, mbuf_t *ranges_out,
 	void *arg, const mbuf_t *chs, head_tail_t ht);
-
 static int search_interval(const char ch, searchXX_arg_t *arg, rangeXX_t *res);
+
+#ifndef NDEBUG
+static void code_print(FILE *s, size_t n, size_t level, regexp_code_t code);
+static void print_ptrstk(FILE *s, const ptrstk_t *stk, const char *name);
+#endif
 
 /*======================================================================
  * function definitions
@@ -98,9 +107,11 @@ int searchXX(region_t *re, const char *pattern, size_t patlen, const char *opt_a
     int ret = 0;
 
     assert(re != NULL);
-#if 0
-printf("# %*s\n", patlen, pattern);
-#endif
+    if (re == NULL)
+	return EINVAL;
+    assert(re->ranges != NULL);
+    if (re->ranges == NULL)
+	return EINVAL;
 
     if (patlen > 0) {
 	searchXX_arg_t arg;
@@ -128,7 +139,7 @@ printf("# %*s\n", patlen, pattern);
 	    mbuf_clear(&ranges_tmp);
 	    /* search */
 	    if ((ret = bf_searchXX_1(re->ranges, &ranges_tmp,
-			    &arg, ch)) != 0)
+			    &arg, ch, none)) != 0)
 	    {
 		break;
 	    }
@@ -149,45 +160,374 @@ printf("# %*s\n", patlen, pattern);
 }
 
 /* search_regexpXX */
-int search_regexpXX(region_t *re, const char *pattern, size_t patlen, const char *opt_alphabet)
+int search_regexpXX(region_t *re, const char *pattern, size_t patlen,
+	const char *opt_alphabet, unsigned long repeat_max)
 {
+    int ret = 0;
+    size_t i, level = 0;
+    searchXX_arg_t arg;
+    regexp_charbits_t alph;
+    regexp_charbits_t bits;
+    regexp_t rx;
+    mbuf_t chs;
+    u32stk_t counters;
+    ptrstk_t regions;
+    size_t adjust = 0;	/* 1: if preceded code is KIND_OR, otherwise 0 */
+
     assert(re != NULL);
-#if 0
-printf("# %*s\n", patlen, pattern);
+    if (re == NULL)
+	return EINVAL;
+    assert(re->ranges != NULL);
+    if (re->ranges == NULL)
+	return EINVAL;
+
+    /*
+     * prepare
+     */ 
+    if ((ret = regexp_init(&rx, pattern, NULL)) != 0) {	    /* error */
+#if !defined(NDEBUG) && 0
+	fprintf(stdout, "Error at '%c' (%u)\n",
+		pattern[rx.error_at], rx.error_at + 1);
 #endif
-
-    if (patlen > 0) {
-	searchXX_arg_t arg;
-	parser_arg_t parser_arg;
-
-	/* setup args */
-	arg.txt = (const char *)sfxa_txt_ptr(re->sa);
-	arg.idx = (const intXX_t *)sfxa_idx_ptr(re->sa);
-	arg.len = (intXX_t)sfxa_txt_len(re->sa);
-
-	/* setup parser arg */
-	parser_arg.ranges_in = re->ranges;
-	parser_arg.ranges_out = NULL;
-	parser_arg.chs = mbuf_new(NULL, 256);
-	parser_arg.alphabet = opt_alphabet;
-	parser_arg.search_arg = (void*)&arg;
-	parser_arg.search_func = bf_searchXX;
-	parser_arg.repeat_max = ULONG_MAX;
-	parser_arg.ptr = pattern;
-	parser_arg.state = 0;
-	if (parser_arg.chs == NULL)
-	    return errno;
-
-	if (yyparse((void*)&parser_arg) != 0)
-	    return 1;
-
-	mbuf_free(re->ranges);
-	re->ranges = parser_arg.ranges_out;
-
-	mbuf_delete(parser_arg.chs);
+	goto bail0;
     }
 
-    return 0;
+    if ((ret = mbuf_init(&chs, NULL, 128)) != 0)
+	goto bail1;
+    
+    if ((ret = u32stk_init(&counters)) != 0)	/* error */
+	goto bail2;
+
+    if ((ret = ptrstk_init(&regions)) != 0)	/* error */
+	goto bail3;
+
+    {	/* move the renges_in into stack */
+	if ((ret = ptrstk_push_back(&regions, re->ranges)) != 1) {
+	    ret = errno;
+	    goto bail4;
+	}
+	re->ranges = NULL;
+    }
+
+    /* setup args */
+    arg.txt = (const char *)sfxa_txt_ptr(re->sa);
+    arg.idx = (const intXX_t *)sfxa_idx_ptr(re->sa);
+    arg.len = (intXX_t)sfxa_txt_len(re->sa);
+
+    /* setup alphabet */
+    if (opt_alphabet) {	    /* if alphabet is specified */
+	const char *cp = opt_alphabet;
+	regexp_charbits_clr(&alph);
+	for (; *cp; ++cp) {
+	    regexp_charbits_set(&alph, *cp);
+	}
+    } else {		    /* otherwise set default alphabet */
+	regexp_charbits_sp_and_print(&alph);
+    }
+
+#if !defined(NDEBUG) && 0
+    regexp_stack_print(stdout, rx.code, rx.code_len);
+#endif
+
+    /*
+     * execute code
+     */
+    for (i = 0; i < rx.code_len; ++i) {
+	regexp_code_t code = rx.code[i];
+	regexp_code_kind_t kind = regexp_code_get_kind(code);
+	mbuf_t *region_ref = NULL;
+	unsigned int j;
+	unsigned int least = regexp_code_get_least(code);
+	unsigned int most = regexp_code_get_most(code);
+	char ch;
+
+#if !defined(NDEBUG) && 0
+	code_print(stdout, i, level, code);
+#endif
+
+	switch (kind) {
+	    case KIND_DOWN:
+		if (regexp_code_get_dj(code)) {
+		    ptrstk_push_back(&regions,
+			    mbuf_dup(ptrstk_back(&regions)));
+		}
+
+		/* push new counter */
+		u32stk_push_back(&counters, 1);
+
+		/* duplicate the stack top and push if least == 0 */
+		if (least == 0) {
+		    ptrstk_push_back(&regions,
+			    mbuf_dup(ptrstk_back(&regions)));
+		}
+
+#if !defined(NDEBUG) && 0
+		print_ptrstk(stdout, &regions, "regions");
+#endif
+		++level;
+		break;
+	    case KIND_UP:
+		{
+		    size_t counters_top = u32stk_size(&counters) - 1;
+		    unsigned int goback = least;
+		    unsigned int count, count_least, count_most;
+		    count_least = regexp_code_get_least(rx.code[i - least]);
+		    count_most = regexp_code_get_most(rx.code[i - least]);
+		    count = u32stk_at(&counters, counters_top);
+
+#if !defined(NDEBUG) && 0
+		    printf("-- c:%u, cl:%u, cm:%u, goback:%u, i:%u->%u --\n",
+			    count, count_least, count_most, goback, i,
+			    i - goback);
+#endif
+
+		    if (regexp_code_get_dj(code)) {
+			/* swap and pop */
+			mbuf_t *ranges_top = ptrstk_back(&regions);
+			ptrstk_pop_back(&regions);
+			mbuf_free(ptrstk_back(&regions));
+			ptrstk_pop_back(&regions);
+			ptrstk_push_back(&regions, ranges_top);
+		    }
+
+		    /* 1 .. */
+		    if (count < count_most) {
+			if (count >= count_least) {
+			    ptrstk_push_back(&regions,
+				    mbuf_dup(ptrstk_back(&regions)));
+			}
+			if (regexp_code_get_dj(code)) {
+			    ptrstk_push_back(&regions,
+				    mbuf_dup(ptrstk_back(&regions)));
+			}
+			u32stk_replace(&counters, counters_top, ++count);
+			i -= goback;
+		    } else {
+			for (; count > count_least; --count) {
+			    /* merge top two of the stack */
+			    mbuf_t *ranges_top = ptrstk_back(&regions);
+			    ptrstk_pop_back(&regions);
+			    mbuf_append(ptrstk_back(&regions), ranges_top);
+			    mbuf_free(ranges_top);
+			}
+			u32stk_pop_back(&counters);
+			--level;
+		    }
+#if !defined(NDEBUG) && 0
+		    print_ptrstk(stdout, &regions, "regions");
+#endif
+		}
+		break;
+	    case KIND_OR:
+		break;
+	    case KIND_HEAD:
+	    case KIND_TAIL:
+		{
+		    /* prepare output */
+		    mbuf_t *ranges_out = mbuf_new(NULL, 0);
+		    if  (ranges_out == NULL) {
+			ret = errno;
+			goto bail4;
+		    }
+		    /* search.
+		     * read from top of regions stack. write to regions_out
+		     */ 
+		    if ((ret = bf_searchXX_1(
+				    ptrstk_at(&regions,
+					ptrstk_size(&regions) - 1 - adjust),
+				    ranges_out, &arg, '\0',
+				    (kind == KIND_HEAD ? head : tail))) != 0)
+		    {
+			goto bail4;
+		    }
+		    if (adjust == 0) {	/* not just after the KIND_OR */
+			/* remove the top of regions stack */
+			mbuf_free(ptrstk_back(&regions));
+			ptrstk_pop_back(&regions);
+			/* push the regions_out to the top of regions stack */
+			ptrstk_push_back(&regions, ranges_out);
+		    } else {
+			/* merge */
+			mbuf_append(ptrstk_back(&regions), ranges_out);
+		    }
+		}
+		break;
+	    case KIND_CH:
+		ch = regexp_code_get_ch(code);
+		region_ref = ptrstk_at(&regions, ptrstk_size(&regions) - 1 - adjust);
+		for (j = 1; j <= most; ++j) {
+#if !defined(NDEBUG) && 0
+		    printf("%d: [%u] %p\n", j, ptrstk_size(&regions), region_ref);
+#endif
+		    /* prepare output */
+		    mbuf_t *ranges_out = mbuf_new(NULL, 0);
+		    if  (ranges_out == NULL) {
+			ret = errno;
+			goto bail4;
+		    }
+		    /* search.
+		     * read from top of regions stack. write to regions_out
+		     */ 
+		    if ((ret = bf_searchXX_1(region_ref,
+				    ranges_out, &arg, ch, none)) != 0)
+		    {
+			goto bail4;
+		    }
+		    /* */
+		    if (j <= least) {
+			if (j != 1 || adjust != 1) {
+			    /* remove the top of regions stack */
+			    mbuf_free(ptrstk_back(&regions));
+			    ptrstk_pop_back(&regions);
+			}
+		    }
+		    /* push the regions_out to the top of regions stack */
+		    ptrstk_push_back(&regions, ranges_out);
+		    region_ref = ptrstk_back(&regions);
+		}
+		for (--j, j += adjust; j > least; --j) {
+		    /* merge top two of the stack */
+		    mbuf_t *ranges_top = ptrstk_back(&regions);
+		    ptrstk_pop_back(&regions);
+		    mbuf_append(ptrstk_back(&regions), ranges_top);
+		    mbuf_free(ranges_top);
+		}
+		break;
+	    case KIND_CHS:
+		ch = regexp_code_get_ch(code);	/* '[' or '!' */
+		region_ref = ptrstk_at(&regions, ptrstk_size(&regions) - 1 - adjust);
+		/* read charbits */
+		regexp_charbits_read(rx.code + i + 1, &bits);
+		i += sizeof(regexp_charbits_t) / sizeof(uint32_t);
+#if !defined(NDEBUG) && 0
+		putchar('\t'); regexp_charbits_print(stdout, &bits); putchar('\n');
+#endif
+		/* complement if ch == '!' */
+		if (ch == '!')
+		    regexp_charbits_not(&bits);
+		/* and with alphabet bits */
+		regexp_charbits_and(&bits, &alph);
+
+		/* */
+		if (regexp_charbits_any(&bits) > 0) {
+		    unsigned int k;
+		    mbuf_clear(&chs);
+		    for (k = 0; k < CHAR_MAX; ++k) {
+			if (regexp_charbits_test(&bits, (char)k))
+			    mbuf_push_back_1(&chs, (char)k);
+		    }
+		    for (j = 1; j <= most; ++j) {
+			/* prepare output */
+			mbuf_t *ranges_out = mbuf_new(NULL, 0);
+			if  (ranges_out == NULL) {
+			    ret = errno;
+			    goto bail4;
+			}
+			/* search.
+			* read from top of regions stack. write to regions_out
+			*/ 
+			if ((ret = bf_searchXX(region_ref,
+					ranges_out, &arg, &chs, none)) != 0)
+			{
+			    goto bail4;
+			}
+			/* */
+			if (j <= least) {
+			    if (j != 1 || adjust != 1) {
+				/* remove the top of regions stack */
+				mbuf_free(ptrstk_back(&regions));
+				ptrstk_pop_back(&regions);
+			    }
+			}
+			/* push the regions_out to the top of regions stack */
+			ptrstk_push_back(&regions, ranges_out);
+			region_ref = ptrstk_back(&regions);
+		    }
+		    for (--j, j += adjust; j > least; --j) {
+			/* merge top two of the stack */
+			mbuf_t *ranges_top = ptrstk_back(&regions);
+			ptrstk_pop_back(&regions);
+			mbuf_append(ptrstk_back(&regions), ranges_top);
+			mbuf_free(ranges_top);
+		    }
+		}
+		break;
+	    case KIND_ANY:
+		regexp_charbits_cpy(&bits, &alph);
+		region_ref = ptrstk_at(&regions, ptrstk_size(&regions) - 1 - adjust);
+		if (regexp_charbits_any(&bits) > 0) {
+		    unsigned int k;
+		    mbuf_clear(&chs);
+		    for (k = 0; k < CHAR_MAX; ++k) {
+			if (regexp_charbits_test(&bits, (char)k))
+			    mbuf_push_back_1(&chs, (char)k);
+		    }
+		    for (j = 1; j <= most; ++j) {
+			/* prepare output */
+			mbuf_t *ranges_out = mbuf_new(NULL, 0);
+			if  (ranges_out == NULL) {
+			    ret = errno;
+			    goto bail4;
+			}
+			/* search.
+			* read from top of regions stack. write to regions_out
+			*/ 
+			if ((ret = bf_searchXX(region_ref,
+					ranges_out, &arg, &chs, none)) != 0)
+			{
+			    goto bail4;
+			}
+			/* */
+			if (j <= least) {
+			    if (j != 1 || adjust != 1) {
+				/* remove the top of regions stack */
+				mbuf_free(ptrstk_back(&regions));
+				ptrstk_pop_back(&regions);
+			    }
+			}
+			/* push the regions_out to the top of regions stack */
+			ptrstk_push_back(&regions, ranges_out);
+			region_ref = ptrstk_back(&regions);
+		    }
+		    for (--j, j += adjust; j > least; --j) {
+			/* merge top two of the stack */
+			mbuf_t *ranges_top = ptrstk_back(&regions);
+			ptrstk_pop_back(&regions);
+			mbuf_append(ptrstk_back(&regions), ranges_top);
+			mbuf_free(ranges_top);
+		    }
+		}
+		break;
+	    default:
+		ret = errno = EINVAL;
+		goto bail4;
+	}
+
+	adjust = (kind == KIND_OR) ? 1 : 0;
+    }
+
+    /* copy the top of the ranges stack back to the region's ranges */
+    re->ranges = ptrstk_back(&regions);
+    ptrstk_pop_back(&regions);
+
+    /* cleaning */
+    mbuf_free(ptrstk_back(&regions));
+    ptrstk_pop_back(&regions);
+
+#if !defined(NDEBUG) && 0
+    print_ptrstk(stdout, &regions, "regions");
+#endif
+
+bail4:
+    ptrstk_free(&regions);
+bail3:
+    u32stk_free(&counters);
+bail2:
+    mbuf_free(&chs);
+bail1:
+    regexp_free(&rx);
+bail0:
+    return ret;
 }
 
 /*======================================================================
@@ -195,7 +535,7 @@ printf("# %*s\n", patlen, pattern);
  *======================================================================*/
 
 static int bf_searchXX_1(const mbuf_t *ranges_in, mbuf_t *ranges_out,
-	void *arg, const char ch)
+	void *arg, const char ch, head_tail_t ht)
 {
     const rangeXX_t *r_beg = (const rangeXX_t*)mbuf_ptr(ranges_in);
     const rangeXX_t *r_end = r_beg + (mbuf_size(ranges_in) / sizeof(rangeXX_t));
@@ -204,6 +544,8 @@ static int bf_searchXX_1(const mbuf_t *ranges_in, mbuf_t *ranges_out,
     for (rp = r_beg; rp < r_end; ++rp) {
 	rangeXX_t r = *rp;
 	if (search_interval(ch, (searchXX_arg_t *)arg, &r)) {
+	    r.head |= (ht == head);
+	    r.tail |= (ht == tail);
 	    if (mbuf_push_back(ranges_out, &r, sizeof r) != sizeof r)
 		return errno;
 	}
@@ -223,8 +565,8 @@ static int bf_searchXX(const mbuf_t *ranges_in, mbuf_t *ranges_out,
 	intXX_t next_beg = rp->beg;
 	const char *cp = (const char *)mbuf_ptr(chs);
 	const char *cp_end = cp + mbuf_size(chs);
-	/* searching from small end */
-	/* searching from both end might be better */
+	/* search from small end */
+	/* search from both end might be better */
 	for (; cp < cp_end; ++cp) {
 	    rangeXX_t r = *rp;
 	    r.beg = next_beg;
@@ -249,11 +591,11 @@ static int bf_searchXX(const mbuf_t *ranges_in, mbuf_t *ranges_out,
 	const char *cp_beg = (const char *)mbuf_ptr(chs);
 	const char *cp_end = cp_beg + mbuf_size(chs) - 1;
 	rangeXX_t r = *rp;
-	/* searching from both end */
+	/* search from both end */
 	for (;;) {
 	    if (!(cp_beg <= cp_end))
 		break;
-	    /* searching from small end */
+	    /* search from small end */
 	    {
 		r.ofst = rp->ofst;
 		r.beg = next_beg;
@@ -269,7 +611,7 @@ static int bf_searchXX(const mbuf_t *ranges_in, mbuf_t *ranges_out,
 	    }
 	    if (!(cp_beg <= cp_end))
 		break;
-	    /* searching from large end */
+	    /* search from large end */
 	    {
 		r.ofst = rp->ofst;
 		r.beg = next_beg;
@@ -339,3 +681,26 @@ static int search_interval(const char ch, searchXX_arg_t *arg, rangeXX_t *range_
     }
     return (range_io->beg <= range_io->end);
 }
+
+/*----------------------------------------------------------------------*/
+#ifndef NDEBUG
+
+static void code_print(FILE *s, size_t n, size_t level, regexp_code_t code)
+{
+    int i;
+    regexp_code_kind_t kind = regexp_code_get_kind(code);
+    printf("%d\t", n);
+    for (i = 0; i < (kind == KIND_UP ? level - 1 : level); ++i)
+	putchar(' ');
+    regexp_code_print(stdout, code); putchar('\n');
+}
+
+static void print_ptrstk(FILE *s, const ptrstk_t *stk, const char *name)
+{
+    int i;
+    fprintf(s, "## %s, size: %u ##\n", name, ptrstk_size(stk));
+    for (i = 0 ; i < ptrstk_size(stk); ++i)
+	printf("[[ %p ]]\n", ptrstk_at(stk, i));
+}
+
+#endif

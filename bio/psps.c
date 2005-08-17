@@ -1,7 +1,7 @@
 /***********************************************************************
- * $Id: sfxasrch.c,v 1.3 2005/08/17 10:11:44 aki Exp $
+ * $Id: psps.c,v 1.1 2005/08/17 10:11:41 aki Exp $
  *
- * sfxasrch
+ * psps
  * Copyright (C) 2005 RIKEN. All rights reserved.
  * Written by Aki Hasegawa <aki@gsc.riken.jp>.
  *
@@ -45,6 +45,8 @@
 #include "search.h"
 #include "cmap.h"
 
+#include "prosite.h"
+
 #include "mmfile.h"
 #include "msg.h"
 #include <minmax.h>
@@ -80,9 +82,7 @@ typedef struct opts_type {
     int		    opt_R;	/* maximum repeat number */
     unsigned int    opt_h: 1;	/* help flag */
     unsigned int    opt_V: 1;	/* version flag */
-    unsigned int    opt_d: 1;	/* dump suffix array */
     unsigned int    opt_q: 1;	/* quiet */
-    unsigned int    opt_s: 1;	/* simple search flag */
     output_param_t  opt_F;
 } opts_t;
 
@@ -101,9 +101,7 @@ static opts_t opts = {
     /* binary flags */
     0,			/* h: help flag */
     0,			/* V: version flag */
-    0,			/* d: dump suffix array */
     0,			/* q: quiet */
-    0,			/* s: simple search flag */
     /* others */
     {
 	NULL,
@@ -117,6 +115,8 @@ static opts_t opts = {
     }
 };
 
+static const char alphabet[] = "ABCDEFGHIKLMNPQRSTVWXYZ";
+
 /*======================================================================
  * prototypes
  *======================================================================*/
@@ -124,7 +124,6 @@ static opts_t opts = {
 inline static int get_max_digit(unsigned long long n);
 static void search(const sfxa_t *sfxa, const cmap_t *cm, char *pat);
 static int search_pattern(const sfxa_t *sfxa, const char *pattern, int patlen);
-static int dump_suffix_array(const sfxa_t *sfxa);
 static void show_version(void);
 static void show_help(void);
 
@@ -142,17 +141,35 @@ inline static int get_max_digit(unsigned long long n)
 static void search(const sfxa_t *sfxa, const cmap_t *cm, char *pat)
 {
     int ret = 0;
+    mbuf_t re;
     time_t beg_tm = 0, end_tm = 0;
 
     if (opts.opt_v) {
-	msg(MSGLVL_INFO, "searching pattern '%s'...", pat);
+	msg(MSGLVL_INFO, "searching PA pattern '%s'...", pat);
 	beg_tm = time(NULL);
     }
+
+    if (mbuf_init(&re, NULL, strlen(pat) + 1) != 0) {
+	msg(MSGLVL_ERR, "Failed to prepare pattern conversion:");
+	exit(EXIT_FAILURE);
+    }
+
+    if ((ret = prosite_to_regex(pat, &re)) != 0) {
+	if (errno != 0)
+	    msg(MSGLVL_ERR, "Failed to convert a pattern '%s':", pat);
+	else
+	    msg(MSGLVL_ERR,
+		    "Illegal character '%c' in a pattern '%s', (col. %d)",
+		    pat[ret - 1], pat, ret);
+	exit(EXIT_FAILURE);
+    }
+    if (opts.opt_v > 1)
+	msg(MSGLVL_INFO, "searching RE pattern '%s'...", (const char *)mbuf_ptr(&re));
 
     if (opts.opt_M) {
 	unsigned char *pattern;
 	int patlen;
-	ret = cmap_translate(cm, pat, &pattern, &patlen);
+	ret = cmap_translate(cm, mbuf_ptr(&re), &pattern, &patlen);
 	if (ret != 0) {
 	    msg(MSGLVL_ERR, "Cannot map the query:");
 	    exit(EXIT_FAILURE);
@@ -160,7 +177,7 @@ static void search(const sfxa_t *sfxa, const cmap_t *cm, char *pat)
 	ret = search_pattern(sfxa, (char *)pattern, patlen);
 	free(pattern);
     } else {
-	ret = search_pattern(sfxa, pat, strlen(pat));
+	ret = search_pattern(sfxa, mbuf_ptr(&re), mbuf_size(&re));
     }
 
     if (ret != 0) {
@@ -168,11 +185,14 @@ static void search(const sfxa_t *sfxa, const cmap_t *cm, char *pat)
 	exit(EXIT_FAILURE);
     }
 
+    mbuf_free(&re);
+
     if (opts.opt_v) {
 	end_tm = time(NULL);
 	msg(MSGLVL_INFO, "...done. (%.1f sec.)", difftime(end_tm, beg_tm));
     }
 }
+
 
 /* search pattern using suffix array */
 static int search_pattern(const sfxa_t *sfxa, const char *pattern, int patlen)
@@ -183,9 +203,7 @@ static int search_pattern(const sfxa_t *sfxa, const char *pattern, int patlen)
     if ((ret = region_init(&result, sfxa)) != 0)
 	return ret;
 
-    ret = (opts.opt_s)
-	? region_search(&result, pattern, patlen, NULL)
-	: region_search_regexp(&result, pattern, patlen, NULL, opts.opt_R);
+    ret = region_search_regexp(&result, pattern, patlen, alphabet, opts.opt_R);
 
     if (ret == 0) {
 	region_narrow_down(&result);
@@ -198,22 +216,6 @@ static int search_pattern(const sfxa_t *sfxa, const char *pattern, int patlen)
 	    ret = region_print(&result, &opts.opt_F);
 	}
     }
-
-    region_free(&result);
-    return ret;
-}
-
-static int dump_suffix_array(const sfxa_t *sfxa)
-{
-    int ret = 0;
-    region_t result;
-    
-    if ((ret = region_init(&result, sfxa)) != 0)
-	return ret;
-
-    opts.opt_F.max_digit = get_max_digit(sfxa_txt_len(sfxa));
-    if ((ret = region_dump(&result, &opts.opt_F)) != 0)
-	return ret;
 
     region_free(&result);
     return 0;
@@ -244,7 +246,7 @@ static void parse_subopt_F(char **optionp)
 	    case NOIDX:	opts.opt_F.idx = 0; break;
 
 	    case SFX:	if (val == NULL) {
-			    msg(MSGLVL_ERR, "Illegal suboption for %s",subop[op]);
+			    msg(MSGLVL_ERR, "Illegal suboption for %s", subop[op]);
 			    exit(EXIT_FAILURE);
 			}
 			opts.opt_F.sfx = atoi(val);
@@ -275,7 +277,7 @@ static void parse_subopt_F(char **optionp)
 static void show_version(void)
 {
     static char fmt[] =
-	"sfxasrch (%s) %s\n"
+	"psps (%s) %s\n"
 	"\n"
 	"Copyright (C) 2005 RIKEN. All rights reserved.\n"
 	"This program comes with ABSOLUTELY NO WARRANTY.\n"
@@ -290,29 +292,27 @@ static void show_version(void)
 static void show_help(void)
 {
     static char fmt[] =
-	"This is sfxasrch, suffix array search program.\n"
+	"This is psps, prosite pattern search program.\n"
 	"\n"
 	"Usage: %s [options] <text_file> <index_file> [pattern ...]\n"
 	"Options:\n"
-	"  -h, --help           display this message\n"
-	"  -V, --version        print version number, and exit\n"
-	"  -v, --verbose        verbose output\n"
-	"  -o, --output=<file>  file to output\n"
-	"  -i, --input=<file>   file to input\n"
-	"  -d, --dump           dump suffix array\n"
-	"  -q, --quiet          output quietly\n"
-	"  -s, --simple         perform non regular expression search\n"
+	"  -h, --help            display this message\n"
+	"  -V, --version         print version number, and exit\n"
+	"  -v, --verbose         verbose output\n"
+	"  -o, --output=<file>   file to output\n"
+	"  -i, --input=<file>    file to input\n"
+	"  -q, --quiet           output quietly\n"
 	"  -R, --repeat-max=<n>  limit maximum repeat number to <n> (+,*,{m,})\n"
-	"  -M, --map=<file>     character mapping file\n"
+	"  -M, --map=<file>      character mapping file\n"
 	"  -F, --format=<comma_separated_subopts>  formatting parameters\n"
-	"        [no]hdr        [do not] print information header\n"
-	"        [no]pos        [do not] print array position column\n"
-	"        [no]idx        [do not] print index column\n"
-	"        [no]sfx=<n>    [do not] print suffix at most length <n>\n"
+	"        [no]hdr         [do not] print information header\n"
+	"        [no]pos         [do not] print array position column\n"
+	"        [no]idx         [do not] print index column\n"
+	"        [no]sfx=<n>     [do not] print suffix at most length <n>\n"
 #if 0
-	"        [no]pre=<n>    [do not] print <n> characters ahead of the suffix\n"
+	"        [no]pre=<n>     [do not] print <n> characters ahead of the suffix\n"
 #endif
-	"        [no]chop       [do not] chop suffix beyond delimiter character\n"
+	"        [no]chop        [do not] chop suffix beyond delimiter character\n"
 	"Report bugs to <%s>.\n"
 	;
     fprintf(stdout, fmt, base_name(program_name), PACKAGE_BUGREPORT);
@@ -337,16 +337,14 @@ int main(int argc, char **argv)
 	    {"verbose",	    no_argument,	NULL, 'v'},
 	    {"output",      required_argument,	NULL, 'o'},
 	    {"input",	    required_argument,	NULL, 'i'},
-	    {"dump",	    no_argument,	NULL, 'd'},
 	    {"quiet",	    no_argument,	NULL, 'q'},
-	    {"simple",      no_argument,        NULL, 's'},
-	    {"repeat-max",  required_argument,  NULL, 'R'},
+	    {"repeat-max",  required_argument,	NULL, 'R'},
 	    {"map",	    required_argument,	NULL, 'M'},
 	    {"format",      required_argument,	NULL, 'F'},
 	    {0, 0, 0, 0}
 	};
 
-	opt = getopt_long(argc, argv, "hVvo:i:dqsR:M:F:", long_opts, &opt_index);
+	opt = getopt_long(argc, argv, "hVvo:i:qR:M:F:", long_opts, &opt_index);
 	if (opt == -1)
 	    break;
 
@@ -356,9 +354,7 @@ int main(int argc, char **argv)
 	    case 'v': ++opts.opt_v; break;
 	    case 'o': opts.opt_o = xstrdup(optarg); break;
 	    case 'i': opts.opt_i = xstrdup(optarg); break;
-	    case 'd': opts.opt_d = 1; break;
 	    case 'q': opts.opt_q = 1; break;
-	    case 's': opts.opt_s = 1; break;
 	    case 'R': opts.opt_R = atoi(optarg); break;
 	    case 'M': opts.opt_M = xstrdup(optarg); break;
 	    case 'F': parse_subopt_F(&optarg); break;
@@ -422,9 +418,7 @@ int main(int argc, char **argv)
     }
 
     /* search the pattern */
-    if (opts.opt_d) {
-	dump_suffix_array(&sa);
-    } else if (opts.opt_i != NULL || optind == argc) {
+    if (opts.opt_i != NULL || optind == argc) {
 	char *line = NULL;
 	size_t len = 0;
 	ssize_t read;
