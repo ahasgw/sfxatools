@@ -1,7 +1,7 @@
 /***********************************************************************
- * $Id: search.h,v 1.2 2005/08/17 10:11:42 aki Exp $
+ * $Id: lcp.h,v 1.1 2005/08/17 10:11:42 aki Exp $
  *
- * search header file
+ * lcp header file
  * Copyright (C) 2005 RIKEN. All rights reserved.
  * Written by Aki Hasegawa <aki@gsc.riken.jp>.
  *
@@ -20,18 +20,18 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  ***********************************************************************/
 
-#ifndef SEARCH_H
-#define SEARCH_H 1
-#define SEARCH_H_INCLUDED 1
+#ifndef LCP_H
+#define LCP_H 1
+#define LCP_H_INCLUDED 1
 
 #ifndef CONFIG_H_INCLUDED
 # define CONFIG_H_INCLUDED 1
 # include <config.h>
 #endif
 
-#ifndef REGION_H_INCLUDED
-# define REGION_H_INCLUDED 1
-# include "region.h"
+#ifndef STDINT_H_INCLUDED
+# define STDINT_H_INCLUDED 1
+# include <stdint.h>
 #endif
 
 #ifdef __cplusplus
@@ -42,16 +42,14 @@ extern "C" {
  * function declarations
  *======================================================================*/
 
-int search32(region_t *re, const char *pattern, size_t patlen, const char *opt_alphabet);
-int search_regexp32(region_t *re, const char *pattern, size_t patlen, const char *opt_alphabet, unsigned long rep_max);
+int lcp32(const char *txt, const int32_t *idx, int32_t *lcp, const int32_t len);
 
 #if SIZEOF_OFF_T >= 8
-int search64(region_t *re, const char *pattern, size_t patlen, const char *opt_alphabet);
-int search_regexp64(region_t *re, const char *pattern, size_t patlen, const char *opt_alphabet, unsigned long rep_max);
+int lcp64(const char *txt, const int64_t *idx, int64_t *lcp, const int64_t len);
 #endif
 
 #ifdef __cplusplus
 } /* extern "C" */
 #endif
 
-#endif /* SEARCH_H */
+#endif /* LCP_H */

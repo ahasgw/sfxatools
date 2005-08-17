@@ -1,4 +1,4 @@
-## $Id: Makefile.am,v 1.4 2005/08/01 09:04:48 aki Exp $
+## $Id: Makefile.am,v 1.5 2005/08/17 10:11:43 aki Exp $
 ##
 ## Makefile for the src directory of sfxatools.
 ## Copyright (C) 2004 RIKEN. All rights reserved.
@@ -22,16 +22,6 @@
 
 MAINTAINERCLEANFILES = Makefile.in
 
-## suffix rule for building 64bit version (compile with -DSIZE_OF_INITXX_T=8)
-SUFFIXES = .o64
-.c.o64:
-@am__fastdepCC_TRUE@	if $(COMPILE) -DSIZEOF_INTXX_T=8 -MT $@ -MD -MP -MF "$(DEPDIR)/$*.Tpo" -c -o $@ $<; \
-@am__fastdepCC_TRUE@	then mv -f "$(DEPDIR)/$*.Tpo" "$(DEPDIR)/$*.Po"; else rm -f "$(DEPDIR)/$*.Tpo"; exit 1; fi
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='$<' object='$@' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(COMPILE) -DSIZEOF_INTXX_T=8 -c -o $@ $<
-
-
 bin_PROGRAMS = 
 
 AM_CPPFLAGS = -I$(top_srcdir)/lib -I$(top_srcdir)/util -I$(top_srcdir)/libgnu
@@ -39,36 +29,24 @@ AM_CFLAGS = -DNDEBUG
 
 ## mksfxa
 bin_PROGRAMS += mksfxa
-mksfxa_SOURCES = mksfxa.c sort.c sort.h
+mksfxa_SOURCES = mksfxa.c
 mksfxa_LDADD = 
-if IS_SIZEOF_OFF_T_EQ_8
-mksfxa_LDADD += sort.o64
-endif
+mksfxa_LDADD += $(top_builddir)/lib/libsfxa.a
 mksfxa_LDADD += $(top_builddir)/util/libutil.a
 mksfxa_LDADD += $(top_builddir)/libgnu/libgnu.a
 
 ## mklcpa
 bin_PROGRAMS += mklcpa
-mklcpa_SOURCES = mklcpa.c lcp.c lcp.h
+mklcpa_SOURCES = mklcpa.c
 mklcpa_LDADD = 
-if IS_SIZEOF_OFF_T_EQ_8
-mklcpa_LDADD += lcp.o64
-endif
+mklcpa_LDADD += $(top_builddir)/lib/libsfxa.a
 mklcpa_LDADD += $(top_builddir)/util/libutil.a
 mklcpa_LDADD += $(top_builddir)/libgnu/libgnu.a
 
 ## sfxasrch
 bin_PROGRAMS += sfxasrch
-sfxasrch_SOURCES = sfxasrch.c output.c output.h
+sfxasrch_SOURCES = sfxasrch.c
 sfxasrch_LDADD = 
-if IS_SIZEOF_OFF_T_EQ_8
-sfxasrch_LDADD += output.o64
-endif
 sfxasrch_LDADD += $(top_builddir)/lib/libsfxa.a
 sfxasrch_LDADD += $(top_builddir)/util/libutil.a
 sfxasrch_LDADD += $(top_builddir)/libgnu/libgnu.a
-
-if IS_SIZEOF_OFF_T_EQ_8
-clean-local:
-	-rm -f *.o64
-endif

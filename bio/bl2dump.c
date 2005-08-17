@@ -1,5 +1,5 @@
 /***********************************************************************
- * $Id: bl2dump.c,v 1.4 2005/08/01 10:36:24 aki Exp $
+ * $Id: bl2dump.c,v 1.5 2005/08/17 10:11:40 aki Exp $
  *
  * Blast2 database dump
  * Copyright (C) 2005 RIKEN. All rights reserved.
@@ -207,14 +207,14 @@ static void read_indfile(void * const top, ofs_t *ofs)
 /* print index info */
 static void print_indinfo(const info_t *info)
 {
-    printf("## version:\t%u\n", info->version);
-    printf("## dump flag:\t%d (%s)\n", info->dumpflag,
+    printf("# version:\t%u\n", info->version);
+    printf("# dump flag:\t%d (%s)\n", info->dumpflag,
 	    (info->dumpflag ? "protein" : "nucleotide"));
-    printf("## db title:\t[%s]\n", info->title);
-    printf("## date/time:\t[%s]\n", info->date);
-    printf("## max count:\t%d\n", info->max_cnt);
-    printf("## total len:\t%lld\n", (long long)info->tot_len);
-    printf("## max len:\t%d\n", info->max_len);
+    printf("# db title:\t[%s]\n", info->title);
+    printf("# date/time:\t[%s]\n", info->date);
+    printf("# max count:\t%d\n", info->max_cnt);
+    printf("# total len:\t%lld\n", (long long)info->tot_len);
+    printf("# max len:\t%d\n", info->max_len);
 }
 
 /* print protein */
@@ -230,7 +230,7 @@ static void print_protein(const char * const hdr, const char * const seq, ofs_t 
 	uint32_t slen = nexts - s;
 
 	if (opts.opt_v)
-	    printf("# === [%u] def:(%d@%u) seq:(%u@%u) ===\n",
+	    printf("## === [%u] def:(%d@%u) seq:(%u@%u) ===\n",
 		    i, dlen, d, slen, s);
 
 	if (opts.opt_v > 1)
@@ -267,7 +267,7 @@ static void print_nucleotide(const char * const hdr, const char * const seq, ofs
 	uint32_t slen = a - s;
 
 	if (opts.opt_v)
-	    printf("# === [%u] def:(%d@%u) seq:(%u@%u) amb:(%u@%u) ===\n",
+	    printf("## === [%u] def:(%d@%u) seq:(%u@%u) amb:(%u@%u) ===\n",
 		    i, dlen, d, slen, s, alen, a);
 
 	if (opts.opt_v > 1)
@@ -335,7 +335,7 @@ static void print_nucleotide(const char * const hdr, const char * const seq, ofs
 		    uint32_t amb = ntohl(*(amblst + j));
 		    int ch = (amb >> 28);
 		    uint32_t off = amb & ~((uint32_t)(0xf) << 28);
-		    printf("# [%u] -> %c\n", off, cmap_num2char(&cmap_amb, ch));
+		    printf("### [%u] -> %c\n", off, cmap_num2char(&cmap_amb, ch));
 		}
 	    }
 	}

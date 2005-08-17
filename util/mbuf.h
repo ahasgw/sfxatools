@@ -1,5 +1,5 @@
 /***********************************************************************
- * $Id: mbuf.h,v 1.1 2005/08/01 09:04:50 aki Exp $
+ * $Id: mbuf.h,v 1.2 2005/08/17 10:11:45 aki Exp $
  *
  * Header file for mbuf
  * Copyright (C) 2005 RIKEN. All rights reserved.
@@ -74,16 +74,19 @@ size_t mbuf_push_front(mbuf_t *mp, const void *p, size_t n);
 size_t mbuf_pop_back(mbuf_t *mp, size_t n);
 size_t mbuf_pop_front(mbuf_t *mp, size_t n);
 
-inline static const void *mbuf_ptr(const mbuf_t *mp);
+inline static void *mbuf_ptr(const mbuf_t *mp);
 inline static size_t mbuf_size(const mbuf_t *mp);
 inline static size_t mbuf_max_size(void);
 inline static int mbuf_empty(const mbuf_t *mp);
-inline static size_t capacity(const mbuf_t *mp);
+inline static size_t mbuf_capacity(const mbuf_t *mp);
 
 inline static size_t mbuf_push_back_1(mbuf_t *mp, char c);
 inline static size_t mbuf_push_front_1(mbuf_t *mp, char c);
 inline static size_t mbuf_pop_back_1(mbuf_t *mp);
 inline static size_t mbuf_pop_front_1(mbuf_t *mp);
+
+inline static char mbuf_back_1(const mbuf_t *mp);
+inline static char mbuf_front_1(const mbuf_t *mp);
 
 /*======================================================================
  * inline function definitions
@@ -101,11 +104,11 @@ inline static size_t mbuf_insert(mbuf_t *mp, size_t at, const void *p, size_t n)
     return mbuf_replace(mp, at, 0, p, n);
 }
 
-inline static const void *mbuf_ptr(const mbuf_t *mp) { return mp->ptr; }
+inline static void *mbuf_ptr(const mbuf_t *mp) { return mp->ptr; }
 inline static size_t mbuf_size(const mbuf_t *mp) { return mp->cnt; }
 inline static size_t mbuf_max_size(void) { return SIZE_MAX - 1; }
 inline static int mbuf_empty(const mbuf_t *mp) { return mp->cnt == 0; }
-inline static size_t capacity(const mbuf_t *mp) { return mp->max; }
+inline static size_t mbuf_capacity(const mbuf_t *mp) { return mp->max; }
 
 inline static size_t mbuf_push_back_1(mbuf_t *mp, char c)
 {
@@ -127,6 +130,16 @@ inline static size_t mbuf_pop_back_1(mbuf_t *mp)
 inline static size_t mbuf_pop_front_1(mbuf_t *mp)
 {
     return mbuf_pop_front(mp, 1);
+}
+
+inline static char mbuf_back_1(const mbuf_t *mp)
+{
+    return (mbuf_size(mp) > 0) ? ((char*)mbuf_ptr(mp))[mbuf_size(mp) - 1] : 0;
+}
+
+inline static char mbuf_front_1(const mbuf_t *mp)
+{
+    return (mbuf_size(mp) > 0) ? *(char*)mbuf_ptr(mp) : 0;
 }
 
 #ifdef __cplusplus

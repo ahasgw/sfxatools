@@ -37,7 +37,7 @@ subdir = tests
 DIST_COMMON = $(srcdir)/Makefile.am $(srcdir)/Makefile.in \
 	$(srcdir)/annotidx.in $(srcdir)/bl2dump.in \
 	$(srcdir)/fa2hdsq.in $(srcdir)/mklcpa.in $(srcdir)/mksfxa.in \
-	$(srcdir)/sfxasrch.in
+	$(srcdir)/psps.in $(srcdir)/sfxasrch.in
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/libgnu/m4/alloca.m4 \
 	$(top_srcdir)/libgnu/m4/assert.m4 \
@@ -104,7 +104,8 @@ am__configure_deps = $(am__aclocal_m4_deps) $(CONFIGURE_DEPENDENCIES) \
 	$(ACLOCAL_M4)
 mkinstalldirs = $(install_sh) -d
 CONFIG_HEADER = $(top_builddir)/config.h
-CONFIG_CLEAN_FILES = mksfxa mklcpa sfxasrch fa2hdsq annotidx bl2dump
+CONFIG_CLEAN_FILES = mksfxa mklcpa sfxasrch fa2hdsq annotidx bl2dump \
+	psps
 SOURCES =
 DIST_SOURCES =
 DISTFILES = $(DIST_COMMON) $(DIST_SOURCES) $(TEXINFOS) $(EXTRA_DIST)
@@ -167,7 +168,6 @@ STDBOOL_H = @STDBOOL_H@
 STDINT_H = @STDINT_H@
 STRIP = @STRIP@
 VERSION = @VERSION@
-YACC = @YACC@
 ac_aux_dir = @ac_aux_dir@
 ac_ct_CC = @ac_ct_CC@
 ac_ct_RANLIB = @ac_ct_RANLIB@
@@ -205,8 +205,8 @@ EXTRA_DIST = $(TESTSUITE_AT) $(TESTSUITE) package.m4
 TESTSUITE = $(srcdir)/testsuite
 AUTOTEST = $(AUTOM4TE) --language=autotest
 TESTSUITE_AT = testsuite.at mksfxa.at mklcpa.at sfxasrch.at fa2hdsq.at \
-	annotidx.at bl2dump.at
-check_SCRIPTS = mksfxa mklcpa sfxasrch fa2hdsq annotidx bl2dump
+	annotidx.at bl2dump.at psps.at
+check_SCRIPTS = mksfxa mklcpa sfxasrch fa2hdsq annotidx bl2dump psps
 all: all-am
 
 .SUFFIXES:
@@ -250,6 +250,8 @@ fa2hdsq: $(top_builddir)/config.status $(srcdir)/fa2hdsq.in
 annotidx: $(top_builddir)/config.status $(srcdir)/annotidx.in
 	cd $(top_builddir) && $(SHELL) ./config.status $(subdir)/$@
 bl2dump: $(top_builddir)/config.status $(srcdir)/bl2dump.in
+	cd $(top_builddir) && $(SHELL) ./config.status $(subdir)/$@
+psps: $(top_builddir)/config.status $(srcdir)/psps.in
 	cd $(top_builddir) && $(SHELL) ./config.status $(subdir)/$@
 uninstall-info-am:
 tags: TAGS

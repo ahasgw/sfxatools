@@ -1,4 +1,4 @@
-## $Id: Makefile.am,v 1.1 2005/08/01 09:04:48 aki Exp $
+## $Id: Makefile.am,v 1.2 2005/08/17 10:11:41 aki Exp $
 ##
 ## Makefile for lib directory of sfxatools.
 ## Copyright (C) 2004, 2005 RIKEN. All rights reserved.
@@ -33,19 +33,22 @@ SUFFIXES = .o64
 
 AM_CPPFLAGS = -I$(top_srcdir)/util -I$(top_srcdir)/libgnu
 AM_CFLAGS = -DNDEBUG
-AM_YFLAGS = -d
-
-BUILT_SOURCES = parser.h
 
 noinst_LIBRARIES = libsfxa.a
 libsfxa_a_SOURCES = \
-	parser.y \
+	lcp.c lcp.h \
+	output.c output.h \
+	regexp.c regexp.h \
 	region.c region.h \
 	search.c search.h search_impl.h \
-	sfxa.c sfxa.h
+	sfxa.c sfxa.h \
+	sort.c sort.h
 libsfxa_a_LIBADD = 
 if IS_SIZEOF_OFF_T_EQ_8
+libsfxa_a_LIBADD += lcp.o64
+libsfxa_a_LIBADD += output.o64
 libsfxa_a_LIBADD += search.o64
+libsfxa_a_LIBADD += sort.o64
 endif
 
 if IS_SIZEOF_OFF_T_EQ_8

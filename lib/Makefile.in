@@ -34,10 +34,10 @@ POST_INSTALL = :
 NORMAL_UNINSTALL = :
 PRE_UNINSTALL = :
 POST_UNINSTALL = :
-@IS_SIZEOF_OFF_T_EQ_8_TRUE@am__append_1 = search.o64
+@IS_SIZEOF_OFF_T_EQ_8_TRUE@am__append_1 = lcp.o64 output.o64 \
+@IS_SIZEOF_OFF_T_EQ_8_TRUE@	search.o64 sort.o64
 subdir = lib
-DIST_COMMON = $(srcdir)/Makefile.am $(srcdir)/Makefile.in parser.c \
-	parser.h
+DIST_COMMON = $(srcdir)/Makefile.am $(srcdir)/Makefile.in
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/libgnu/m4/alloca.m4 \
 	$(top_srcdir)/libgnu/m4/assert.m4 \
@@ -109,10 +109,12 @@ LIBRARIES = $(noinst_LIBRARIES)
 AR = ar
 ARFLAGS = cru
 libsfxa_a_AR = $(AR) $(ARFLAGS)
-@IS_SIZEOF_OFF_T_EQ_8_TRUE@am__DEPENDENCIES_1 = search.o64
+@IS_SIZEOF_OFF_T_EQ_8_TRUE@am__DEPENDENCIES_1 = lcp.o64 output.o64 \
+@IS_SIZEOF_OFF_T_EQ_8_TRUE@	search.o64 sort.o64
 libsfxa_a_DEPENDENCIES = $(am__DEPENDENCIES_1)
-am_libsfxa_a_OBJECTS = parser.$(OBJEXT) region.$(OBJEXT) \
-	search.$(OBJEXT) sfxa.$(OBJEXT)
+am_libsfxa_a_OBJECTS = lcp.$(OBJEXT) output.$(OBJEXT) regexp.$(OBJEXT) \
+	region.$(OBJEXT) search.$(OBJEXT) sfxa.$(OBJEXT) \
+	sort.$(OBJEXT)
 libsfxa_a_OBJECTS = $(am_libsfxa_a_OBJECTS)
 DEFAULT_INCLUDES = -I. -I$(srcdir) -I$(top_builddir)
 depcomp = $(SHELL) $(top_srcdir)/config/depcomp
@@ -121,7 +123,6 @@ COMPILE = $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) \
 	$(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS)
 CCLD = $(CC)
 LINK = $(CCLD) $(AM_CFLAGS) $(CFLAGS) $(AM_LDFLAGS) $(LDFLAGS) -o $@
-YACCCOMPILE = $(YACC) $(YFLAGS) $(AM_YFLAGS)
 SOURCES = $(libsfxa_a_SOURCES)
 DIST_SOURCES = $(libsfxa_a_SOURCES)
 ETAGS = etags
@@ -186,7 +187,6 @@ STDBOOL_H = @STDBOOL_H@
 STDINT_H = @STDINT_H@
 STRIP = @STRIP@
 VERSION = @VERSION@
-YACC = @YACC@
 ac_aux_dir = @ac_aux_dir@
 ac_ct_CC = @ac_ct_CC@
 ac_ct_RANLIB = @ac_ct_RANLIB@
@@ -222,21 +222,21 @@ MAINTAINERCLEANFILES = Makefile.in
 SUFFIXES = .o64
 AM_CPPFLAGS = -I$(top_srcdir)/util -I$(top_srcdir)/libgnu
 AM_CFLAGS = -DNDEBUG
-AM_YFLAGS = -d
-BUILT_SOURCES = parser.h
 noinst_LIBRARIES = libsfxa.a
 libsfxa_a_SOURCES = \
-	parser.y \
+	lcp.c lcp.h \
+	output.c output.h \
+	regexp.c regexp.h \
 	region.c region.h \
 	search.c search.h search_impl.h \
-	sfxa.c sfxa.h
+	sfxa.c sfxa.h \
+	sort.c sort.h
 
 libsfxa_a_LIBADD = $(am__append_1)
-all: $(BUILT_SOURCES)
-	$(MAKE) $(AM_MAKEFLAGS) all-am
+all: all-am
 
 .SUFFIXES:
-.SUFFIXES: .o64 .c .o .obj .y
+.SUFFIXES: .o64 .c .o .obj
 $(srcdir)/Makefile.in:  $(srcdir)/Makefile.am  $(am__configure_deps)
 	@for dep in $?; do \
 	  case '$(am__configure_deps)' in \
@@ -269,11 +269,6 @@ $(ACLOCAL_M4):  $(am__aclocal_m4_deps)
 
 clean-noinstLIBRARIES:
 	-test -z "$(noinst_LIBRARIES)" || rm -f $(noinst_LIBRARIES)
-parser.h: parser.c
-	@if test ! -f $@; then \
-	  rm -f parser.c; \
-	  $(MAKE) parser.c; \
-	else :; fi
 libsfxa.a: $(libsfxa_a_OBJECTS) $(libsfxa_a_DEPENDENCIES) 
 	-rm -f libsfxa.a
 	$(libsfxa_a_AR) libsfxa.a $(libsfxa_a_OBJECTS) $(libsfxa_a_LIBADD)
@@ -285,10 +280,13 @@ mostlyclean-compile:
 distclean-compile:
 	-rm -f *.tab.c
 
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/parser.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/lcp.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/output.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/regexp.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/region.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/search.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/sfxa.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/sort.Po@am__quote@
 
 .c.o:
 @am__fastdepCC_TRUE@	if $(COMPILE) -MT $@ -MD -MP -MF "$(DEPDIR)/$*.Tpo" -c -o $@ $<; \
@@ -303,27 +301,6 @@ distclean-compile:
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	source='$<' object='$@' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(COMPILE) -c `$(CYGPATH_W) '$<'`
-
-.y.c:
-	$(YACCCOMPILE) $<
-	if test -f y.tab.h; then \
-	  to=`echo "$*_H" | sed \
-                -e 'y/abcdefghijklmnopqrstuvwxyz/ABCDEFGHIJKLMNOPQRSTUVWXYZ/' \
-                -e 's/[^ABCDEFGHIJKLMNOPQRSTUVWXYZ]/_/g'`; \
-	  sed -e "/^#/!b" -e "s/Y_TAB_H/$$to/g" -e "s|y\.tab\.h|$*.h|" \
-            y.tab.h >$*.ht; \
-	  rm -f y.tab.h; \
-	  if cmp -s $*.ht $*.h; then \
-	    rm -f $*.ht ;\
-	  else \
-	    mv $*.ht $*.h; \
-	  fi; \
-	fi
-	if test -f y.output; then \
-	  mv y.output $*.output; \
-	fi
-	sed '/^#/ s|y\.tab\.c|$@|' y.tab.c >$@t && mv $@t $@
-	rm -f y.tab.c
 uninstall-info-am:
 
 ID: $(HEADERS) $(SOURCES) $(LISP) $(TAGS_FILES)
@@ -402,12 +379,10 @@ distdir: $(DISTFILES)
 	  fi; \
 	done
 check-am: all-am
-check: $(BUILT_SOURCES)
-	$(MAKE) $(AM_MAKEFLAGS) check-am
+check: check-am
 all-am: Makefile $(LIBRARIES)
 installdirs:
-install: $(BUILT_SOURCES)
-	$(MAKE) $(AM_MAKEFLAGS) install-am
+install: install-am
 install-exec: install-exec-am
 install-data: install-data-am
 uninstall: uninstall-am
@@ -431,9 +406,6 @@ distclean-generic:
 maintainer-clean-generic:
 	@echo "This command is intended for maintainers to use"
 	@echo "it deletes files that may require special tools to rebuild."
-	-rm -f parser.c
-	-rm -f parser.h
-	-test -z "$(BUILT_SOURCES)" || rm -f $(BUILT_SOURCES)
 	-test -z "$(MAINTAINERCLEANFILES)" || rm -f $(MAINTAINERCLEANFILES)
 @IS_SIZEOF_OFF_T_EQ_8_FALSE@clean-local:
 clean: clean-am

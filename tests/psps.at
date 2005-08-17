@@ -1,6 +1,6 @@
-# $Id: mksfxa.at,v 1.3 2005/08/17 10:11:44 aki Exp $
+# $Id: psps.at,v 1.1 2005/08/17 10:11:44 aki Exp $
 #
-# Test for mksfxa.
+# Test for psps.
 # Copyright (C) 2004 RIKEN. All rights reserved.
 # Written by Aki Hasegawa <aki@gsc.riken.jp>.
 #
@@ -18,30 +18,10 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
 
-AT_BANNER([[Tests for mksfxa.]])
+AT_BANNER([[Tests for psps.]])
 
 AT_SETUP([The file not existing.])
 AT_KEYWORDS([non-existent-file])
 AT_CHECK([rm deleteme], ignore, ignore, ignore)
-AT_CHECK([mksfxa deleteme], 1, ignore, ignore)
-AT_CLEANUP
-
-AT_SETUP([The file of length zero.])
-AT_KEYWORDS([zero-length-file])
-AT_DATA([zero], [[]])
-AT_CHECK([mksfxa zero], 0, ignore, ignore)
-AT_CLEANUP
-
-AT_SETUP([The file of length one.])
-AT_KEYWORDS([one-length-file])
-AT_DATA([one], [[
-]])
-AT_CHECK([mksfxa one], 0, ignore, ignore)
-AT_CLEANUP
-
-AT_SETUP([The file of length two.])
-AT_KEYWORDS([two-length-file])
-AT_DATA([two], [[A
-]])
-AT_CHECK([mksfxa two], 0, ignore, ignore)
+AT_CHECK([psps deleteme], 1, ignore, ignore)
 AT_CLEANUP

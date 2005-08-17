@@ -1,5 +1,5 @@
 /***********************************************************************
- * $Id: sfxa.h,v 1.1 2005/08/01 09:04:48 aki Exp $
+ * $Id: sfxa.h,v 1.2 2005/08/17 10:11:43 aki Exp $
  *
  * Header file for sfxa
  * Copyright (C) 2005 RIKEN. All rights reserved.
@@ -24,9 +24,11 @@
 #define SFXA_H 1
 #define SFXA_H_INCLUDED 1
 
+#if 0
 #ifndef CONFIG_H_INCLUDED
 # define CONFIG_H_INCLUDED 1
 # include <config.h>
+#endif
 #endif
 
 #ifndef MMFILE_H_INCLUDED
@@ -64,6 +66,9 @@ sfxa_t *sfxa_new(const char *ftxt, const char *fidx, const char *flcp);
 int sfxa_init(sfxa_t *sa, const char *ftxt, const char *fidx, const char *flcp);
 void sfxa_free(sfxa_t *sa);
 void sfxa_delete(sfxa_t *sa);
+
+int sfxa_build_idx(sfxa_t *sa);
+int sfxa_build_lcp(sfxa_t *sa);
 
 int sfxa_open(sfxa_t *sa);
 int sfxa_close(sfxa_t *sa);

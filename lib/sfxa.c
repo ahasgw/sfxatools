@@ -1,5 +1,5 @@
 /***********************************************************************
- * $Id: sfxa.c,v 1.1 2005/08/01 09:04:48 aki Exp $
+ * $Id: sfxa.c,v 1.2 2005/08/17 10:11:42 aki Exp $
  *
  * sfxa
  * Copyright (C) 2005 RIKEN. All rights reserved.
@@ -33,6 +33,8 @@
 #include <limits.h>
 
 #include "sfxa.h"
+#include "sort.h"
+#include "lcp.h"
 
 /*======================================================================
  * public function definitions
@@ -83,28 +85,165 @@ void sfxa_delete(sfxa_t *sa)
     free(sa);
 }
 
-int sfxa_open(sfxa_t *sa)
+int sfxa_build_idx(sfxa_t *sa)
 {
     int ret = 0;
-    off_t len = 0;
+    off_t txt_len = 0;		/* the size of text file */
+    off_t idx_len = 0;		/* the size of index file */
 
     /* map text file */
     if ((ret = mmfile_map_shared_rd(&sa->ftxt)) != 0)
 	return ret;
 
-    /* idxbits */
-    len = mmfile_len(&sa->ftxt);
+    txt_len = mmfile_len(&sa->ftxt);
+
+    /* calculate idxbits and idx_len */
 #if SIZEOF_OFF_T < 8
-    if (len <= (INT32_MAX / sizeof(int32_t))) {
+    if (txt_len <= (INT32_MAX / sizeof(int32_t))) {
+	sa->idxbits = SFXA_IDXBITS_32;
+	idx_len = txt_len * sizeof(int32_t);
+    } else {
+	ret = errno = EFBIG;
+	goto bail1;
+    }
+#else
+    if (txt_len <= INT32_MAX) {
+	sa->idxbits = SFXA_IDXBITS_32;
+	idx_len = txt_len * sizeof(int32_t);
+    } else if (txt_len <= (INT64_MAX / sizeof(int64_t))) {
+	sa->idxbits = SFXA_IDXBITS_64;
+	idx_len = txt_len * sizeof(int64_t);
+    } else {
+	ret = errno = EFBIG;
+	goto bail1;
+    }
+#endif
+#if SIZEOF_OFF_T > SIZEOF_SIZE_T
+    if (idx_len > (SIZE_MAX / 2)) {
+	ret = errno = EFBIG;		/* Should this be ENOMEM? */
+	goto bail1;
+    }
+#endif
+
+    /* build index */
+    if ((ret = mmfile_map_shared_rw(&sa->fidx, idx_len)) != 0)
+	goto bail1;
+
+#if SIZEOF_OFF_T < 8
+    sort32(mmfile_ptr(&sa->ftxt), mmfile_ptr(&sa->fidx), (int32_t)txt_len);
+#elif SIZEOF_OFF_T >= 8
+    if (txt_len <= INT32_MAX) {
+	sort32(mmfile_ptr(&sa->ftxt), mmfile_ptr(&sa->fidx), (int32_t)txt_len);
+    } else {
+	sort64(mmfile_ptr(&sa->ftxt), mmfile_ptr(&sa->fidx), (int64_t)txt_len);
+    }
+#endif
+
+    mmfile_unmap(&sa->fidx);
+bail1:
+    mmfile_unmap(&sa->ftxt);
+    return ret;
+}
+
+int sfxa_build_lcp(sfxa_t *sa)
+{
+    int ret = 0;
+    off_t txt_len = 0;		/* the size of text file */
+    off_t idx_len = 0;		/* the size of index file */
+    off_t lcp_len = 0;		/* the size of lcp file */
+
+    /* check lcp file path */
+    if (mmfile_path(&sa->flcp) == NULL)
+	return (errno = EINVAL);
+
+    /* map text file */
+    if ((ret = mmfile_map_shared_rd(&sa->ftxt)) != 0)
+	return ret;
+    txt_len = mmfile_len(&sa->ftxt);
+
+    /* map index file */
+    if ((ret = mmfile_map_shared_rd(&sa->fidx)) != 0)
+	goto bail1;
+    idx_len = mmfile_len(&sa->fidx);
+
+    /* calculate idxbits and idx_len */
+#if SIZEOF_OFF_T < 8
+    if (txt_len <= (INT32_MAX / sizeof(int32_t))) {
+	sa->idxbits = SFXA_IDXBITS_32;
+	lcp_len = txt_len * sizeof(int32_t);
+    } else {
+	ret = errno = EFBIG;
+	goto bail2;
+    }
+#else
+    if (txt_len <= INT32_MAX) {
+	sa->idxbits = SFXA_IDXBITS_32;
+	lcp_len = txt_len * sizeof(int32_t);
+    } else if (txt_len <= (INT64_MAX / sizeof(int64_t))) {
+	sa->idxbits = SFXA_IDXBITS_64;
+	lcp_len = txt_len * sizeof(int64_t);
+    } else {
+	ret = errno = EFBIG;
+	goto bail2;
+    }
+#endif
+#if SIZEOF_OFF_T > SIZEOF_SIZE_T
+    if (lcp_len > (SIZE_MAX / 2)) {
+	ret = errno = EFBIG;		/* Should this be ENOMEM? */
+	goto bail2;
+    }
+#endif
+
+    /* check lengths */
+    if (idx_len != lcp_len) {
+	ret = errno = EINVAL;
+	goto bail2;
+    }
+
+    /* build lcp */
+    if ((ret = mmfile_map_shared_rw(&sa->flcp, lcp_len)) != 0)
+	goto bail2;
+
+#if SIZEOF_OFF_T < 8
+    lcp32(mmfile_ptr(&sa->ftxt), mmfile_ptr(&sa->fidx), mmfile_ptr(&sa->flcp), (int32_t)txt_len);
+#elif SIZEOF_OFF_T >= 8
+    if (txt_len <= INT32_MAX) {
+	lcp32(mmfile_ptr(&sa->ftxt), mmfile_ptr(&sa->fidx), mmfile_ptr(&sa->flcp), (int32_t)txt_len);
+    } else {
+	lcp64(mmfile_ptr(&sa->ftxt), mmfile_ptr(&sa->fidx), mmfile_ptr(&sa->flcp), (int64_t)txt_len);
+    }
+#endif
+
+    mmfile_unmap(&sa->flcp);
+bail2:
+    mmfile_unmap(&sa->fidx);
+bail1:
+    mmfile_unmap(&sa->ftxt);
+    return ret;
+}
+
+int sfxa_open(sfxa_t *sa)
+{
+    int ret = 0;
+    off_t txt_len = 0;		/* the size of text file */
+
+    /* map text file */
+    if ((ret = mmfile_map_shared_rd(&sa->ftxt)) != 0)
+	return ret;
+
+    /* calculate idxbits and idx_len */
+    txt_len = mmfile_len(&sa->ftxt);
+#if SIZEOF_OFF_T < 8
+    if (txt_len <= (INT32_MAX / sizeof(int32_t))) {
 	sa->idxbits = SFXA_IDXBITS_32;
     } else {
 	ret = errno = EFBIG;
 	goto bail1;
     }
 #else
-    if (len <= INT32_MAX) {
+    if (txt_len <= INT32_MAX) {
 	sa->idxbits = SFXA_IDXBITS_32;
-    } else if (len <= (INT64_MAX / sizeof(int64_t))) {
+    } else if (txt_len <= (INT64_MAX / sizeof(int64_t))) {
 	sa->idxbits = SFXA_IDXBITS_64;
     } else {
 	ret = errno = EFBIG;

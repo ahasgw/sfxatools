@@ -1,4 +1,4 @@
-## $Id: Makefile.am,v 1.5 2005/08/01 09:04:47 aki Exp $
+## $Id: Makefile.am,v 1.6 2005/08/17 10:11:41 aki Exp $
 ##
 ## Makefile for the doc directory of sfxatools.
 ## Copyright (C) 2005 RIKEN. All rights reserved.
@@ -20,7 +20,7 @@
 
 ## Process this file with automake to produce Makefile.in
 
-CLEANFILES = mksfxa.1 mklcpa.1 sfxasrch.1 fa2hdsq.1 annotidx.1 bl2dump.1
+CLEANFILES = mksfxa.1 mklcpa.1 sfxasrch.1 fa2hdsq.1 annotidx.1 bl2dump.1 psps.1
 DISTCLEANFILES = sfxatools.info
 MAINTAINERCLEANFILES = Makefile.in
 EXTRA_DIST = $(man_MANS)
@@ -64,6 +64,12 @@ annotidx.1 : $(top_builddir)/bio/annotidx
 
 man_MANS += bl2dump.1
 bl2dump.1 : $(top_builddir)/bio/bl2dump
+	if test "x$(HELP2MAN)" != x; then \
+	  $(HELP2MAN) $(HELP2MANFLAGS) $< > $@; \
+	fi
+
+man_MANS += psps.1
+psps.1 : $(top_builddir)/bio/psps
 	if test "x$(HELP2MAN)" != x; then \
 	  $(HELP2MAN) $(HELP2MANFLAGS) $< > $@; \
 	fi
