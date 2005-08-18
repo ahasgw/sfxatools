@@ -1,5 +1,5 @@
 /***********************************************************************
- * $Id: ptrstk.h,v 1.1 2005/08/17 10:11:45 aki Exp $
+ * $Id: ptrstk.h,v 1.2 2005/08/18 11:16:24 aki Exp $
  *
  * Header file for ptrstk
  * Copyright (C) 2005 RIKEN. All rights reserved.
@@ -56,6 +56,7 @@ inline static int ptrstk_replace(ptrstk_t *pp, size_t at, void *p);
 inline static void ptrstk_clear(ptrstk_t *pp);
 inline static void **ptrstk_ptr(const ptrstk_t *pp);
 inline static size_t ptrstk_size(const ptrstk_t *pp);
+inline static size_t ptrstk_back_idx(const ptrstk_t *pp);
 inline static size_t ptrstk_max_size(void);
 inline static int ptrstk_empty(const ptrstk_t *pp);
 inline static size_t ptrstk_capacity(const ptrstk_t *pp);
@@ -133,6 +134,11 @@ inline static void **ptrstk_ptr(const ptrstk_t *pp)
 inline static size_t ptrstk_size(const ptrstk_t *pp)
 {
     return pp->cnt / sizeof(void*);
+}
+
+inline static size_t ptrstk_back_idx(const ptrstk_t *pp)
+{
+    return (pp->cnt / sizeof(void*)) - 1;
 }
 
 inline static size_t ptrstk_max_size(void)
