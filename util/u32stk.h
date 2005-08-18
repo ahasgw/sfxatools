@@ -1,5 +1,5 @@
 /***********************************************************************
- * $Id: u32stk.h,v 1.1 2005/08/17 10:11:45 aki Exp $
+ * $Id: u32stk.h,v 1.2 2005/08/18 11:16:33 aki Exp $
  *
  * Header file for u32stk
  * Copyright (C) 2005 RIKEN. All rights reserved.
@@ -63,6 +63,7 @@ inline static int u32stk_replace(u32stk_t *sp, size_t at, uint32_t i);
 inline static void u32stk_clear(u32stk_t *sp);
 inline static uint32_t *u32stk_ptr(const u32stk_t *sp);
 inline static size_t u32stk_size(const u32stk_t *sp);
+inline static size_t u32stk_back_idx(const u32stk_t *sp);
 inline static size_t u32stk_max_size(void);
 inline static int u32stk_empty(const u32stk_t *sp);
 inline static size_t u32stk_capacity(const u32stk_t *sp);
@@ -140,6 +141,11 @@ inline static uint32_t *u32stk_ptr(const u32stk_t *sp)
 inline static size_t u32stk_size(const u32stk_t *sp)
 {
     return sp->cnt / sizeof(uint32_t);
+}
+
+inline static size_t u32stk_back_idx(const u32stk_t *sp)
+{
+    return (sp->cnt / sizeof(uint32_t)) - 1;
 }
 
 inline static size_t u32stk_max_size(void)
