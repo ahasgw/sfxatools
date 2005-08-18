@@ -1,5 +1,5 @@
 /***********************************************************************
- * $Id: sfxasrch.c,v 1.3 2005/08/17 10:11:44 aki Exp $
+ * $Id: sfxasrch.c,v 1.4 2005/08/18 11:20:36 aki Exp $
  *
  * sfxasrch
  * Copyright (C) 2005 RIKEN. All rights reserved.
@@ -376,6 +376,19 @@ int main(int argc, char **argv)
     if (argc < optind + 2) {
 	msg(MSGLVL_ERR, "You must specify both of text and index file.");
 	exit(EXIT_FAILURE);
+    }
+
+    /* check maximum repeat number */
+    if (opts.opt_R <= 0 || opts.opt_R > search_regexp_max_repeat()) {
+	if (opts.opt_R <= 0) {
+	    msg(MSGLVL_NOTICE,
+		    "Maximum repeat number (%d) ignored", opts.opt_R);
+	} else if (opts.opt_R != INT_MAX) {
+	    msg(MSGLVL_NOTICE,
+		    "Maximum repeat number was reset to the system limit (%lu)",
+		    search_regexp_max_repeat());
+	}
+	opts.opt_R = search_regexp_max_repeat();
     }
 
     /* prepare cmap */

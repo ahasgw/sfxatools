@@ -1,5 +1,5 @@
 /***********************************************************************
- * $Id: search.c,v 1.4 2005/08/17 10:27:29 aki Exp $
+ * $Id: search.c,v 1.5 2005/08/18 11:20:36 aki Exp $
  *
  * search
  * Copyright (C) 2005 RIKEN. All rights reserved.
@@ -48,6 +48,10 @@
 /*======================================================================
  * macro definitions
  *======================================================================*/
+
+#if SIZEOF_INTXX_T < 8
+# define search_regexp_max_repeat    search_regexp_max_repeat
+#endif
 
 #if SIZEOF_INTXX_T < 8
 # define intXX_t	    int32_t
@@ -174,6 +178,7 @@ int search_regexpXX(region_t *re, const char *pattern, size_t patlen,
     regexp_charbits_t alph;
     regexp_charbits_t bits;
     regexp_t rx;
+    regexp_opt_t rx_opt;
     mbuf_t chs;
     u32stk_t counters;
     ptrstk_t regions;
@@ -189,7 +194,8 @@ int search_regexpXX(region_t *re, const char *pattern, size_t patlen,
     /*
      * prepare
      */ 
-    if ((ret = regexp_init(&rx, pattern, NULL)) != 0) {	    /* error */
+    rx_opt.max_repeat = repeat_max;
+    if ((ret = regexp_init(&rx, pattern, &rx_opt)) != 0) {  /* error */
 #if !defined(NDEBUG) && 0
 	fprintf(stdout, "Error at '%c' (%u)\n",
 		pattern[rx.error_at], rx.error_at + 1);
@@ -534,6 +540,14 @@ bail1:
 bail0:
     return ret;
 }
+
+#if SIZEOF_INTXX_T < 8
+/* search_regexp_max_repeat */
+unsigned int search_regexp_max_repeat(void)
+{
+    return REGEXP_MAX_REPEAT;
+}
+#endif
 
 /*======================================================================
  * private function definitions
