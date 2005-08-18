@@ -1,5 +1,5 @@
 /***********************************************************************
- * $Id: search.h,v 1.2 2005/08/17 10:11:42 aki Exp $
+ * $Id: search.h,v 1.3 2005/08/18 11:20:36 aki Exp $
  *
  * search header file
  * Copyright (C) 2005 RIKEN. All rights reserved.
@@ -41,6 +41,8 @@ extern "C" {
 /*======================================================================
  * function declarations
  *======================================================================*/
+
+unsigned int search_regexp_max_repeat(void);
 
 int search32(region_t *re, const char *pattern, size_t patlen, const char *opt_alphabet);
 int search_regexp32(region_t *re, const char *pattern, size_t patlen, const char *opt_alphabet, unsigned long rep_max);

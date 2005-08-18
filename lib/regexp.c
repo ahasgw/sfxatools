@@ -1,5 +1,5 @@
 /***********************************************************************
- * $Id: regexp.c,v 1.1 2005/08/17 10:11:42 aki Exp $
+ * $Id: regexp.c,v 1.2 2005/08/18 11:20:36 aki Exp $
  *
  * regexp
  * Copyright (C) 2005 RIKEN. All rights reserved.
@@ -36,6 +36,9 @@
 
 #include "regexp.h"
 #include "u32stk.h"
+#if 1
+# include "msg.h"
+#endif
 
 #include <minmax.h>
 
@@ -57,9 +60,10 @@
 
 static int compile(regexp_t *rxp, const char *pat, const regexp_opt_t *optp);
 
-static int scan_level(u32stk_t *stk, const char **cpp, int *disjunctive);
+static int scan_level(u32stk_t *stk, const char **cpp, int *disjunctive, const regexp_opt_t *optp);
+static int scan_repeat(u32stk_t *stk, const char **cpp, size_t at, unsigned int max_repeat);
 static int scan_chars(const char **cpp, regexp_charbits_t *cbp, int *not);
-static int scan_range(const char **cpp, unsigned int *least, unsigned int *most);
+static int scan_range(const char **cpp, unsigned int *least, unsigned int *most, unsigned int max_repeat);
 
 static int code_push(u32stk_t *stk, regexp_code_kind_t kind, char c);
 static void code_set_ch(u32stk_t *stk, size_t at, char c);
@@ -122,6 +126,11 @@ static int compile(regexp_t *rxp, const char *pat, const regexp_opt_t *optp)
     u32stk_t code_stack;
     size_t sz = 0;
     int dj = 0;
+    regexp_opt_t opt = { REGEXP_MAX_REPEAT };
+    
+    if (optp != NULL)
+	opt = *optp;
+    opt.max_repeat = MIN(optp->max_repeat, REGEXP_MAX_REPEAT);
 
     if ((ret = u32stk_init(&code_stack)) != 0)
 	return ret;
@@ -129,13 +138,11 @@ static int compile(regexp_t *rxp, const char *pat, const regexp_opt_t *optp)
     if (!code_push(&code_stack, KIND_DOWN, '(')) {  // implicit parenthesis
 	ret = errno;
     } else {
-	if ((ret = scan_level(&code_stack, &cp, &dj)) == 0) {
+	if ((ret = scan_level(&code_stack, &cp, &dj, &opt)) == 0) {
 	    code_push(&code_stack, KIND_UP, ')');
 	    code_set_rep(&code_stack, u32stk_size(&code_stack) - 1,
 		    0, u32stk_size(&code_stack) - 1);
-#if 1
 	    code_set_dj(&code_stack, u32stk_size(&code_stack) - 1, dj);
-#endif
 
 	    code_set_rep(&code_stack, 0, 1, 1);
 	    code_set_dj(&code_stack, 0, dj);
@@ -161,11 +168,10 @@ static int compile(regexp_t *rxp, const char *pat, const regexp_opt_t *optp)
     return ret;
 }
 
-static int scan_level(u32stk_t *stk, const char **cpp, int *disjunctive)
+static int scan_level(u32stk_t *stk, const char **cpp, int *disjunctive,
+	const regexp_opt_t *optp)
 {
     size_t at = 0;
-    unsigned int least;
-    unsigned int most;
     regexp_charbits_t charbits;
     char ch;
     int not = 0;
@@ -181,7 +187,6 @@ static int scan_level(u32stk_t *stk, const char **cpp, int *disjunctive)
 	    case ')':	    /* end of subexpression */
 		if (!code_push(stk, KIND_UP, *(*cpp)++))
 		    return 1;
-//code_set_rep(stk, u32stk_size(stk) - 1, 0, 0);
 		return ')';
 
 	    case '(':	    /* begin of subexpression */
@@ -189,40 +194,19 @@ static int scan_level(u32stk_t *stk, const char **cpp, int *disjunctive)
 		if (!code_push(stk, KIND_DOWN, *(*cpp)++))
 		    return 1;
 		dj = false;
-		if (!scan_level(stk, cpp, &dj))	/* scan recursively */
+		if (!scan_level(stk, cpp, &dj, optp))	/* scan recursively */
 		    return 1;
 		code_set_dj(stk, at, dj);
 		/* to allow consecutive range specifiers,
-		 * loop the following switch statement. (and check overflow)
+		 * loop the following statement. (and check overflow)
 		 */
-		switch (**cpp) {
-		    case '?':
-			code_set_rep(stk, at, 0, 1);
-			++*cpp;
-			break;
-		    case '*':
-			code_set_rep(stk, at, 0, REGEXP_MAX_REPEAT);
-			++*cpp;
-			break;
-		    case '+':
-			code_set_rep(stk, at, 1, REGEXP_MAX_REPEAT);
-			++*cpp;
-			break;
-		    case '{':
-			if (!scan_range(cpp, &least, &most))
-			    return 1;
-			code_set_rep(stk, at, MIN(least, most), MAX(least, most));
-			break;
-		    default:
-			break;
-		}
+		if (scan_repeat(stk, cpp, at, optp->max_repeat) != 0)
+		    return 1;
 		/* set jump idx of loop */
 		code_set_rep(stk, u32stk_size(stk) - 1,
 			u32stk_size(stk) - 1 - at, 0);
-#if 1
 		/* set dj bit */
 		code_set_dj(stk, u32stk_size(stk) - 1, dj);
-#endif
 		continue;
 	    case '[':	    /* begin of character class */
 		at = u32stk_size(stk);
@@ -235,29 +219,10 @@ static int scan_level(u32stk_t *stk, const char **cpp, int *disjunctive)
 		if (!charbits_push(stk, &charbits))
 		    return 1;
 		/* to allow consecutive range specifiers,
-		 * loop the following switch statement. (and check overflow)
+		 * loop the following statement. (and check overflow)
 		 */
-		switch (**cpp) {
-		    case '?':
-			code_set_rep(stk, at, 0, 1);
-			++*cpp;
-			break;
-		    case '*':
-			code_set_rep(stk, at, 0, REGEXP_MAX_REPEAT);
-			++*cpp;
-			break;
-		    case '+':
-			code_set_rep(stk, at, 1, REGEXP_MAX_REPEAT);
-			++*cpp;
-			break;
-		    case '{':
-			if (!scan_range(cpp, &least, &most))
-			    return 1;
-			code_set_rep(stk, at, MIN(least, most), MAX(least, most));
-			break;
-		    default:
-			break;
-		}
+		if (scan_repeat(stk, cpp, at, optp->max_repeat) != 0)
+		    return 1;
 		continue;
 
 	    case '^':
@@ -322,32 +287,50 @@ static int scan_level(u32stk_t *stk, const char **cpp, int *disjunctive)
 	}
 
 	/* to allow consecutive range specifiers,
-	 * loop the following switch statement. (and check overflow)
+	 * loop the following statement. (and check overflow)
 	 */
-	{
-	    size_t top = u32stk_size(stk);
-	    switch (**cpp) {
-		case '?':
-		    code_set_rep(stk, top - 1, 0, 1);
-		    ++*cpp;
-		    break;
-		case '*':
-		    code_set_rep(stk, top - 1, 0, REGEXP_MAX_REPEAT);
-		    ++*cpp;
-		    break;
-		case '+':
-		    code_set_rep(stk, top - 1, 1, REGEXP_MAX_REPEAT);
-		    ++*cpp;
-		    break;
-		case '{':
-		    if (!scan_range(cpp, &least, &most))
-			return 1;
-		    code_set_rep(stk, top - 1, MIN(least, most), MAX(least, most));
-		    break;
-		default:
-		    break;
+	if (scan_repeat(stk, cpp, u32stk_back_idx(stk), optp->max_repeat) != 0)
+	    return 1;
+    }
+    return 0;
+}
+
+static int scan_repeat(u32stk_t *stk, const char **cpp, size_t at, unsigned int max_repeat)
+{
+    switch (**cpp) {
+	case '?':
+	    code_set_rep(stk, at, 0, 1);
+	    ++*cpp;
+	    break;
+	case '*':
+	    code_set_rep(stk, at, 0, max_repeat);
+#if 1
+	    msg(MSGLVL_NOTICE,
+		    "Maximum repeat number of '*' reset to (%lu).",
+		    max_repeat);
+#endif
+	    ++*cpp;
+	    break;
+	case '+':
+	    code_set_rep(stk, at, 1, max_repeat);
+#if 1
+	    msg(MSGLVL_NOTICE,
+		    "Maximum repeat number of '+' reset to (%lu).",
+		    max_repeat);
+#endif
+	    ++*cpp;
+	    break;
+	case '{':
+	    {
+		unsigned int least;
+		unsigned int most;
+		if (!scan_range(cpp, &least, &most, max_repeat))
+		    return 1;
+		code_set_rep(stk, at, MIN(least, most), MAX(least, most));
 	    }
-	}
+	    break;
+	default:
+	    break;
     }
     return 0;
 }
@@ -399,15 +382,14 @@ static int scan_chars(const char **cpp, regexp_charbits_t *cbp, int *not)
     return (state == ACC);
 }
 
-static int scan_range(const char **cpp, unsigned int *least, unsigned int *most)
+static int scan_range(const char **cpp, unsigned int *least, unsigned int *most,
+	unsigned int max_repeat)
 {
     const char *digit_beg = NULL;
 
     enum { ERR, R0, R1, R2, R3, ACC } state = R0;
 
     *least = *most = 0;
-
-    /* !!! all atoi() needs check of overflow (max REGEXP_MAX_REPEAT 255) !!! */
 
     for (++*cpp; **cpp; ++*cpp) {
 	if (state == ERR || state == ACC)
@@ -430,7 +412,7 @@ static int scan_range(const char **cpp, unsigned int *least, unsigned int *most)
 	    case R2:	/* just came into comma and parenthesis */
 		switch (**cpp) {
 		    case DIGIT: digit_beg = *cpp; state = R3; break;
-		    case '}': *most = REGEXP_MAX_REPEAT; state = ACC; break;
+		    case '}': /* *most = 0; */ state = ACC; break;
 		    default: state =ERR; break;
 		}
 		break;
@@ -447,6 +429,26 @@ static int scan_range(const char **cpp, unsigned int *least, unsigned int *most)
 		break;
 	}
     }
+
+#if 1
+    if (state == ACC && *most == 0) {
+	msg(MSGLVL_NOTICE, "Maximum repeat number of {%lu,} set to (%lu).",
+		    *least, max_repeat);
+	*most = max_repeat;
+    }
+    if (*most > max_repeat) {
+	if (*least > max_repeat) {
+	    msg(MSGLVL_ERR,
+		    "Minimum repeat number (%lu) exceeds the limit (%lu), canceled.",
+		    *least, max_repeat);
+	    state = ERR;
+	} else {
+	    msg(MSGLVL_NOTICE, "Maximum repeat number (%lu) reset to (%lu).",
+		    *most, max_repeat);
+	    *most = max_repeat;
+	}
+    }
+#endif
 
     return (state == ACC);
 }

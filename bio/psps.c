@@ -1,5 +1,5 @@
 /***********************************************************************
- * $Id: psps.c,v 1.1 2005/08/17 10:11:41 aki Exp $
+ * $Id: psps.c,v 1.2 2005/08/18 11:20:36 aki Exp $
  *
  * psps
  * Copyright (C) 2005 RIKEN. All rights reserved.
@@ -372,6 +372,19 @@ int main(int argc, char **argv)
     if (argc < optind + 2) {
 	msg(MSGLVL_ERR, "You must specify both of text and index file.");
 	exit(EXIT_FAILURE);
+    }
+
+    /* check maximum repeat number */
+    if (opts.opt_R <= 0 || opts.opt_R > search_regexp_max_repeat()) {
+	if (opts.opt_R <= 0) {
+	    msg(MSGLVL_NOTICE,
+		    "Maximum repeat number (%d) ignored", opts.opt_R);
+	} else if (opts.opt_R != INT_MAX) {
+	    msg(MSGLVL_NOTICE,
+		    "Maximum repeat number was reset to the system limit (%d)",
+		    search_regexp_max_repeat());
+	}
+	opts.opt_R = search_regexp_max_repeat();
     }
 
     /* prepare cmap */

@@ -1,5 +1,5 @@
 /***********************************************************************
- * $Id: regexp.h,v 1.1 2005/08/17 10:11:42 aki Exp $
+ * $Id: regexp.h,v 1.2 2005/08/18 11:20:36 aki Exp $
  *
  * Header file for regexp
  * Copyright (C) 2005 RIKEN. All rights reserved.
@@ -45,7 +45,7 @@ extern "C" {
  * macro definitions
  *======================================================================*/
 
-#define REGEXP_MAX_REPEAT   255
+#define REGEXP_MAX_REPEAT   (255U)
 
 /*======================================================================
  * type definitions
@@ -58,6 +58,7 @@ typedef struct regexp_type {
 } regexp_t;
 
 typedef struct regexp_opt_type {
+    uint32_t	    max_repeat;
 } regexp_opt_t;
 
 typedef enum regexp_code_kind_type {
