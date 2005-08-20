@@ -1,5 +1,5 @@
 /***********************************************************************
- * $Id: regexp.c,v 1.2 2005/08/18 11:20:36 aki Exp $
+ * $Id: regexp.c,v 1.3 2005/08/20 12:42:14 aki Exp $
  *
  * regexp
  * Copyright (C) 2005 RIKEN. All rights reserved.
@@ -572,8 +572,7 @@ void regexp_stack_print(FILE *s, const uint32_t *ptr, size_t n)
 	regexp_code_print(s, code);
 	if (kind == KIND_CHS) {
 	    putc('\t', s);
-	    regexp_charbits_read(ptr + i + 1, &bits);
-	    i += (sizeof(regexp_charbits_t) / sizeof(uint32_t));
+	    regexp_charbits_read(ptr, &i, &bits);
 	    regexp_charbits_print(s, &bits);
 	}
 	putc('\n', s);

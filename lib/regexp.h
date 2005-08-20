@@ -1,5 +1,5 @@
 /***********************************************************************
- * $Id: regexp.h,v 1.2 2005/08/18 11:20:36 aki Exp $
+ * $Id: regexp.h,v 1.3 2005/08/20 12:42:14 aki Exp $
  *
  * Header file for regexp
  * Copyright (C) 2005 RIKEN. All rights reserved.
@@ -51,8 +51,21 @@ extern "C" {
  * type definitions
  *======================================================================*/
 
+/*
+ * regexp_code_t
+ *
+ * MSB                                        LSB
+ * +--------------------------------------------+
+ * |1| kind: 7 |    ch: 8 |  most: 8 | least: 8 |
+ * +--------------------------------------------+
+ *  ^ disjunctive clause
+ */
+typedef uint32_t regexp_code_t;
+
+typedef uint32_t regexp_charbits_t[4];
+
 typedef struct regexp_type {
-    uint32_t	    *code;
+    regexp_code_t   *code;
     size_t	    code_len;
     size_t	    error_at;
 } regexp_t;
@@ -72,19 +85,6 @@ typedef enum regexp_code_kind_type {
     KIND_ANY	    /* '.': any character */
 } regexp_code_kind_t;
 
-/*
- * regexp_code_t
- *
- * MSB                                        LSB
- * +--------------------------------------------+
- * |1| kind: 7 |    ch: 8 |  most: 8 | least: 8 |
- * +--------------------------------------------+
- *  ^ disjunctive clause
- */
-typedef uint32_t regexp_code_t;
-
-typedef uint32_t regexp_charbits_t[4];
-
 /*======================================================================
  * function declarations
  *======================================================================*/
@@ -103,12 +103,14 @@ inline static unsigned int regexp_code_get_most(regexp_code_t code);
 inline static void regexp_charbits_clr(regexp_charbits_t *bits);
 inline static void regexp_charbits_set(regexp_charbits_t *bits, char c);
 inline static int regexp_charbits_test(regexp_charbits_t *bits, char c);
-inline static void regexp_charbits_read(const uint32_t *pp, regexp_charbits_t *bits);
+inline static void regexp_charbits_read(const uint32_t *p, size_t *i, regexp_charbits_t *bits);
 inline static void regexp_charbits_sp_and_print(regexp_charbits_t *bits);
 inline static void regexp_charbits_not(regexp_charbits_t *bits);
 inline static void regexp_charbits_and(regexp_charbits_t *des, regexp_charbits_t *src);
-inline static void regexp_charbits_cpy(regexp_charbits_t *dst, regexp_charbits_t *src);
 inline static int regexp_charbits_any(regexp_charbits_t *bits);
+#if 0
+inline static void regexp_charbits_cpy(regexp_charbits_t *dst, regexp_charbits_t *src);
+#endif
 
 #ifndef NDEBUG
 void regexp_code_print(FILE *s, const regexp_code_t code);
@@ -153,12 +155,12 @@ inline static int regexp_charbits_test(regexp_charbits_t *bits, char c) {
     const size_t uint32_bit = (CHAR_BIT * sizeof(uint32_t));
     return ((*bits)[c / uint32_bit] & (1U << (c % uint32_bit)));
 }
-inline static void regexp_charbits_read(const uint32_t *pp, regexp_charbits_t *bits) {
+inline static void regexp_charbits_read(const uint32_t *p, size_t *i, regexp_charbits_t *bits) {
     uint32_t *u32p = (uint32_t*)bits;
-    u32p[0] = *(pp++);
-    u32p[1] = *(pp++);
-    u32p[2] = *(pp++);
-    u32p[3] = *(pp++);
+    u32p[0] = *(p + ++*i);  /* charbits is begins at next uint32_t */
+    u32p[1] = *(p + ++*i);
+    u32p[2] = *(p + ++*i);
+    u32p[3] = *(p + ++*i);
 }
 inline static void regexp_charbits_sp_and_print(regexp_charbits_t *bits) {
     uint32_t *u32p = (uint32_t*)bits;
@@ -182,6 +184,11 @@ inline static void regexp_charbits_and(regexp_charbits_t *dst, regexp_charbits_t
     dstp[2] &= srcp[2];
     dstp[3] &= srcp[3];
 }
+inline static int regexp_charbits_any(regexp_charbits_t *bits) {
+    uint32_t *u32p = (uint32_t*)bits;
+    return (*u32p++ || *u32p++ || *u32p++ || *u32p++);
+}
+#if 0
 inline static void regexp_charbits_cpy(regexp_charbits_t *dst, regexp_charbits_t *src) {
     uint32_t *dstp = (uint32_t*)dst;
     uint32_t *srcp = (uint32_t*)src;
@@ -190,10 +197,7 @@ inline static void regexp_charbits_cpy(regexp_charbits_t *dst, regexp_charbits_t
     dstp[2] = srcp[2];
     dstp[3] = srcp[3];
 }
-inline static int regexp_charbits_any(regexp_charbits_t *bits) {
-    uint32_t *u32p = (uint32_t*)bits;
-    return (*u32p++ || *u32p++ || *u32p++ || *u32p++);
-}
+#endif
 
 #ifdef __cplusplus
 } /* extern "C" */
