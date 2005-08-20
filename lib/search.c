@@ -1,5 +1,5 @@
 /***********************************************************************
- * $Id: search.c,v 1.6 2005/08/20 12:42:14 aki Exp $
+ * $Id: search.c,v 1.7 2005/08/20 13:28:57 aki Exp $
  *
  * search
  * Copyright (C) 2005 RIKEN. All rights reserved.
@@ -114,7 +114,7 @@ static int search_branch(search_regexpXX_data_t *d, size_t skip);
 static int search_subexp(search_regexpXX_data_t *d, size_t skip);
 
 static void data_init(search_regexpXX_data_t *d, regexp_code_t *code);
-static void merge_top2_region(ptrstk_t *stk);
+static int merge_top2_region(ptrstk_t *stk);
 static void swap_pop_region(ptrstk_t *stk);
 static int dup_n_push_region(ptrstk_t *stk, size_t skip);
 static void build_charlist(search_regexpXX_data_t *d);
@@ -365,7 +365,8 @@ print_ptrstk(stdout, &d->regions, "chs() enter");
 
     /* merge */
     for (j = most; j > least; --j) {
-	merge_top2_region(&d->regions);
+	if (merge_top2_region(&d->regions))
+	    return errno;
     }
 #if !defined(NDEBUG) && 0
 print_ptrstk(stdout, &d->regions, "chs() leave");
@@ -442,7 +443,8 @@ print_ptrstk(stdout, &d->regions, "subexp() enter");
 printf("subexp()\t%u\t%p\t", d->ip, d->code + d->ip);
 regexp_code_print(stdout, code); putchar('\n');
 #endif
-	    search_branch(d, k);/* err chk */ /* search_branch advances d->ip */
+	    if (search_branch(d, k))	/* search_branch advances d->ip */
+		return errno;		/* could be memory leak */
 	    code = d->code[d->ip];
 
 #if !defined(NDEBUG) && 0
@@ -455,7 +457,8 @@ regexp_code_print(stdout, code); putchar('\n');
 	} while (kind != KIND_UP);
 
 	for (--k; k > 0; --k) {
-	    merge_top2_region(&d->regions);
+	    if (merge_top2_region(&d->regions))
+		return errno;
 	}
 
 	if (j <= least)
@@ -467,7 +470,8 @@ regexp_code_print(stdout, code); putchar('\n');
 
     /* merge */
     for (j = most; j > least; --j) {
-	merge_top2_region(&d->regions);
+	if (merge_top2_region(&d->regions))
+	    return errno;
     }
 #if !defined(NDEBUG) && 0
 print_ptrstk(stdout, &d->regions, "subexp() leave");
@@ -486,12 +490,15 @@ static void data_init(search_regexpXX_data_t *d, regexp_code_t *code)
 }
 
 /* merge top two of the stack */
-static void merge_top2_region(ptrstk_t *stk)
+static int merge_top2_region(ptrstk_t *stk)
 {
+    int ret = 0;
     mbuf_t *r_tmp = (mbuf_t*)ptrstk_back(stk);
     ptrstk_pop_back(stk);
-    mbuf_append(ptrstk_back(stk), r_tmp);
+    if (mbuf_append(ptrstk_back(stk), r_tmp) != mbuf_size(r_tmp))
+	ret = errno;
     mbuf_free(r_tmp);
+    return ret;
 }
 
 /* swap and pop */
