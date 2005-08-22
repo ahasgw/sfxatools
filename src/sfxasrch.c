@@ -1,5 +1,5 @@
 /***********************************************************************
- * $Id: sfxasrch.c,v 1.5 2005/08/22 06:18:59 aki Exp $
+ * $Id: sfxasrch.c,v 1.6 2005/08/22 10:05:28 aki Exp $
  *
  * sfxasrch
  * Copyright (C) 2005 RIKEN. All rights reserved.
@@ -75,6 +75,7 @@
 typedef struct opts_type {
     char	    *opt_o;	/* output file path */
     char	    *opt_i;	/* input file path */
+    char	    *opt_a;	/* character list of the alphabet */
     char	    *opt_M;	/* mapping file path */
     int		    opt_v;	/* verbose level */
     int		    opt_R;	/* maximum repeat number */
@@ -94,6 +95,7 @@ static opts_t opts = {
     /* pointers */
     NULL,		/* o: output file path */
     NULL,		/* i: input file path */
+    NULL,		/* o: character list of the alphabet */
     NULL,		/* M: mapping file path */
     /* numerals */
     0,			/* v: verbose level */
@@ -184,8 +186,8 @@ static int search_pattern(const sfxa_t *sfxa, const char *pattern, int patlen)
 	return ret;
 
     ret = (opts.opt_s)
-	? region_search(&result, pattern, patlen, NULL)
-	: region_search_regexp(&result, pattern, patlen, NULL, opts.opt_R);
+	? region_search(&result, pattern, patlen, opts.opt_a)
+	: region_search_regexp(&result, pattern, patlen, opts.opt_a, opts.opt_R);
 
     if (ret == 0) {
 	region_narrow_down(&result);
@@ -304,6 +306,7 @@ static void show_help(void)
 	"  -s, --simple          perform non regular expression search\n"
 	"  -R, --repeat-max=<n>  limit maximum repeat number of +/*/{m,} to <n>\n"
 	"                        (max. %u)\n"
+	"  -a, --alphabet=<string>  character list of the alphabet\n"
 	"  -M, --map=<file>      character mapping file\n"
 	"  -F, --format=<comma_separated_subopts>  formatting parameters\n"
 	"        [no]hdr         [do not] print information header\n"
@@ -343,12 +346,13 @@ int main(int argc, char **argv)
 	    {"quiet",	    no_argument,	NULL, 'q'},
 	    {"simple",      no_argument,        NULL, 's'},
 	    {"repeat-max",  required_argument,  NULL, 'R'},
+	    {"alphabet",    required_argument,  NULL, 'a'},
 	    {"map",	    required_argument,	NULL, 'M'},
 	    {"format",      required_argument,	NULL, 'F'},
 	    {0, 0, 0, 0}
 	};
 
-	opt = getopt_long(argc, argv, "hVvo:i:dqsR:M:F:", long_opts, &opt_index);
+	opt = getopt_long(argc, argv, "hVvo:i:dqsR:a:M:F:", long_opts, &opt_index);
 	if (opt == -1)
 	    break;
 
@@ -362,6 +366,7 @@ int main(int argc, char **argv)
 	    case 'q': opts.opt_q = 1; break;
 	    case 's': opts.opt_s = 1; break;
 	    case 'R': opts.opt_R = atoi(optarg); break;
+	    case 'a': opts.opt_a = xstrdup(optarg); break;
 	    case 'M': opts.opt_M = xstrdup(optarg); break;
 	    case 'F': parse_subopt_F(&optarg); break;
 	    default: show_help(); exit(EXIT_FAILURE);
@@ -391,6 +396,13 @@ int main(int argc, char **argv)
 		    search_regexp_max_repeat());
 	}
 	opts.opt_R = search_regexp_max_repeat();
+    }
+    
+    /* alphabet */
+    if (opts.opt_a) {
+	if (opts.opt_v > 1) {
+	    msg(MSGLVL_INFO, "alphabet: '%s'", opts.opt_a);
+	}
     }
 
     /* prepare cmap */
