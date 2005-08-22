@@ -1,5 +1,5 @@
 /***********************************************************************
- * $Id: search.c,v 1.7 2005/08/20 13:28:57 aki Exp $
+ * $Id: search.c,v 1.8 2005/08/22 06:18:59 aki Exp $
  *
  * search
  * Copyright (C) 2005 RIKEN. All rights reserved.
@@ -303,7 +303,7 @@ bail0:
 /* search_regexp_max_repeat */
 unsigned int search_regexp_max_repeat(void)
 {
-    return REGEXP_MAX_REPEAT;
+    return (unsigned int)(REGEXP_MAX_REPEAT);
 }
 #endif
 
