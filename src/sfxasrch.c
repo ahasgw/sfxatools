@@ -1,5 +1,5 @@
 /***********************************************************************
- * $Id: sfxasrch.c,v 1.4 2005/08/18 11:20:36 aki Exp $
+ * $Id: sfxasrch.c,v 1.5 2005/08/22 06:18:59 aki Exp $
  *
  * sfxasrch
  * Copyright (C) 2005 RIKEN. All rights reserved.
@@ -294,28 +294,30 @@ static void show_help(void)
 	"\n"
 	"Usage: %s [options] <text_file> <index_file> [pattern ...]\n"
 	"Options:\n"
-	"  -h, --help           display this message\n"
-	"  -V, --version        print version number, and exit\n"
-	"  -v, --verbose        verbose output\n"
-	"  -o, --output=<file>  file to output\n"
-	"  -i, --input=<file>   file to input\n"
-	"  -d, --dump           dump suffix array\n"
-	"  -q, --quiet          output quietly\n"
-	"  -s, --simple         perform non regular expression search\n"
-	"  -R, --repeat-max=<n>  limit maximum repeat number to <n> (+,*,{m,})\n"
-	"  -M, --map=<file>     character mapping file\n"
+	"  -h, --help            display this message\n"
+	"  -V, --version         print version number, and exit\n"
+	"  -v, --verbose         verbose output\n"
+	"  -o, --output=<file>   file to output\n"
+	"  -i, --input=<file>    file to input\n"
+	"  -d, --dump            dump suffix array\n"
+	"  -q, --quiet           output quietly\n"
+	"  -s, --simple          perform non regular expression search\n"
+	"  -R, --repeat-max=<n>  limit maximum repeat number of +/*/{m,} to <n>\n"
+	"                        (max. %u)\n"
+	"  -M, --map=<file>      character mapping file\n"
 	"  -F, --format=<comma_separated_subopts>  formatting parameters\n"
-	"        [no]hdr        [do not] print information header\n"
-	"        [no]pos        [do not] print array position column\n"
-	"        [no]idx        [do not] print index column\n"
-	"        [no]sfx=<n>    [do not] print suffix at most length <n>\n"
+	"        [no]hdr         [do not] print information header\n"
+	"        [no]pos         [do not] print array position column\n"
+	"        [no]idx         [do not] print index column\n"
+	"        [no]sfx=<n>     [do not] print suffix at most length <n>\n"
 #if 0
-	"        [no]pre=<n>    [do not] print <n> characters ahead of the suffix\n"
+	"        [no]pre=<n>     [do not] print <n> characters ahead of the suffix\n"
 #endif
-	"        [no]chop       [do not] chop suffix beyond delimiter character\n"
+	"        [no]chop        [do not] chop suffix beyond delimiter character\n"
 	"Report bugs to <%s>.\n"
 	;
-    fprintf(stdout, fmt, base_name(program_name), PACKAGE_BUGREPORT);
+    fprintf(stdout, fmt, base_name(program_name),
+	    search_regexp_max_repeat(), PACKAGE_BUGREPORT);
 }
 
 /* main */

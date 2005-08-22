@@ -1,5 +1,5 @@
 /***********************************************************************
- * $Id: psps.c,v 1.2 2005/08/18 11:20:36 aki Exp $
+ * $Id: psps.c,v 1.3 2005/08/22 06:18:58 aki Exp $
  *
  * psps
  * Copyright (C) 2005 RIKEN. All rights reserved.
@@ -302,7 +302,8 @@ static void show_help(void)
 	"  -o, --output=<file>   file to output\n"
 	"  -i, --input=<file>    file to input\n"
 	"  -q, --quiet           output quietly\n"
-	"  -R, --repeat-max=<n>  limit maximum repeat number to <n> (+,*,{m,})\n"
+	"  -R, --repeat-max=<n>  limit maximum repeat number of +/*/{m,} to <n>\n"
+	"                        (max. %u)\n"
 	"  -M, --map=<file>      character mapping file\n"
 	"  -F, --format=<comma_separated_subopts>  formatting parameters\n"
 	"        [no]hdr         [do not] print information header\n"
@@ -315,7 +316,8 @@ static void show_help(void)
 	"        [no]chop        [do not] chop suffix beyond delimiter character\n"
 	"Report bugs to <%s>.\n"
 	;
-    fprintf(stdout, fmt, base_name(program_name), PACKAGE_BUGREPORT);
+    fprintf(stdout, fmt, base_name(program_name),
+	    search_regexp_max_repeat(), PACKAGE_BUGREPORT);
 }
 
 /* main */
