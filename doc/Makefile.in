@@ -579,31 +579,31 @@ uninstall-man: uninstall-man1
 	uninstall-man1
 
 mksfxa.1 : $(top_builddir)/src/mksfxa
-	if test "x$(HELP2MAN)" != x; then \
+	if test x"$(HELP2MAN)" != x; then \
 	  $(HELP2MAN) $(HELP2MANFLAGS) $< > $@; \
 	fi
 mklcpa.1 : $(top_builddir)/src/mklcpa
-	if test "x$(HELP2MAN)" != x; then \
+	if test x"$(HELP2MAN)" != x; then \
 	  $(HELP2MAN) $(HELP2MANFLAGS) $< > $@; \
 	fi
 sfxasrch.1 : $(top_builddir)/src/sfxasrch
-	if test "x$(HELP2MAN)" != x; then \
+	if test x"$(HELP2MAN)" != x; then \
 	  $(HELP2MAN) $(HELP2MANFLAGS) $< > $@; \
 	fi
 fa2hdsq.1 : $(top_builddir)/bio/fa2hdsq
-	if test "x$(HELP2MAN)" != x; then \
+	if test x"$(HELP2MAN)" != x; then \
 	  $(HELP2MAN) $(HELP2MANFLAGS) $< > $@; \
 	fi
 annotidx.1 : $(top_builddir)/bio/annotidx
-	if test "x$(HELP2MAN)" != x; then \
+	if test x"$(HELP2MAN)" != x; then \
 	  $(HELP2MAN) $(HELP2MANFLAGS) $< > $@; \
 	fi
 bl2dump.1 : $(top_builddir)/bio/bl2dump
-	if test "x$(HELP2MAN)" != x; then \
+	if test x"$(HELP2MAN)" != x; then \
 	  $(HELP2MAN) $(HELP2MANFLAGS) $< > $@; \
 	fi
 psps.1 : $(top_builddir)/bio/psps
-	if test "x$(HELP2MAN)" != x; then \
+	if test x"$(HELP2MAN)" != x; then \
 	  $(HELP2MAN) $(HELP2MANFLAGS) $< > $@; \
 	fi
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
