@@ -1,3 +1,7 @@
+2005-08-29  Aki Hasegawa  <aki@gsc.riken.jp>
+
+	* sfxatools (0.2.2.1): improved consecutive search performance.
+
 2005-08-20  Aki Hasegawa  <aki@gsc.riken.jp>
 
 	* sfxatools (0.2.2): bug fix release.

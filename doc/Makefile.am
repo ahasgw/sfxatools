@@ -1,4 +1,4 @@
-## $Id: Makefile.am,v 1.6 2005/08/17 10:11:41 aki Exp $
+## $Id: Makefile.am,v 1.7 2005/08/29 07:33:15 aki Exp $
 ##
 ## Makefile for the doc directory of sfxatools.
 ## Copyright (C) 2005 RIKEN. All rights reserved.
@@ -34,42 +34,42 @@ HELP2MANFLAGS = -p sfxatools
 
 man_MANS += mksfxa.1
 mksfxa.1 : $(top_builddir)/src/mksfxa
-	if test "x$(HELP2MAN)" != x; then \
+	if test x"$(HELP2MAN)" != x; then \
 	  $(HELP2MAN) $(HELP2MANFLAGS) $< > $@; \
 	fi
 
 man_MANS += mklcpa.1
 mklcpa.1 : $(top_builddir)/src/mklcpa
-	if test "x$(HELP2MAN)" != x; then \
+	if test x"$(HELP2MAN)" != x; then \
 	  $(HELP2MAN) $(HELP2MANFLAGS) $< > $@; \
 	fi
 
 man_MANS += sfxasrch.1
 sfxasrch.1 : $(top_builddir)/src/sfxasrch
-	if test "x$(HELP2MAN)" != x; then \
+	if test x"$(HELP2MAN)" != x; then \
 	  $(HELP2MAN) $(HELP2MANFLAGS) $< > $@; \
 	fi
 
 man_MANS += fa2hdsq.1
 fa2hdsq.1 : $(top_builddir)/bio/fa2hdsq
-	if test "x$(HELP2MAN)" != x; then \
+	if test x"$(HELP2MAN)" != x; then \
 	  $(HELP2MAN) $(HELP2MANFLAGS) $< > $@; \
 	fi
 
 man_MANS += annotidx.1
 annotidx.1 : $(top_builddir)/bio/annotidx
-	if test "x$(HELP2MAN)" != x; then \
+	if test x"$(HELP2MAN)" != x; then \
 	  $(HELP2MAN) $(HELP2MANFLAGS) $< > $@; \
 	fi
 
 man_MANS += bl2dump.1
 bl2dump.1 : $(top_builddir)/bio/bl2dump
-	if test "x$(HELP2MAN)" != x; then \
+	if test x"$(HELP2MAN)" != x; then \
 	  $(HELP2MAN) $(HELP2MANFLAGS) $< > $@; \
 	fi
 
 man_MANS += psps.1
 psps.1 : $(top_builddir)/bio/psps
-	if test "x$(HELP2MAN)" != x; then \
+	if test x"$(HELP2MAN)" != x; then \
 	  $(HELP2MAN) $(HELP2MANFLAGS) $< > $@; \
 	fi

@@ -1,5 +1,5 @@
 /***********************************************************************
- * $Id: psps.c,v 1.3 2005/08/22 06:18:58 aki Exp $
+ * $Id: psps.c,v 1.4 2005/08/29 07:33:15 aki Exp $
  *
  * psps
  * Copyright (C) 2005 RIKEN. All rights reserved.
@@ -34,6 +34,11 @@
 #include <limits.h>
 #include <string.h>
 #include <time.h>
+#include <sys/stat.h>
+#include <sys/types.h>
+#if HAVE_UNISTD_H
+# include <unistd.h>
+#endif
 
 #include <dirname.h>
 #include <getopt.h>
@@ -122,7 +127,7 @@ static const char alphabet[] = "ABCDEFGHIKLMNPQRSTVWXYZ";
  *======================================================================*/
 
 inline static int get_max_digit(unsigned long long n);
-static void search(const sfxa_t *sfxa, const cmap_t *cm, char *pat);
+static void search(sfxa_t *sfxa, const cmap_t *cm, char *pat);
 static int search_pattern(const sfxa_t *sfxa, const char *pattern, int patlen);
 static void show_version(void);
 static void show_help(void);
@@ -138,7 +143,7 @@ inline static int get_max_digit(unsigned long long n)
     return strlen(buf);
 }
 
-static void search(const sfxa_t *sfxa, const cmap_t *cm, char *pat)
+static void search(sfxa_t *sfxa, const cmap_t *cm, char *pat)
 {
     int ret = 0;
     mbuf_t re;
@@ -147,6 +152,11 @@ static void search(const sfxa_t *sfxa, const cmap_t *cm, char *pat)
     if (opts.opt_v) {
 	msg(MSGLVL_INFO, "searching PA pattern '%s'...", pat);
 	beg_tm = time(NULL);
+    }
+
+    if (sfxa_open(sfxa) != 0) {
+	msg(MSGLVL_ERR, "Cannot open suffix array:");
+	exit(EXIT_FAILURE);
     }
 
     if (mbuf_init(&re, NULL, strlen(pat) + 1) != 0) {
@@ -163,6 +173,7 @@ static void search(const sfxa_t *sfxa, const cmap_t *cm, char *pat)
 		    pat[ret - 1], pat, ret);
 	exit(EXIT_FAILURE);
     }
+
     if (opts.opt_v > 1)
 	msg(MSGLVL_INFO, "searching RE pattern '%s'...", (const char *)mbuf_ptr(&re));
 
@@ -186,6 +197,8 @@ static void search(const sfxa_t *sfxa, const cmap_t *cm, char *pat)
     }
 
     mbuf_free(&re);
+
+    sfxa_close(sfxa);
 
     if (opts.opt_v) {
 	end_tm = time(NULL);
@@ -398,12 +411,11 @@ int main(int argc, char **argv)
 	opts.opt_F.cmap = &cm;
     }
 
-    /* open suffix array */
+    /* initialize suffix array */
     {
 	char *ftxt = argv[optind++];
 	char *fidx = argv[optind++];
-	if (sfxa_init(&sa, ftxt, fidx, NULL) != 0
-		|| sfxa_open(&sa) != 0) {
+	if (sfxa_init(&sa, ftxt, fidx, NULL) != 0) {
 	    msg(MSGLVL_ERR, "Cannot open suffix array:");
 	    exit(EXIT_FAILURE);
 	}
@@ -427,9 +439,14 @@ int main(int argc, char **argv)
 
     /* print information header */
     if (opts.opt_F.hdr) {
+	struct stat fs;
+	if (stat(sfxa_txt_path(&sa), &fs) != 0) {
+	    msg(MSGLVL_ERR, "Cannot stat file:");
+	    exit(EXIT_FAILURE);
+	}
 	printf("# txt:'%s', idx:'%s', size:%llu\n",
 		sfxa_txt_path(&sa), sfxa_idx_path(&sa), 
-		(unsigned long long)sfxa_txt_len(&sa));
+		(unsigned long long)fs.st_size);
     }
 
     /* search the pattern */
@@ -450,8 +467,7 @@ int main(int argc, char **argv)
 	}
     }
 
-    /* close suffix array */
-    sfxa_close(&sa);
+    /* finalize suffix array */
     sfxa_free(&sa);
 
     /* finalize */
