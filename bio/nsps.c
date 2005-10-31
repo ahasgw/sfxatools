@@ -1,7 +1,7 @@
 /***********************************************************************
- * $Id: sfxasrch.c,v 1.8 2005/10/31 03:03:46 aki Exp $
+ * $Id: nsps.c,v 1.1 2005/10/31 03:03:44 aki Exp $
  *
- * sfxasrch
+ * nsps
  * Copyright (C) 2005 RIKEN. All rights reserved.
  * Written by Aki Hasegawa <aki@gsc.riken.jp>.
  *
@@ -50,6 +50,8 @@
 #include "search.h"
 #include "cmap.h"
 
+#include "na_pat.h"
+
 #include "mmfile.h"
 #include "msg.h"
 #include <minmax.h>
@@ -80,15 +82,13 @@
 typedef struct opts_type {
     char	    *opt_o;	/* output file path */
     char	    *opt_i;	/* input file path */
-    char	    *opt_a;	/* character list of the alphabet */
     char	    *opt_M;	/* mapping file path */
     int		    opt_v;	/* verbose level */
     int		    opt_R;	/* maximum repeat number */
     unsigned int    opt_h: 1;	/* help flag */
     unsigned int    opt_V: 1;	/* version flag */
-    unsigned int    opt_d: 1;	/* dump suffix array */
     unsigned int    opt_q: 1;	/* quiet */
-    unsigned int    opt_s: 1;	/* simple search flag */
+    unsigned int    opt_r: 1;	/* revcom */
     output_param_t  opt_F;
 } opts_t;
 
@@ -100,7 +100,6 @@ static opts_t opts = {
     /* pointers */
     NULL,		/* o: output file path */
     NULL,		/* i: input file path */
-    NULL,		/* o: character list of the alphabet */
     NULL,		/* M: mapping file path */
     /* numerals */
     0,			/* v: verbose level */
@@ -108,9 +107,8 @@ static opts_t opts = {
     /* binary flags */
     0,			/* h: help flag */
     0,			/* V: version flag */
-    0,			/* d: dump suffix array */
     0,			/* q: quiet */
-    0,			/* s: simple search flag */
+    0,			/* r: revcom */
     /* others */
     {
 	NULL,
@@ -124,6 +122,8 @@ static opts_t opts = {
     }
 };
 
+static const char alphabet[] = "ABCDGHKMNRSTUVWY";
+
 /*======================================================================
  * prototypes
  *======================================================================*/
@@ -131,7 +131,6 @@ static opts_t opts = {
 inline static int get_max_digit(unsigned long long n);
 static void search(sfxa_t *sfxa, const cmap_t *cm, char *pat);
 static int search_pattern(const sfxa_t *sfxa, const char *pattern, int patlen);
-static int dump_suffix_array(const sfxa_t *sfxa);
 static void show_version(void);
 static void show_help(void);
 
@@ -149,12 +148,6 @@ inline static int get_max_digit(unsigned long long n)
 static void search(sfxa_t *sfxa, const cmap_t *cm, char *pat)
 {
     int ret = 0;
-    time_t beg_tm = 0, end_tm = 0;
-
-    if (opts.opt_v) {
-	msg(MSGLVL_INFO, "searching pattern '%s'...", pat);
-	beg_tm = time(NULL);
-    }
 
     if (sfxa_open(sfxa) != 0) {
 	msg(MSGLVL_ERR, "Cannot open suffix array:");
@@ -181,67 +174,120 @@ static void search(sfxa_t *sfxa, const cmap_t *cm, char *pat)
     }
 
     sfxa_close(sfxa);
-
-    if (opts.opt_v) {
-	end_tm = time(NULL);
-	msg(MSGLVL_INFO, "...done. (%.1f sec.)", difftime(end_tm, beg_tm));
-    }
 }
+
 
 /* search pattern using suffix array */
 static int search_pattern(const sfxa_t *sfxa, const char *pattern, int patlen)
 {
     int ret = 0;
+    time_t beg_tm = 0, end_tm = 0;
+    regexp_t regexp;
+    regexp_opt_t rx_opt;
     region_t result;
 
-    if ((ret = region_init(&result, sfxa)) != 0)
-	return ret;
+    {
+	if ((ret = region_init(&result, sfxa)) != 0)
+	    return ret;
 
-    if (opts.opt_s) {
-	ret = region_search(&result, pattern, patlen, opts.opt_a);
-    } else {
-	regexp_t regexp;
-	regexp_opt_t rx_opt;
 	rx_opt.max_repeat = REGEXP_MAX_REPEAT;
 	if ((ret = regexp_init(&regexp, pattern, &rx_opt)) != 0) {
 	    msg(MSGLVL_ERR, "Error at '%c' (%u)",
 		    pattern[regexp.error_at], regexp.error_at + 1);
 	} else {
-	    ret = region_search_regexp(&result, &regexp, opts.opt_a, opts.opt_R);
+	    if (opts.opt_v) {
+		msg(MSGLVL_INFO, "searching pattern '%s'...", pattern);
+		beg_tm = time(NULL);
+	    }
+
+	    ret = region_search_regexp(&result, &regexp, alphabet, opts.opt_R);
+
+	    if (ret == 0) {
+		region_narrow_down(&result);
+		if (opts.opt_F.hdr) {
+		    printf("## pat:'%*s', cnt:%lu\n", patlen, pattern,
+			    (unsigned long)region_count(&result));
+		}
+		if (!opts.opt_q) {
+		    opts.opt_F.max_digit = get_max_digit(sfxa_txt_len(sfxa));
+		    ret = region_print(&result, &opts.opt_F);
+		}
+
+		if (opts.opt_v) {
+		    end_tm = time(NULL);
+		    msg(MSGLVL_INFO,
+			    "...done. (%.1f sec.)", difftime(end_tm, beg_tm));
+		}
+	    }
 	    regexp_free(&regexp);
 	}
+	region_free(&result);
     }
 
-    if (ret == 0) {
-	region_narrow_down(&result);
-	if (opts.opt_F.hdr) {
-	    printf("## pat:'%*s', cnt:%lu\n", patlen, pattern,
-		    (unsigned long)region_count(&result));
-	}
-	if (!opts.opt_q) {
-	    opts.opt_F.max_digit = get_max_digit(sfxa_txt_len(sfxa));
-	    ret = region_print(&result, &opts.opt_F);
-	}
-    }
+    /* duplicated code. this should be refactored. */
+    if (ret == 0 && opts.opt_r) {
+	char *cmpl = NULL;
+	int cmpl_patlen = 0;
 
-    region_free(&result);
+	if ((ret = region_init(&result, sfxa)) != 0)
+	    return ret;
+
+	if ((ret = na_pat_complement(pattern, &cmpl)) != 0) {
+	    region_free(&result);
+	    return ret;
+	}
+	cmpl_patlen = strlen(cmpl);
+
+	rx_opt.max_repeat = REGEXP_MAX_REPEAT;
+	if ((ret = regexp_init(&regexp, cmpl, &rx_opt)) != 0) {
+#if 0
+	    msg(MSGLVL_ERR, "Error at '%c' (%u)",
+		    cmpl[regexp.error_at], regexp.error_at + 1);
+#endif
+	} else {
+	    char *s = NULL;
+#if 0
+regexp_stack_print(stdout, regexp.code, regexp.code_len);
+#endif
+	    regexp_reverse(&regexp);	/* !!! */
+	    s = regexp_string(&regexp);
+
+	    if (opts.opt_v) {
+		msg(MSGLVL_INFO,
+			"searching reverse complement pattern of '%s'...",
+			pattern);
+		beg_tm = time(NULL);
+	    }
+	    if (opts.opt_v > 1)
+		msg(MSGLVL_INFO, "searching RE pattern '%s'...", s);
+
+	    ret = region_search_regexp(&result, &regexp, alphabet, opts.opt_R);
+
+	    if (ret == 0) {
+		region_narrow_down(&result);
+		if (opts.opt_F.hdr) {
+		    printf("## pat:'%*s', revcom:'%*s', cnt:%lu\n",
+			    strlen(s), s, patlen, pattern,
+			    (unsigned long)region_count(&result));
+		}
+		if (!opts.opt_q) {
+		    opts.opt_F.max_digit = get_max_digit(sfxa_txt_len(sfxa));
+		    ret = region_print(&result, &opts.opt_F);
+		}
+
+		if (opts.opt_v) {
+		    end_tm = time(NULL);
+		    msg(MSGLVL_INFO,
+			    "...done. (%.1f sec.)", difftime(end_tm, beg_tm));
+		}
+	    }
+	    free(s);
+	    regexp_free(&regexp);
+	}
+	free(cmpl);
+	region_free(&result);
+    }
     return ret;
-}
-
-static int dump_suffix_array(const sfxa_t *sfxa)
-{
-    int ret = 0;
-    region_t result;
-    
-    if ((ret = region_init(&result, sfxa)) != 0)
-	return ret;
-
-    opts.opt_F.max_digit = get_max_digit(sfxa_txt_len(sfxa));
-    if ((ret = region_dump(&result, &opts.opt_F)) != 0)
-	return ret;
-
-    region_free(&result);
-    return 0;
 }
 
 /* parse suboption F */
@@ -269,7 +315,7 @@ static void parse_subopt_F(char **optionp)
 	    case NOIDX:	opts.opt_F.idx = 0; break;
 
 	    case SFX:	if (val == NULL) {
-			    msg(MSGLVL_ERR, "Illegal suboption for %s",subop[op]);
+			    msg(MSGLVL_ERR, "Illegal suboption for %s", subop[op]);
 			    exit(EXIT_FAILURE);
 			}
 			opts.opt_F.sfx = atoi(val);
@@ -300,7 +346,7 @@ static void parse_subopt_F(char **optionp)
 static void show_version(void)
 {
     static char fmt[] =
-	"sfxasrch (%s) %s\n"
+	"nsps (%s) %s\n"
 	"\n"
 	"Copyright (C) 2005 RIKEN. All rights reserved.\n"
 	"This program comes with ABSOLUTELY NO WARRANTY.\n"
@@ -315,7 +361,7 @@ static void show_version(void)
 static void show_help(void)
 {
     static char fmt[] =
-	"This is sfxasrch, suffix array search program.\n"
+	"This is nsps, nucleic acid sequence pattern search program.\n"
 	"\n"
 	"Usage: %s [options] <text_file> <index_file> [pattern ...]\n"
 	"Options:\n"
@@ -324,12 +370,10 @@ static void show_help(void)
 	"  -v, --verbose         verbose output\n"
 	"  -o, --output=<file>   file to output\n"
 	"  -i, --input=<file>    file to input\n"
-	"  -d, --dump            dump suffix array\n"
 	"  -q, --quiet           output quietly\n"
-	"  -s, --simple          perform non regular expression search\n"
+	"  -r, --revcom          search also reverse complement\n"
 	"  -R, --repeat-max=<n>  limit maximum repeat number of +/*/{m,} to <n>\n"
 	"                        (max. %u)\n"
-	"  -a, --alphabet=<string>  character list of the alphabet\n"
 	"  -M, --map=<file>      character mapping file\n"
 	"  -F, --format=<comma_separated_subopts>  formatting parameters\n"
 	"        [no]hdr         [do not] print information header\n"
@@ -365,17 +409,15 @@ int main(int argc, char **argv)
 	    {"verbose",	    no_argument,	NULL, 'v'},
 	    {"output",      required_argument,	NULL, 'o'},
 	    {"input",	    required_argument,	NULL, 'i'},
-	    {"dump",	    no_argument,	NULL, 'd'},
 	    {"quiet",	    no_argument,	NULL, 'q'},
-	    {"simple",      no_argument,        NULL, 's'},
-	    {"repeat-max",  required_argument,  NULL, 'R'},
-	    {"alphabet",    required_argument,  NULL, 'a'},
+	    {"revcom",	    no_argument,	NULL, 'r'},
+	    {"repeat-max",  required_argument,	NULL, 'R'},
 	    {"map",	    required_argument,	NULL, 'M'},
 	    {"format",      required_argument,	NULL, 'F'},
 	    {0, 0, 0, 0}
 	};
 
-	opt = getopt_long(argc, argv, "hVvo:i:dqsR:a:M:F:", long_opts, &opt_index);
+	opt = getopt_long(argc, argv, "hVvo:i:qrR:M:F:", long_opts, &opt_index);
 	if (opt == -1)
 	    break;
 
@@ -385,11 +427,9 @@ int main(int argc, char **argv)
 	    case 'v': ++opts.opt_v; break;
 	    case 'o': opts.opt_o = xstrdup(optarg); break;
 	    case 'i': opts.opt_i = xstrdup(optarg); break;
-	    case 'd': opts.opt_d = 1; break;
 	    case 'q': opts.opt_q = 1; break;
-	    case 's': opts.opt_s = 1; break;
+	    case 'r': opts.opt_r = 1; break;
 	    case 'R': opts.opt_R = atoi(optarg); break;
-	    case 'a': opts.opt_a = xstrdup(optarg); break;
 	    case 'M': opts.opt_M = xstrdup(optarg); break;
 	    case 'F': parse_subopt_F(&optarg); break;
 	    default: show_help(); exit(EXIT_FAILURE);
@@ -415,17 +455,10 @@ int main(int argc, char **argv)
 		    "Maximum repeat number (%d) ignored", opts.opt_R);
 	} else if (opts.opt_R != INT_MAX) {
 	    msg(MSGLVL_NOTICE,
-		    "Maximum repeat number was reset to the system limit (%lu)",
+		    "Maximum repeat number was reset to the system limit (%d)",
 		    search_regexp_max_repeat());
 	}
 	opts.opt_R = search_regexp_max_repeat();
-    }
-    
-    /* alphabet */
-    if (opts.opt_a) {
-	if (opts.opt_v > 1) {
-	    msg(MSGLVL_INFO, "alphabet: '%s'", opts.opt_a);
-	}
     }
 
     /* prepare cmap */
@@ -442,7 +475,7 @@ int main(int argc, char **argv)
 	char *ftxt = argv[optind++];
 	char *fidx = argv[optind++];
 	if (sfxa_init(&sa, ftxt, fidx, NULL) != 0) {
-	    msg(MSGLVL_ERR, "Cannot initialize suffix array:");
+	    msg(MSGLVL_ERR, "Cannot open suffix array:");
 	    exit(EXIT_FAILURE);
 	}
     }
@@ -471,14 +504,12 @@ int main(int argc, char **argv)
 	    exit(EXIT_FAILURE);
 	}
 	printf("# txt:'%s', idx:'%s', size:%llu\n",
-		sfxa_txt_path(&sa), sfxa_idx_path(&sa),
+		sfxa_txt_path(&sa), sfxa_idx_path(&sa), 
 		(unsigned long long)fs.st_size);
     }
 
     /* search the pattern */
-    if (opts.opt_d) {
-	dump_suffix_array(&sa);
-    } else if (opts.opt_i != NULL || optind == argc) {
+    if (opts.opt_i != NULL || optind == argc) {
 	char *line = NULL;
 	size_t len = 0;
 	ssize_t read;

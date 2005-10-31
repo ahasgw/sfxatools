@@ -228,7 +228,7 @@ MAINTAINERCLEANFILES = Makefile.in aclocal.m4 configure \
 
 EXTRA_DIST = bootstrap.sh BUGS THANKS TODO sfxatools.spec
 SUBDIRS = libgnu util lib src bio doc tests
-ACLOCAL_AMFLAGS = -I libgnu/m4
+ACLOCAL_AMFLAGS = -I config -I libgnu/m4
 all: config.h
 	$(MAKE) $(AM_MAKEFLAGS) all-recursive
 

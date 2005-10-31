@@ -1,4 +1,4 @@
-## $Id: Makefile.am,v 1.3 2005/08/01 09:04:46 aki Exp $
+## $Id: Makefile.am,v 1.4 2005/10/31 03:03:43 aki Exp $
 ##
 ## Makefile for the toplevel directory of sfxatools.
 ## Copyright (C) 2005 RIKEN. All rights reserved.
@@ -31,4 +31,4 @@ maintainer-check:
 	cd tests && $(MAKE) $(AM_MAKEFLAGS) $@
 
 ACLOCAL = aclocal
-ACLOCAL_AMFLAGS = -I libgnu/m4
+ACLOCAL_AMFLAGS = -I config -I libgnu/m4

@@ -1,5 +1,5 @@
 /***********************************************************************
- * $Id: psps.c,v 1.4 2005/08/29 07:33:15 aki Exp $
+ * $Id: psps.c,v 1.5 2005/10/31 03:03:44 aki Exp $
  *
  * psps
  * Copyright (C) 2005 RIKEN. All rights reserved.
@@ -211,12 +211,21 @@ static void search(sfxa_t *sfxa, const cmap_t *cm, char *pat)
 static int search_pattern(const sfxa_t *sfxa, const char *pattern, int patlen)
 {
     int ret = 0;
+    regexp_t regexp;
+    regexp_opt_t rx_opt;
     region_t result;
 
     if ((ret = region_init(&result, sfxa)) != 0)
 	return ret;
 
-    ret = region_search_regexp(&result, pattern, patlen, alphabet, opts.opt_R);
+    rx_opt.max_repeat = REGEXP_MAX_REPEAT;
+    if ((ret = regexp_init(&regexp, pattern, &rx_opt)) != 0) {
+	msg(MSGLVL_ERR, "Error at '%c' (%u)",
+		pattern[regexp.error_at], regexp.error_at + 1);
+    } else {
+	ret = region_search_regexp(&result, &regexp, alphabet, opts.opt_R);
+	regexp_free(&regexp);
+    }
 
     if (ret == 0) {
 	region_narrow_down(&result);
@@ -231,7 +240,7 @@ static int search_pattern(const sfxa_t *sfxa, const char *pattern, int patlen)
     }
 
     region_free(&result);
-    return 0;
+    return ret;
 }
 
 /* parse suboption F */

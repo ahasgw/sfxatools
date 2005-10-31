@@ -1,5 +1,5 @@
 /***********************************************************************
- * $Id: regexp.c,v 1.3 2005/08/20 12:42:14 aki Exp $
+ * $Id: regexp.c,v 1.4 2005/10/31 03:03:44 aki Exp $
  *
  * regexp
  * Copyright (C) 2005 RIKEN. All rights reserved.
@@ -35,6 +35,7 @@
 #include <string.h>
 
 #include "regexp.h"
+#include "mbuf.h"
 #include "u32stk.h"
 #if 1
 # include "msg.h"
@@ -60,7 +61,7 @@
 
 static int compile(regexp_t *rxp, const char *pat, const regexp_opt_t *optp);
 
-static int scan_level(u32stk_t *stk, const char **cpp, int *disjunctive, const regexp_opt_t *optp);
+static int scan_level(u32stk_t *stk, const char **cpp, const regexp_opt_t *optp);
 static int scan_repeat(u32stk_t *stk, const char **cpp, size_t at, unsigned int max_repeat);
 static int scan_chars(const char **cpp, regexp_charbits_t *cbp, int *not);
 static int scan_range(const char **cpp, unsigned int *least, unsigned int *most, unsigned int max_repeat);
@@ -68,10 +69,11 @@ static int scan_range(const char **cpp, unsigned int *least, unsigned int *most,
 static int code_push(u32stk_t *stk, regexp_code_kind_t kind, char c);
 static void code_set_ch(u32stk_t *stk, size_t at, char c);
 static void code_set_rep(u32stk_t *stk, size_t at, unsigned int least, unsigned int most);
-static void code_set_dj(u32stk_t *stk, size_t at, bool dj);
 
 static int charbits_push(u32stk_t *stk, regexp_charbits_t *cbp);
 static void charbits_set_series(regexp_charbits_t *cbp, char from, char to);
+
+static int reverse_level(const regexp_code_t **code, const regexp_code_t *code_end, u32stk_t *lifo);
 
 /*======================================================================
  * public function definitions
@@ -102,6 +104,32 @@ int regexp_init(regexp_t *rxp, const char *pat, const regexp_opt_t *optp)
     return 0;
 }
 
+int regexp_reverse(regexp_t *rxp)
+{
+    int ret = 0;
+    u32stk_t lifo;
+    const regexp_code_t *cp = rxp->code;
+    const regexp_code_t *cp_end = rxp->code + rxp->code_len;
+
+    if ((ret = u32stk_init(&lifo)) != 0)
+	return ret;
+
+    if ((ret = reverse_level(&cp, cp_end, &lifo)) != 0)
+	return ret;
+
+    /* copy back the code_stack to rxp->code */
+    {
+	uint32_t *src = u32stk_ptr(&lifo) + rxp->code_len - 1;
+	uint32_t *dst = rxp->code;
+	while (src >= u32stk_ptr(&lifo))
+	    *dst++ = *src--;
+    }
+
+    u32stk_free(&lifo);
+
+    return ret;
+}
+
 void regexp_free(regexp_t *rxp)
 {
     free(rxp->code), rxp->code = NULL;
@@ -114,7 +142,7 @@ void regexp_delete(regexp_t *rxp)
     regexp_free(rxp);
     free(rxp);
 }
-
+ 
 /*----------------------------------------------------------------------
  * private function definitions
  *----------------------------------------------------------------------*/
@@ -125,7 +153,6 @@ static int compile(regexp_t *rxp, const char *pat, const regexp_opt_t *optp)
     const char *cp = pat;
     u32stk_t code_stack;
     size_t sz = 0;
-    int dj = 0;
     regexp_opt_t opt = { REGEXP_MAX_REPEAT };
     
     if (optp != NULL)
@@ -138,14 +165,12 @@ static int compile(regexp_t *rxp, const char *pat, const regexp_opt_t *optp)
     if (!code_push(&code_stack, KIND_DOWN, '(')) {  // implicit parenthesis
 	ret = errno;
     } else {
-	if ((ret = scan_level(&code_stack, &cp, &dj, &opt)) == 0) {
+	if ((ret = scan_level(&code_stack, &cp, &opt)) == 0) {
 	    code_push(&code_stack, KIND_UP, ')');
 	    code_set_rep(&code_stack, u32stk_size(&code_stack) - 1,
-		    0, u32stk_size(&code_stack) - 1);
-	    code_set_dj(&code_stack, u32stk_size(&code_stack) - 1, dj);
+		    u32stk_size(&code_stack) - 1, 0);
 
 	    code_set_rep(&code_stack, 0, 1, 1);
-	    code_set_dj(&code_stack, 0, dj);
 
 	    /* copy back the code_stack to rxp->code */
 	    rxp->code_len = u32stk_size(&code_stack);
@@ -168,16 +193,13 @@ static int compile(regexp_t *rxp, const char *pat, const regexp_opt_t *optp)
     return ret;
 }
 
-static int scan_level(u32stk_t *stk, const char **cpp, int *disjunctive,
-	const regexp_opt_t *optp)
+static int scan_level(u32stk_t *stk, const char **cpp, const regexp_opt_t *optp)
 {
+    const char *beg = *cpp;
     size_t at = 0;
     regexp_charbits_t charbits;
     char ch;
     int not = 0;
-    int dj = 0;
-
-    *disjunctive = false;
 
     while (**cpp) {
 	switch (**cpp) {
@@ -193,10 +215,8 @@ static int scan_level(u32stk_t *stk, const char **cpp, int *disjunctive,
 		at = u32stk_size(stk);
 		if (!code_push(stk, KIND_DOWN, *(*cpp)++))
 		    return 1;
-		dj = false;
-		if (!scan_level(stk, cpp, &dj, optp))	/* scan recursively */
+		if (!scan_level(stk, cpp, optp))    /* scan recursively */
 		    return 1;
-		code_set_dj(stk, at, dj);
 		/* to allow consecutive range specifiers,
 		 * loop the following statement. (and check overflow)
 		 */
@@ -205,8 +225,6 @@ static int scan_level(u32stk_t *stk, const char **cpp, int *disjunctive,
 		/* set jump idx of loop */
 		code_set_rep(stk, u32stk_size(stk) - 1,
 			u32stk_size(stk) - 1 - at, 0);
-		/* set dj bit */
-		code_set_dj(stk, u32stk_size(stk) - 1, dj);
 		continue;
 	    case '[':	    /* begin of character class */
 		at = u32stk_size(stk);
@@ -225,26 +243,35 @@ static int scan_level(u32stk_t *stk, const char **cpp, int *disjunctive,
 		    return 1;
 		continue;
 
+	    /* we do not want to scan_repeat() in the following three cases */
 	    case '^':
+		{
+		    const char *cp;
+		    for (cp = *cpp - 1; cp >= beg; --cp) {
+			if (*cp != '^' && *cp != '(')
+			    return 1;
+		    }
+		}
 		if (!code_push(stk, KIND_HEAD, *(*cpp)++))
 		    return 1;
 		continue;
 	    case '$':
+		{
+		    const char *cp;
+		    for (cp = *cpp + 1; *cp; ++cp) {
+			if (*cp != '$' && *cp != ')')
+			    return 1;
+		    }
+		}
 		if (!code_push(stk, KIND_TAIL, *(*cpp)++))
 		    return 1;
 		continue;
-
 	    case '|':
 		if (*(*cpp + 1) == ')')
 		    return 1;
-		*disjunctive = true;
 		if (!code_push(stk, KIND_OR, *(*cpp)++))
 		    return 1;
-		break;
-	    case '.':
-		if (!code_push(stk, KIND_ANY, *(*cpp)++))
-		    return 1;
-		break;
+		continue;
 
 		/* if you want characters ']' and '}' always be escaped,
 		 * uncomment the following lines
@@ -260,6 +287,10 @@ static int scan_level(u32stk_t *stk, const char **cpp, int *disjunctive,
 		return 1;
 #endif
 
+	    case '.':
+		if (!code_push(stk, KIND_ANY, *(*cpp)++))
+		    return 1;
+		break;
 	    case '\\':
 		++*cpp;
 		if (**cpp == '\0') {
@@ -458,7 +489,7 @@ static int scan_range(const char **cpp, unsigned int *least, unsigned int *most,
 static int code_push(u32stk_t *stk, regexp_code_kind_t kind, char c)
 {
     uint32_t code = 0U;
-    code |= ((kind & 0x7F) << 24) | (c << 16) | (1 << 8) | 1;
+    code |= ((kind & 0xFF) << 24) | (c << 16) | (1 << 8) | 1;
     return u32stk_push_back(stk, code) == 1;
 }
 
@@ -474,12 +505,6 @@ static void code_set_rep(u32stk_t *stk, size_t at, unsigned int least, unsigned 
     regexp_code_t *p = (regexp_code_t*)u32stk_ptr(stk);
     p[at] &= 0xFFFF0000;
     p[at] |= ((most & 0xFF) << 8) | (least & 0xFF);
-}
-
-static void code_set_dj(u32stk_t *stk, size_t at, bool dj)
-{
-    regexp_code_t *p = (regexp_code_t*)u32stk_ptr(stk);
-    ((dj) ? (p[at] |= 0x80000000) : (p[at] &= 0x7FFFFFFF));
 }
 
 /*--------------------------------------------------------------------*/
@@ -504,15 +529,62 @@ static void charbits_set_series(regexp_charbits_t *bits, char from, char to)
 }
 
 /*--------------------------------------------------------------------*/
+
+static int reverse_level(const regexp_code_t **code, const regexp_code_t *code_end, u32stk_t *lifo)
+{
+    const regexp_code_t *beg;
+    while (*code < code_end) {
+	regexp_code_kind_t kind = regexp_code_get_kind(**code);
+	switch (kind) {
+	    case KIND_UP:
+		u32stk_push_back(lifo, **code);
+		++*code;
+		return 0;
+
+	    case KIND_DOWN:
+		beg = *code;
+		u32stk_push_back(lifo, **code);
+		++*code;
+		reverse_level(code, code_end, lifo);
+		u32stk_swap(lifo, u32stk_back_idx(lifo),
+			u32stk_back_idx(lifo) - (*code - beg - 1));
+		break;
+	    case KIND_CHS:
+		u32stk_push_back(lifo, *(*code + 4));
+		u32stk_push_back(lifo, *(*code + 3));
+		u32stk_push_back(lifo, *(*code + 2));
+		u32stk_push_back(lifo, *(*code + 1));
+		u32stk_push_back(lifo, **code);
+		*code += 5;
+		break;
+	    case KIND_HEAD:
+		if (!code_push(lifo, KIND_TAIL, '$'))
+		    return 1;
+		++*code;
+		break;
+	    case KIND_TAIL:
+		if (!code_push(lifo, KIND_HEAD, '^'))
+		    return 1;
+		++*code;
+		break;
+	    default:
+		u32stk_push_back(lifo, **code);
+		++*code;
+		break;
+	}
+    }
+    return 0;
+}
+
+/*--------------------------------------------------------------------*/
 #ifndef NDEBUG
 
 void regexp_code_print(FILE *s, const regexp_code_t code)
 {
     char ch;
 
-    fprintf(s, "CODE<kind:%d,dj:%d,{%u,%u},ch:",
+    fprintf(s, "CODE<kind:%d,{%u,%u},ch:",
 	    regexp_code_get_kind(code),
-	    regexp_code_get_dj(code),
 	    regexp_code_get_least(code),
 	    regexp_code_get_most(code)
 	  );
@@ -582,3 +654,92 @@ void regexp_stack_print(FILE *s, const uint32_t *ptr, size_t n)
 }
 
 #endif
+char *regexp_string(const regexp_t *rxp)    /* !!! needs error handling */
+{
+    char *str = NULL;
+    size_t i;
+    mbuf_t buf;
+    regexp_charbits_t bits;
+
+    if (mbuf_init(&buf, NULL, 0) != 0)
+	return NULL;
+
+    for (i = 1; i < rxp->code_len - 1; ++i) {
+	regexp_code_t code = (regexp_code_t)(rxp->code[i]);
+	regexp_code_kind_t kind = regexp_code_get_kind(code);
+	uint32_t least = regexp_code_get_least(code);
+	uint32_t most = regexp_code_get_most(code);
+	char ch = regexp_code_get_ch(code);
+
+	if (kind != KIND_CHS) {
+	    switch (ch) {		    /* oct, hex */
+		case '\0': mbuf_push_back(&buf, "\\0", 2); break;
+		case '\a': mbuf_push_back(&buf, "\\a", 2); break;
+		case '\b': mbuf_push_back(&buf, "\\b", 2); break;
+		case '\t': mbuf_push_back(&buf, "\\t", 2); break;
+		case '\n': mbuf_push_back(&buf, "\\n", 2); break;
+		case '\v': mbuf_push_back(&buf, "\\v", 2); break;
+		case '\f': mbuf_push_back(&buf, "\\f", 2); break;
+		case '\r': mbuf_push_back(&buf, "\\r", 2); break;
+		default: mbuf_push_back_1(&buf, ch); break;
+	    }
+	} else {
+	    size_t j;
+	    regexp_charbits_read(rxp->code, &i, &bits);
+	    mbuf_push_back_1(&buf, '[');
+	    if (ch == '!')
+		mbuf_push_back_1(&buf, '^');
+	    for (j = 0; j < CHAR_MAX; ++j) {
+		if (regexp_charbits_test(&bits, (char)j)) {
+		    switch (j) {   /* oct, hex */
+			case '\0': mbuf_push_back(&buf, "\\0", 2); break;
+			case '\a': mbuf_push_back(&buf, "\\a", 2); break;
+			case '\b': mbuf_push_back(&buf, "\\b", 2); break;
+			case '\t': mbuf_push_back(&buf, "\\t", 2); break;
+			case '\n': mbuf_push_back(&buf, "\\n", 2); break;
+			case '\v': mbuf_push_back(&buf, "\\v", 2); break;
+			case '\f': mbuf_push_back(&buf, "\\f", 2); break;
+			case '\r': mbuf_push_back(&buf, "\\r", 2); break;
+			default: mbuf_push_back_1(&buf, (char)j); break;
+		    }
+		}
+	    }
+	    mbuf_push_back_1(&buf, ']');
+	}
+	if (kind == KIND_CH || kind == KIND_ANY || kind == KIND_CHS || kind == KIND_UP) {
+	    if (kind == KIND_UP) {
+		uint32_t down_idx = i - least;
+		least = regexp_code_get_least(rxp->code[down_idx]);
+		most = regexp_code_get_most(rxp->code[down_idx]);
+	    }
+
+	    if (least != most) {
+		if (least == 0 && most == 1) {
+		    mbuf_push_back_1(&buf, '?');
+		} else {
+		    char numstr[64];
+		    mbuf_push_back_1(&buf, '{');
+		    snprintf(numstr, 64, "%d", least);
+		    mbuf_push_back(&buf, numstr, strlen(numstr));
+		    mbuf_push_back_1(&buf, ',');
+		    snprintf(numstr, 64, "%d", most);
+		    mbuf_push_back(&buf, numstr, strlen(numstr));
+		    mbuf_push_back_1(&buf, '}');
+		}
+	    } else if (least != 1) {
+		char numstr[64];
+		mbuf_push_back_1(&buf, '{');
+		snprintf(numstr, 64, "%d", least);
+		mbuf_push_back(&buf, numstr, strlen(numstr));
+		mbuf_push_back_1(&buf, '}');
+	    }
+	}
+    }
+    mbuf_push_back_1(&buf, '\0');
+
+    str = strdup((char*)mbuf_ptr(&buf));
+
+    mbuf_free(&buf);
+    return str;
+}
+

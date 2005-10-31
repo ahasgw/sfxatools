@@ -1,5 +1,5 @@
 /***********************************************************************
- * $Id: regexp.h,v 1.3 2005/08/20 12:42:14 aki Exp $
+ * $Id: regexp.h,v 1.4 2005/10/31 03:03:45 aki Exp $
  *
  * Header file for regexp
  * Copyright (C) 2005 RIKEN. All rights reserved.
@@ -35,8 +35,6 @@
 
 #include <stdint.h>
 
-#include "mbuf.h"
-
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -56,9 +54,23 @@ extern "C" {
  *
  * MSB                                        LSB
  * +--------------------------------------------+
- * |1| kind: 7 |    ch: 8 |  most: 8 | least: 8 |
+ * |   kind: 8 |    ch: 8 |  most: 8 | least: 8 |
  * +--------------------------------------------+
- *  ^ disjunctive clause
+ *
+ * | KIND_DOWN |     '('  |     most |    least |
+ * | KIND_UP   |     ')'  |        0 | goback # |
+ * | KIND_OR   |     '|'  |      n/a |      n/a |
+ * | KIND_HEAD |     '^'  |      n/a |      n/a |
+ * | KIND_TAIL |     '$'  |      n/a |      n/a |
+ * | KIND_CH   |      ch  |     most |    least |
+ * | KIND_ANY  |     '.'  |     most |    least |
+ *
+ * | KIND_CHS  |     '['  |     most |    least | or
+ * | KIND_CHS  |     '!'  |     most |    least | followed by
+ * |                 charbits[0]                | \
+ * |                 charbits[1]                |  > regexp_charbits_t
+ * |                 charbits[2]                | |
+ * |                 charbits[3]                | /
  */
 typedef uint32_t regexp_code_t;
 
@@ -91,10 +103,11 @@ typedef enum regexp_code_kind_type {
 
 regexp_t *regexp_new(const char *pat, const regexp_opt_t *optp);
 int regexp_init(regexp_t *rxp, const char *pat, const regexp_opt_t *optp);
+int regexp_reverse(regexp_t *rxp);
+char *regexp_string(const regexp_t *rxp);
 void regexp_free(regexp_t *rxp);
 void regexp_delete(regexp_t *rxp);
 
-inline static int regexp_code_get_dj(regexp_code_t code);
 inline static regexp_code_kind_t regexp_code_get_kind(regexp_code_t code);
 inline static char regexp_code_get_ch(regexp_code_t code);
 inline static unsigned int regexp_code_get_least(regexp_code_t code);
@@ -122,11 +135,8 @@ void regexp_stack_print(FILE *s, const uint32_t *ptr, size_t n);
  * inline function definitions
  *======================================================================*/
 
-inline static int regexp_code_get_dj(regexp_code_t code) {
-    return (code & 0x80000000) ? 1 : 0;
-}
 inline static regexp_code_kind_t regexp_code_get_kind(regexp_code_t code) {
-    return (regexp_code_kind_t)((code >> 24) & 0x7F);
+    return (regexp_code_kind_t)((code >> 24) & 0xFF);
 }
 inline static char regexp_code_get_ch(regexp_code_t code) {
     return (char)((code >> 16) & 0xFF);

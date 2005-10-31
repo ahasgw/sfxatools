@@ -1,8 +1,8 @@
-#! /bin/sh
+#! @SHELL@
 #
-# $Id: bootstrap.sh,v 1.2 2005/10/31 03:03:43 aki Exp $
+# $Id: nsps.in,v 1.1 2005/10/31 03:03:46 aki Exp $
 #
-# Bootstrapping
+# nsps
 # Copyright (C) 2005 RIKEN. All rights reserved.
 # Written by Aki Hasegawa <aki@gsc.riken.jp>.
 #
@@ -19,12 +19,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
+                                                                                
+# @configure_input@
 
-set -x
-if test ! -d ./config; then
-	mkdir config
-fi
-aclocal -I config -I libgnu/m4
-autoheader
-automake --add-missing --copy
-autoconf
+exec '@abs_top_builddir@/bio/nsps' ${1+"$@"}

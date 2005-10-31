@@ -36,7 +36,7 @@ NORMAL_UNINSTALL = :
 PRE_UNINSTALL = :
 POST_UNINSTALL = :
 bin_PROGRAMS = fa2hdsq$(EXEEXT) bl2dump$(EXEEXT) annotidx$(EXEEXT) \
-	psps$(EXEEXT)
+	psps$(EXEEXT) nsps$(EXEEXT)
 @IS_SIZEOF_OFF_T_EQ_8_TRUE@am__append_1 = parsefa.o64
 subdir = bio
 DIST_COMMON = $(srcdir)/Makefile.am $(srcdir)/Makefile.in
@@ -124,6 +124,10 @@ fa2hdsq_OBJECTS = $(am_fa2hdsq_OBJECTS)
 @IS_SIZEOF_OFF_T_EQ_8_TRUE@am__DEPENDENCIES_1 = parsefa.o64
 fa2hdsq_DEPENDENCIES = $(am__DEPENDENCIES_1) \
 	$(top_builddir)/util/libutil.a $(top_builddir)/libgnu/libgnu.a
+am_nsps_OBJECTS = nsps.$(OBJEXT) na_pat.$(OBJEXT)
+nsps_OBJECTS = $(am_nsps_OBJECTS)
+nsps_DEPENDENCIES = $(top_builddir)/lib/libsfxa.a \
+	$(top_builddir)/util/libutil.a $(top_builddir)/libgnu/libgnu.a
 am_psps_OBJECTS = psps.$(OBJEXT) prosite.$(OBJEXT)
 psps_OBJECTS = $(am_psps_OBJECTS)
 psps_DEPENDENCIES = $(top_builddir)/lib/libsfxa.a \
@@ -136,9 +140,9 @@ COMPILE = $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) \
 CCLD = $(CC)
 LINK = $(CCLD) $(AM_CFLAGS) $(CFLAGS) $(AM_LDFLAGS) $(LDFLAGS) -o $@
 SOURCES = $(annotidx_SOURCES) $(bl2dump_SOURCES) $(fa2hdsq_SOURCES) \
-	$(psps_SOURCES)
+	$(nsps_SOURCES) $(psps_SOURCES)
 DIST_SOURCES = $(annotidx_SOURCES) $(bl2dump_SOURCES) \
-	$(fa2hdsq_SOURCES) $(psps_SOURCES)
+	$(fa2hdsq_SOURCES) $(nsps_SOURCES) $(psps_SOURCES)
 am__vpath_adj_setup = srcdirstrip=`echo "$(srcdir)" | sed 's|.|.|g'`;
 am__vpath_adj = case $$p in \
     $(srcdir)/*) f=`echo "$$p" | sed "s|^$$srcdirstrip/||"`;; \
@@ -259,6 +263,9 @@ annotidx_LDADD = $(top_builddir)/util/libutil.a \
 psps_SOURCES = psps.c prosite.c prosite.h
 psps_LDADD = $(top_builddir)/lib/libsfxa.a \
 	$(top_builddir)/util/libutil.a $(top_builddir)/libgnu/libgnu.a
+nsps_SOURCES = nsps.c na_pat.c na_pat.h
+nsps_LDADD = $(top_builddir)/lib/libsfxa.a \
+	$(top_builddir)/util/libutil.a $(top_builddir)/libgnu/libgnu.a
 all: all-am
 
 .SUFFIXES:
@@ -324,6 +331,9 @@ bl2dump$(EXEEXT): $(bl2dump_OBJECTS) $(bl2dump_DEPENDENCIES)
 fa2hdsq$(EXEEXT): $(fa2hdsq_OBJECTS) $(fa2hdsq_DEPENDENCIES) 
 	@rm -f fa2hdsq$(EXEEXT)
 	$(LINK) $(fa2hdsq_LDFLAGS) $(fa2hdsq_OBJECTS) $(fa2hdsq_LDADD) $(LIBS)
+nsps$(EXEEXT): $(nsps_OBJECTS) $(nsps_DEPENDENCIES) 
+	@rm -f nsps$(EXEEXT)
+	$(LINK) $(nsps_LDFLAGS) $(nsps_OBJECTS) $(nsps_LDADD) $(LIBS)
 psps$(EXEEXT): $(psps_OBJECTS) $(psps_DEPENDENCIES) 
 	@rm -f psps$(EXEEXT)
 	$(LINK) $(psps_LDFLAGS) $(psps_OBJECTS) $(psps_LDADD) $(LIBS)
@@ -337,6 +347,8 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/annotidx.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/bl2dump.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/fa2hdsq.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/na_pat.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/nsps.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/ofiles.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/parsefa.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/prosite.Po@am__quote@

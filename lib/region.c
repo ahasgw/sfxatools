@@ -1,5 +1,5 @@
 /***********************************************************************
- * $Id: region.c,v 1.3 2005/08/17 10:11:42 aki Exp $
+ * $Id: region.c,v 1.4 2005/10/31 03:03:45 aki Exp $
  *
  * region
  * Copyright (C) 2005 RIKEN. All rights reserved.
@@ -101,7 +101,7 @@ int region_search(region_t *re, const char *pattern, size_t patlen, const char *
     return ret;
 }
 
-int region_search_regexp(region_t *re, const char *pattern, size_t patlen, const char *opt_alphabet, unsigned long rep_max)
+int region_search_regexp(region_t *re, const regexp_t *rx, const char *opt_alphabet, unsigned long rep_max)
 {
     int ret = 0;
 
@@ -109,10 +109,10 @@ int region_search_regexp(region_t *re, const char *pattern, size_t patlen, const
 	return errno = EINVAL;	    /* sa is not open */
 
     if (sfxa_idxbits(re->sa) == SFXA_IDXBITS_32) {
-	ret = search_regexp32(re, pattern, patlen, opt_alphabet, rep_max);
+	ret = search_regexp32(re, rx, opt_alphabet, rep_max);
 #if SIZEOF_OFF_T >= 8
     } else {	/* SFXA_IDXBITS_64 */
-	ret = search_regexp64(re, pattern, patlen, opt_alphabet, rep_max);
+	ret = search_regexp64(re, rx, opt_alphabet, rep_max);
 #endif /* SIZEOF_OFF_T >= 8 */
     }
     return ret;
