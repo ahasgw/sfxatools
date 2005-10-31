@@ -1,4 +1,4 @@
-## $Id: Makefile.am,v 1.5 2005/08/17 10:11:40 aki Exp $
+## $Id: Makefile.am,v 1.6 2005/10/31 03:03:43 aki Exp $
 ##
 ## Makefile for the bio directory of biotuils.
 ## Copyright (C) 2004 RIKEN. All rights reserved.
@@ -70,6 +70,14 @@ psps_LDADD =
 psps_LDADD += $(top_builddir)/lib/libsfxa.a
 psps_LDADD += $(top_builddir)/util/libutil.a
 psps_LDADD += $(top_builddir)/libgnu/libgnu.a
+
+## nsps
+bin_PROGRAMS += nsps
+nsps_SOURCES = nsps.c na_pat.c na_pat.h
+nsps_LDADD = 
+nsps_LDADD += $(top_builddir)/lib/libsfxa.a
+nsps_LDADD += $(top_builddir)/util/libutil.a
+nsps_LDADD += $(top_builddir)/libgnu/libgnu.a
 
 ## data
 pkgdata_DATA += $(top_srcdir)/bio/NCBIstdaa.map

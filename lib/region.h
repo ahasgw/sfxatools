@@ -1,5 +1,5 @@
 /***********************************************************************
- * $Id: region.h,v 1.3 2005/08/17 10:11:42 aki Exp $
+ * $Id: region.h,v 1.4 2005/10/31 03:03:45 aki Exp $
  *
  * region header file
  * Copyright (C) 2005 RIKEN. All rights reserved.
@@ -41,6 +41,10 @@
 #ifndef OUTPUT_H_INCLUDED
 # define OUTPUT_H_INCLUDED 1
 # include "output.h"
+#endif
+#ifndef REGEXP_H_INCLUDED
+# define REGEXP_H_INCLUDED 1
+# include "regexp.h"
 #endif
 #ifndef MBUF_H_INCLUDED
 # define MBUF_H_INCLUDED 1
@@ -85,7 +89,7 @@ void region_free(region_t *re);
 
 int region_search(region_t *re, const char *pattern, size_t patlen,
 	const char *opt_alphabet);
-int region_search_regexp(region_t *re, const char *pattern, size_t patlen,
+int region_search_regexp(region_t *re, const regexp_t *rx,
 	const char *opt_alphabet, unsigned long rep_max);
 
 int region_narrow_down(region_t *re);

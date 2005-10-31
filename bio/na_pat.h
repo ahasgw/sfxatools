@@ -1,7 +1,7 @@
 /***********************************************************************
- * $Id: search.h,v 1.4 2005/10/31 03:03:45 aki Exp $
+ * $Id: na_pat.h,v 1.1 2005/10/31 03:03:43 aki Exp $
  *
- * search header file
+ * na_pat header file
  * Copyright (C) 2005 RIKEN. All rights reserved.
  * Written by Aki Hasegawa <aki@gsc.riken.jp>.
  *
@@ -20,18 +20,15 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  ***********************************************************************/
 
-#ifndef SEARCH_H
-#define SEARCH_H 1
-#define SEARCH_H_INCLUDED 1
+#ifndef NA_PAT_H
+#define NA_PAT_H 1
+#define NA_PAT_H_INCLUDED 1
 
+#if 0
 #ifndef CONFIG_H_INCLUDED
 # define CONFIG_H_INCLUDED 1
 # include <config.h>
 #endif
-
-#ifndef REGION_H_INCLUDED
-# define REGION_H_INCLUDED 1
-# include "region.h"
 #endif
 
 #ifdef __cplusplus
@@ -42,18 +39,10 @@ extern "C" {
  * function declarations
  *======================================================================*/
 
-unsigned int search_regexp_max_repeat(void);
-
-int search32(region_t *re, const char *pattern, size_t patlen, const char *opt_alphabet);
-int search_regexp32(region_t *re, const regexp_t *rx, const char *opt_alphabet, unsigned long rep_max);
-
-#if SIZEOF_OFF_T >= 8
-int search64(region_t *re, const char *pattern, size_t patlen, const char *opt_alphabet);
-int search_regexp64(region_t *re, const regexp_t *rx, const char *opt_alphabet, unsigned long rep_max);
-#endif
+int na_pat_complement(const char *pat, char **pat_complement);
 
 #ifdef __cplusplus
 } /* extern "C" */
 #endif
 
-#endif /* SEARCH_H */
+#endif /* NA_PAT_H */

@@ -1,5 +1,5 @@
 /***********************************************************************
- * $Id: search.c,v 1.8 2005/08/22 06:18:59 aki Exp $
+ * $Id: search.c,v 1.9 2005/10/31 03:03:45 aki Exp $
  *
  * search
  * Copyright (C) 2005 RIKEN. All rights reserved.
@@ -199,12 +199,10 @@ int searchXX(region_t *re, const char *pattern, size_t patlen, const char *opt_a
 }
 
 /* search_regexpXX */
-int search_regexpXX(region_t *re, const char *pattern, size_t patlen,
+int search_regexpXX(region_t *re, const regexp_t *rx,
 	const char *opt_alphabet, unsigned long repeat_max)
 {
     int ret = 0;
-    regexp_t rx;
-    regexp_opt_t rx_opt;
     search_regexpXX_data_t data;
 
     assert(re != NULL);
@@ -214,18 +212,7 @@ int search_regexpXX(region_t *re, const char *pattern, size_t patlen,
     if (re->ranges == NULL)
 	return EINVAL;
 
-    /*
-     * prepare
-     */ 
-    rx_opt.max_repeat = repeat_max;
-    if ((ret = regexp_init(&rx, pattern, &rx_opt)) != 0) {
-#if !defined(NDEBUG) && 0
-	fprintf(stdout, "Error at '%c' (%u)\n",
-		pattern[rx.error_at], rx.error_at + 1);
-#endif
-	goto bail0;
-    }
-    data_init(&data, rx.code);
+    data_init(&data, rx->code);
 
     if ((ret = mbuf_init(&data.chs, NULL, 128)) != 0)
 	goto bail1;
@@ -258,7 +245,7 @@ int search_regexpXX(region_t *re, const char *pattern, size_t patlen,
     }
 
 #if !defined(NDEBUG) && 0
-    regexp_stack_print(stdout, rx.code, rx.code_len);
+    regexp_stack_print(stdout, rx->code, rx->code_len);
 #endif
 
 #if !defined(NDEBUG) && 0
@@ -294,8 +281,6 @@ bail3:
 bail2:
     mbuf_free(&data.chs);
 bail1:
-    regexp_free(&rx);
-bail0:
     return ret;
 }
 

@@ -1,5 +1,5 @@
 /***********************************************************************
- * $Id: u32stk.h,v 1.2 2005/08/18 11:16:33 aki Exp $
+ * $Id: u32stk.h,v 1.3 2005/10/31 03:03:46 aki Exp $
  *
  * Header file for u32stk
  * Copyright (C) 2005 RIKEN. All rights reserved.
@@ -59,6 +59,7 @@ inline static size_t u32stk_pop_back(u32stk_t *sp);
 inline static size_t u32stk_pop_front(u32stk_t *sp);
 
 inline static int u32stk_replace(u32stk_t *sp, size_t at, uint32_t i);
+inline static void u32stk_swap(u32stk_t *sp, size_t at1, size_t at2);
 
 inline static void u32stk_clear(u32stk_t *sp);
 inline static uint32_t *u32stk_ptr(const u32stk_t *sp);
@@ -126,6 +127,16 @@ inline static int u32stk_replace(u32stk_t *sp, size_t at, uint32_t i)
     return (at < mbuf_size(sp))
 	? mbuf_replace(sp, at, sizeof(uint32_t), &j, sizeof(uint32_t))
 	: 0;
+}
+
+inline static void u32stk_swap(u32stk_t *sp, size_t at1, size_t at2)
+{
+    size_t sz = u32stk_size(sp);
+    if (at1 != at2 && at1 < sz && at2 < sz) {
+	uint32_t t = ((uint32_t*)sp->ptr)[at1];
+	((uint32_t*)sp->ptr)[at1] = ((uint32_t*)sp->ptr)[at2];
+	((uint32_t*)sp->ptr)[at2] = t;
+    }
 }
 
 inline static void u32stk_clear(u32stk_t *sp)

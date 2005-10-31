@@ -1,5 +1,5 @@
 /***********************************************************************
- * $Id: ptrstk.h,v 1.2 2005/08/18 11:16:24 aki Exp $
+ * $Id: ptrstk.h,v 1.3 2005/10/31 03:03:46 aki Exp $
  *
  * Header file for ptrstk
  * Copyright (C) 2005 RIKEN. All rights reserved.
@@ -52,6 +52,7 @@ inline static size_t ptrstk_pop_back(ptrstk_t *pp);
 inline static size_t ptrstk_pop_front(ptrstk_t *pp);
 
 inline static int ptrstk_replace(ptrstk_t *pp, size_t at, void *p);
+inline static void ptrstk_swap(ptrstk_t *pp, size_t at1, size_t at2);
 
 inline static void ptrstk_clear(ptrstk_t *pp);
 inline static void **ptrstk_ptr(const ptrstk_t *pp);
@@ -119,6 +120,16 @@ inline static int ptrstk_replace(ptrstk_t *pp, size_t at, void *p)
     return (at < mbuf_size(pp))
 	? mbuf_replace(pp, at, sizeof(void*), &ptr, sizeof(void*))
 	: 0;
+}
+
+inline static void ptrstk_swap(ptrstk_t *pp, size_t at1, size_t at2)
+{
+    size_t sz = u32stk_size(pp);
+    if (at1 != at2 && at1 < sz && at2 < sz) {
+	void *t = ((void**)pp->ptr)[at1];
+	((void**)pp->ptr)[at1] = ((void**)pp->ptr)[at2];
+	((void**)pp->ptr)[at2] = t;
+    }
 }
 
 inline static void ptrstk_clear(ptrstk_t *pp)

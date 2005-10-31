@@ -301,13 +301,13 @@ at_stderr=$at_suite_dir/at-stderr
 at_times_file=$at_suite_dir/at-times
 
 # List of the tested programs.
-at_tested='mksfxa mklcpa sfxasrch fa2hdsq annotidx bl2dump psps'
+at_tested='mksfxa mklcpa sfxasrch fa2hdsq annotidx bl2dump psps nsps'
 # List of the all the test groups.
-at_groups_all=' banner-1 1 2 3 4 banner-2 5 banner-3 6 banner-4 7 8 banner-5 banner-6 banner-7 9'
+at_groups_all=' banner-1 1 2 3 4 banner-2 5 banner-3 6 banner-4 7 8 banner-5 banner-6 banner-7 9 banner-8 10'
 # As many dots as there are digits in the last test group number.
 # Used to normalize the test group numbers so that `ls' lists them in
 # numerical order.
-at_format='.'
+at_format='..'
 # Description of all the test groups.
 at_help_all='1;mksfxa.at:23;The file not existing.;non-existent-file;
 2;mksfxa.at:29;The file of length zero.;zero-length-file;
@@ -318,6 +318,7 @@ at_help_all='1;mksfxa.at:23;The file not existing.;non-existent-file;
 7;fa2hdsq.at:23;The file not existing.;non-existent-file;
 8;fa2hdsq.at:29;The file of length zero.;zero-length-file;
 9;psps.at:23;The file not existing.;non-existent-file;
+10;nsps.at:23;The file not existing.;non-existent-file;
 '
 
 at_keywords=
@@ -344,7 +345,7 @@ do
 	;;
 
     --version | -V )
-	echo "$as_me (SfxaTools 0.2.2.1)"
+	echo "$as_me (SfxaTools 0.2.3d)"
 	exit 0
 	;;
 
@@ -500,7 +501,7 @@ fi
 # List of tests.
 if $at_list_p; then
   cat <<_ATEOF
-SfxaTools 0.2.2.1 test suite test groups:
+SfxaTools 0.2.3d test suite test groups:
 
  NUM: FILENAME:LINE      TEST-GROUP-NAME
       KEYWORDS
@@ -581,15 +582,15 @@ exec 5>$at_suite_log
 
 # Banners and logs.
 cat <<\_ASBOX
-## ----------------------------- ##
-## SfxaTools 0.2.2.1 test suite. ##
-## ----------------------------- ##
+## ---------------------------- ##
+## SfxaTools 0.2.3d test suite. ##
+## ---------------------------- ##
 _ASBOX
 {
   cat <<\_ASBOX
-## ----------------------------- ##
-## SfxaTools 0.2.2.1 test suite. ##
-## ----------------------------- ##
+## ---------------------------- ##
+## SfxaTools 0.2.3d test suite. ##
+## ---------------------------- ##
 _ASBOX
   echo
 
@@ -880,8 +881,8 @@ echo stdout:; cat $at_stdout
 case $at_status in
    77) echo 77 > $at_status_file
             exit 77;;
-   0) ;;
-   *) echo "mksfxa.at:32: exit code was $at_status, expected 0"
+   1) ;;
+   *) echo "mksfxa.at:32: exit code was $at_status, expected 1"
       at_failed=:;;
 esac
 if $at_failed; then
@@ -1341,6 +1342,79 @@ $at_traceon
     ;;
 
 
+  banner-8 ) # Banner 8. nsps.at:21
+    cat <<\_ATEOF
+
+Tests for nsps.
+
+_ATEOF
+    ;;
+
+  10 ) # 10. nsps.at:23: The file not existing.
+    at_setup_line='nsps.at:23'
+    at_desc='The file not existing.'
+    $at_quiet $ECHO_N " 10: The file not existing.                       $ECHO_C"
+    at_xfail=no
+    (
+      echo "10. nsps.at:23: testing ..."
+      $at_traceon
+
+
+$at_traceoff
+echo "nsps.at:25: rm deleteme"
+echo nsps.at:25 >$at_check_line_file
+( $at_traceon; rm deleteme ) >$at_stdout 2>$at_stder1
+at_status=$?
+grep '^ *+' $at_stder1 >&2
+grep -v '^ *+' $at_stder1 >$at_stderr
+at_failed=false
+echo stderr:; cat $at_stderr
+echo stdout:; cat $at_stdout
+case $at_status in
+   77) echo 77 > $at_status_file
+            exit 77;;
+   *);;
+esac
+if $at_failed; then
+
+  echo 1 > $at_status_file
+  exit 1
+fi
+
+$at_traceon
+
+$at_traceoff
+echo "nsps.at:26: nsps deleteme"
+echo nsps.at:26 >$at_check_line_file
+( $at_traceon; nsps deleteme ) >$at_stdout 2>$at_stder1
+at_status=$?
+grep '^ *+' $at_stder1 >&2
+grep -v '^ *+' $at_stder1 >$at_stderr
+at_failed=false
+echo stderr:; cat $at_stderr
+echo stdout:; cat $at_stdout
+case $at_status in
+   77) echo 77 > $at_status_file
+            exit 77;;
+   1) ;;
+   *) echo "nsps.at:26: exit code was $at_status, expected 1"
+      at_failed=:;;
+esac
+if $at_failed; then
+
+  echo 1 > $at_status_file
+  exit 1
+fi
+
+$at_traceon
+
+      $at_traceoff
+      $at_times_p && times >$at_times_file
+    ) 5>&1 2>&1 | eval $at_tee_pipe
+    at_status=`cat $at_status_file`
+    ;;
+
+
   * )
     echo "$as_me: no such test group: $at_group" >&2
     continue
@@ -1608,7 +1682,7 @@ _ASBOX
   echo "Please send \`$as_me.log' and all information you think might help:"
   echo
   echo "   To: <aki@gsc.riken.jp>"
-  echo "   Subject: [SfxaTools 0.2.2.1] $as_me:$at_fail_list${at_fail_list:+ failed${at_xpass_list:+,}}$at_xpass_list${at_xpass_list:+ passed unexpectedly}"
+  echo "   Subject: [SfxaTools 0.2.3d] $as_me:$at_fail_list${at_fail_list:+ failed${at_xpass_list:+,}}$at_xpass_list${at_xpass_list:+ passed unexpectedly}"
   echo
   if test $at_debug_p = false; then
     echo
