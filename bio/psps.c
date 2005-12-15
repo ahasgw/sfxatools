@@ -1,5 +1,5 @@
 /***********************************************************************
- * $Id: psps.c,v 1.5 2005/10/31 03:03:44 aki Exp $
+ * $Id: psps.c,v 1.6 2005/12/15 13:31:53 aki Exp $
  *
  * psps
  * Copyright (C) 2005 RIKEN. All rights reserved.
@@ -188,7 +188,7 @@ static void search(sfxa_t *sfxa, const cmap_t *cm, char *pat)
 	ret = search_pattern(sfxa, (char *)pattern, patlen);
 	free(pattern);
     } else {
-	ret = search_pattern(sfxa, mbuf_ptr(&re), mbuf_size(&re));
+	ret = search_pattern(sfxa, mbuf_ptr(&re), mbuf_size(&re) - 1);
     }
 
     if (ret != 0) {
@@ -343,7 +343,7 @@ static void show_help(void)
 }
 
 /* main */
-int main(int argc, char **argv)
+int main(int argc, char *argv[])
 {
     sfxa_t sa;
     cmap_t cm;
