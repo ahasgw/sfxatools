@@ -1,5 +1,5 @@
 /***********************************************************************
- * $Id: regexp.c,v 1.4 2005/10/31 03:03:44 aki Exp $
+ * $Id: regexp.c,v 1.5 2005/12/15 13:58:59 aki Exp $
  *
  * regexp
  * Copyright (C) 2005 RIKEN. All rights reserved.
@@ -25,6 +25,7 @@
 # include <config.h>
 #endif
 
+#include <stdio.h>
 #include <stdlib.h>
 #include <stddef.h>
 #include <stdbool.h>
