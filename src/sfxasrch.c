@@ -1,5 +1,5 @@
 /***********************************************************************
- * $Id: sfxasrch.c,v 1.8 2005/10/31 03:03:46 aki Exp $
+ * $Id: sfxasrch.c,v 1.9 2005/12/15 13:47:04 aki Exp $
  *
  * sfxasrch
  * Copyright (C) 2005 RIKEN. All rights reserved.
@@ -347,7 +347,7 @@ static void show_help(void)
 }
 
 /* main */
-int main(int argc, char **argv)
+int main(int argc, char *argv[])
 {
     sfxa_t sa;
     cmap_t cm;

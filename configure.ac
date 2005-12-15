@@ -1,4 +1,4 @@
-# $Id: configure.ac,v 1.13 2005/10/31 03:03:43 aki Exp $
+# $Id: configure.ac,v 1.14 2005/12/15 13:46:56 aki Exp $
 # vi: set tabstop=8 shiftwidth=8 noexpandtab:
 #
 # Makefile for the toplevel directory of sfxatools.
@@ -20,7 +20,7 @@
 # Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
 
 AC_PREREQ(2.59)
-AC_INIT([SfxaTools], [0.2.3d], [aki@gsc.riken.jp], [sfxatools])
+AC_INIT([SfxaTools], [0.2.3d5], [aki@gsc.riken.jp], [sfxatools])
 AC_CONFIG_AUX_DIR(config)
 AC_CONFIG_SRCDIR([config.h.in])
 AC_CONFIG_TESTDIR(tests)
@@ -49,7 +49,7 @@ gl_MODULES([c-bs-a assert dummy exit atexit strtod strtol strtoul memchr
  memcmp memcpy memmove memset strcspn strpbrk strstr strerror mktime calloc
  free malloc realloc restrict stdbool stdint ullong_max strtoll strtoull
  strtoimax strtoumax snprintf vsnprintf getsubopt dirname getopt xalloc
- xalloc-die getline error exitfail gettext progname ftruncate getsubopt])
+ xalloc-die getline error exitfail gettext progname ftruncate gettimeofday])
 gl_INIT
 
 # Checks for header files.
