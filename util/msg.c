@@ -1,5 +1,5 @@
 /***********************************************************************
- * $Id: msg.c,v 1.2 2005/07/05 05:12:57 aki Exp $
+ * $Id: msg.c,v 1.3 2005/12/15 13:37:51 aki Exp $
  *
  * messaging function
  * Copyright (C) 2004 RIKEN. All rights reserved.
@@ -52,6 +52,7 @@ static const char * const debug_pfx	= "(D) ";
  * messaging function
  *======================================================================*/
 
+#ifdef NDEBUG
 void msg(const msglvl_t lvl, const char *fmt, ...)
 {
     const char *pfx = no_pfx;
@@ -81,3 +82,36 @@ void msg(const msglvl_t lvl, const char *fmt, ...)
     fprintf(stderr, "\n");
     fflush(stderr);
 }
+#else
+void msg_at(const msglvl_t lvl, const char *file, int line, const char *fmt, ...)
+{
+    const char *pfx = no_pfx;
+    va_list args;
+
+    fflush(stdout);
+
+    if (program_name != NULL)
+	fprintf(stderr, "%s:", base_name(program_name));
+
+    fprintf(stderr, "%s(%d):", file, line);
+
+    switch (lvl) {
+	case MSGLVL_ERR:	pfx = err_pfx; break;
+	case MSGLVL_WARNING:	pfx = warning_pfx; break;
+	case MSGLVL_NOTICE:	pfx = notice_pfx; break;
+	case MSGLVL_INFO:	pfx = info_pfx; break;
+	case MSGLVL_DEBUG:	pfx = debug_pfx; break;
+	default: pfx = no_pfx;
+    }
+    fprintf(stderr, "%s", pfx);
+
+    va_start(args, fmt);
+    vfprintf(stderr, fmt, args);
+    va_end(args);
+
+    if (fmt[0] != '\0' && fmt[strlen(fmt) - 1] == ':')
+	fprintf(stderr, " %s", strerror(errno));
+    fprintf(stderr, "\n");
+    fflush(stderr);
+}
+#endif

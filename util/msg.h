@@ -1,5 +1,5 @@
 /***********************************************************************
- * $Id: msg.h,v 1.3 2005/07/05 07:33:28 aki Exp $
+ * $Id: msg.h,v 1.4 2005/12/15 13:37:51 aki Exp $
  *
  * Header file for messaging functions
  * Copyright (C) 2004 RIKEN. All rights reserved.
@@ -24,6 +24,10 @@
 #define MSG_H 1
 #define MSG_H_INCLUDED 1
 
+#ifndef NDEBUG
+# define msg(level, ...)    msg_at(level, __FILE__, __LINE__, __VA_ARGS__)
+#endif
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -45,7 +49,11 @@ typedef enum msglvl_type {
  *======================================================================*/
 
 /* messaging functions */
+#ifdef NDEBUG
 void msg(const msglvl_t lvl, const char *fmt, ...);
+#else
+void msg_at(const msglvl_t lvl, const char *file, int line, const char *fmt, ...);
+#endif
 
 #ifdef __cplusplus
 } /* extern "C" */
