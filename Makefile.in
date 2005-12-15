@@ -55,16 +55,21 @@ am__aclocal_m4_deps = $(top_srcdir)/libgnu/m4/alloca.m4 \
 	$(top_srcdir)/libgnu/m4/extensions.m4 \
 	$(top_srcdir)/libgnu/m4/free.m4 \
 	$(top_srcdir)/libgnu/m4/ftruncate.m4 \
+	$(top_srcdir)/libgnu/m4/getdelim.m4 \
 	$(top_srcdir)/libgnu/m4/getline.m4 \
-	$(top_srcdir)/libgnu/m4/getndelim2.m4 \
 	$(top_srcdir)/libgnu/m4/getopt.m4 \
 	$(top_srcdir)/libgnu/m4/getsubopt.m4 \
-	$(top_srcdir)/libgnu/m4/gnulib.m4 \
+	$(top_srcdir)/libgnu/m4/gettimeofday.m4 \
+	$(top_srcdir)/libgnu/m4/gnulib-comp.m4 \
+	$(top_srcdir)/libgnu/m4/gnulib-tool.m4 \
 	$(top_srcdir)/libgnu/m4/intmax_t.m4 \
 	$(top_srcdir)/libgnu/m4/inttypes.m4 \
 	$(top_srcdir)/libgnu/m4/inttypes_h.m4 \
 	$(top_srcdir)/libgnu/m4/longdouble.m4 \
 	$(top_srcdir)/libgnu/m4/longlong.m4 \
+	$(top_srcdir)/libgnu/m4/mbchar.m4 \
+	$(top_srcdir)/libgnu/m4/mbiter.m4 \
+	$(top_srcdir)/libgnu/m4/mbrtowc.m4 \
 	$(top_srcdir)/libgnu/m4/memchr.m4 \
 	$(top_srcdir)/libgnu/m4/memcmp.m4 \
 	$(top_srcdir)/libgnu/m4/memcpy.m4 \
@@ -158,6 +163,8 @@ EGREP = @EGREP@
 EOVERFLOW = @EOVERFLOW@
 EXEEXT = @EXEEXT@
 GETOPT_H = @GETOPT_H@
+GL_COND_LIBTOOL_FALSE = @GL_COND_LIBTOOL_FALSE@
+GL_COND_LIBTOOL_TRUE = @GL_COND_LIBTOOL_TRUE@
 HAVE_LONG_64BIT = @HAVE_LONG_64BIT@
 HAVE_LONG_LONG_64BIT = @HAVE_LONG_LONG_64BIT@
 HAVE__BOOL = @HAVE__BOOL@

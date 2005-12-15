@@ -1,5 +1,5 @@
 /***********************************************************************
- * $Id: mklcpa.c,v 1.7 2005/08/17 10:11:43 aki Exp $
+ * $Id: mklcpa.c,v 1.8 2005/12/15 13:47:03 aki Exp $
  *
  * mklcpa
  * Copyright (C) 2005 RIKEN. All rights reserved.
@@ -180,7 +180,7 @@ static void show_help(void)
 }
 
 /* main */
-int main(int argc, char **argv)
+int main(int argc, char *argv[])
 {
     /* preserve program name */
     set_program_name(argv[0]);

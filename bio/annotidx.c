@@ -1,5 +1,5 @@
 /***********************************************************************
- * $Id: annotidx.c,v 1.4 2005/07/05 07:33:24 aki Exp $
+ * $Id: annotidx.c,v 1.5 2005/12/15 13:46:56 aki Exp $
  *
  * Annotate index.
  * Copyright (C) 2004,2005 RIKEN. All rights reserved.
@@ -96,7 +96,6 @@ static hdx32_elem_t *bsearch_hdx32(const int32_t idx);
 static hdx64_elem_t *bsearch_hdx64(const int64_t idx);
 static void show_version(void);
 static void show_help(void);
-int main(int argc, char **argv);
 
 /*======================================================================
  * function definitions
@@ -251,7 +250,7 @@ static void show_help(void)
 }
 
 /* main */
-int main(int argc, char **argv)
+int main(int argc, char *argv[])
 {
     /* preserve program name */
     set_program_name(argv[0]);

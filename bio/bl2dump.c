@@ -1,5 +1,5 @@
 /***********************************************************************
- * $Id: bl2dump.c,v 1.5 2005/08/17 10:11:40 aki Exp $
+ * $Id: bl2dump.c,v 1.6 2005/12/15 13:46:56 aki Exp $
  *
  * Blast2 database dump
  * Copyright (C) 2005 RIKEN. All rights reserved.
@@ -510,7 +510,7 @@ static void show_help(void)
 }
 
 /* main */
-int main(int argc, char **argv)
+int main(int argc, char *argv[])
 {
     /* preserve program name */
     set_program_name(argv[0]);

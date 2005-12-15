@@ -54,6 +54,14 @@
 /* Define if backslash-a works in C strings. */
 #undef HAVE_C_BACKSLASH_A
 
+/* Define to 1 if you have the declaration of `getdelim', and to 0 if you
+   don't. */
+#undef HAVE_DECL_GETDELIM
+
+/* Define to 1 if you have the declaration of `getline', and to 0 if you
+   don't. */
+#undef HAVE_DECL_GETLINE
+
 /* Define to 1 if you have the declaration of `snprintf', and to 0 if you
    don't. */
 #undef HAVE_DECL_SNPRINTF
@@ -74,8 +82,14 @@
    don't. */
 #undef HAVE_DECL_VSNPRINTF
 
+/* Define to 1 if you have the `flockfile' function. */
+#undef HAVE_FLOCKFILE
+
 /* Define to 1 if you have the `ftruncate' function. */
 #undef HAVE_FTRUNCATE
+
+/* Define to 1 if you have the `funlockfile' function. */
+#undef HAVE_FUNLOCKFILE
 
 /* Define to 1 if you have the `getdelim' function. */
 #undef HAVE_GETDELIM
@@ -111,6 +125,12 @@
 /* Define to 1 if your system has a GNU libc compatible `malloc' function, and
    to 0 otherwise. */
 #undef HAVE_MALLOC
+
+/* Define to 1 if mbrtowc and mbstate_t are properly declared. */
+#undef HAVE_MBRTOWC
+
+/* Define to 1 if <wchar.h> declares mbstate_t. */
+#undef HAVE_MBSTATE_T
 
 /* Define to 1 if you have the `memchr' function. */
 #undef HAVE_MEMCHR
@@ -189,9 +209,6 @@
 /* Define to 1 if you have the `strpbrk' function. */
 #undef HAVE_STRPBRK
 
-/* Define to 1 if you have the `strstr' function. */
-#undef HAVE_STRSTR
-
 /* Define to 1 if you have the `strtoimax' function. */
 #undef HAVE_STRTOIMAX
 
@@ -250,11 +267,17 @@
 /* Define to 1 if you have the `vsnprintf' function. */
 #undef HAVE_VSNPRINTF
 
+/* Define to 1 if you have the <wchar.h> header file. */
+#undef HAVE_WCHAR_H
+
 /* Define if you have the 'wchar_t' type. */
 #undef HAVE_WCHAR_T
 
 /* Define to 1 if you have the `wcslen' function. */
 #undef HAVE_WCSLEN
+
+/* Define to 1 if you have the <wctype.h> header file. */
+#undef HAVE_WCTYPE_H
 
 /* Define if you have the 'wint_t' type. */
 #undef HAVE_WINT_T
@@ -316,9 +339,9 @@
 /* Define to 1 if you can safely include both <sys/time.h> and <time.h>. */
 #undef TIME_WITH_SYS_TIME
 
-/* Define as the maximum value of the type 'unsigned long long int', if the
-   system doesn't define it, and if the system has that type. */
-#undef ULLONG_MAX
+/* Define if ULONG_MAX < ULLONG_MAX, even if your compiler does not support
+   ULLONG_MAX. */
+#undef ULONG_MAX_LT_ULLONG_MAX
 
 /* Version number of package */
 #undef VERSION
@@ -372,6 +395,12 @@
 /* Define to a replacement function name for getline(). */
 #undef getline
 
+/* Define to rpl_gettimeofday if the replacement function should be used. */
+#undef gettimeofday
+
+/* Define to rpl_gmtime if the replacement function should be used. */
+#undef gmtime
+
 /* Define to `__inline__' or `__inline' if that's what the C compiler
    calls it, or to nothing if 'inline' is not supported under any name.  */
 #ifndef __cplusplus
@@ -381,8 +410,14 @@
 /* Define to long or long long if <stdint.h> and <inttypes.h> don't define. */
 #undef intmax_t
 
+/* Define to rpl_localtime if the replacement function should be used. */
+#undef localtime
+
 /* Define to rpl_malloc if the replacement function should be used. */
 #undef malloc
+
+/* Define to a type if <wchar.h> does not define. */
+#undef mbstate_t
 
 /* Define to rpl_memcmp if the replacement function should be used. */
 #undef memcmp
