@@ -1,5 +1,5 @@
 /***********************************************************************
- * $Id: prosite.c,v 1.1 2005/08/17 10:11:40 aki Exp $
+ * $Id: prosite.c,v 1.2 2005/12/15 13:28:00 aki Exp $
  *
  * prosite.c
  * Copyright (C) 2005 RIKEN. All rights reserved.
@@ -203,11 +203,14 @@ int prosite_to_regex(const char *pat, mbuf_t *re)
 	if (copy == NULL)
 	    state = ERR;
 	else {
-	    POP(cnt - special_cterm);
 	    if (state != ERR)
-		PUSH2("$|");
+		PUSH('|');
 	    if (state != ERR && (mbuf_append(re, copy) != mbuf_size(copy)))
 		state = ERR;
+	    if (state != ERR)
+		POP(cnt - special_cterm);
+	    if (state != ERR)
+		PUSH('$');
 	}
 	mbuf_delete(copy);
     }
