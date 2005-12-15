@@ -1,5 +1,5 @@
 /***********************************************************************
- * $Id: fa2hdsq.c,v 1.5 2005/08/17 10:11:40 aki Exp $
+ * $Id: fa2hdsq.c,v 1.6 2005/12/15 13:28:47 aki Exp $
  *
  * Fasta to header/sequence separator
  * Copyright (C) 2005 RIKEN. All rights reserved.
@@ -69,6 +69,7 @@ typedef struct opts_type {
     int		    opt_v;	    /* verbose level */
     unsigned int    opt_h: 1;
     unsigned int    opt_V: 1;
+    unsigned int    opt_t: 1;
     unsigned int    opt_I: 1;
 } opts_t;
 
@@ -92,6 +93,7 @@ static opts_t opts = {
     0,
     0,
     /* binary flags */
+    0,
     0,
     0,
     0
@@ -124,8 +126,12 @@ static void process_file(const char *file)
 	msg(MSGLVL_ERR, "cannot open input file '%s':", file);
 	exit(EXIT_FAILURE);
     }
-    ofnames_init(&ofnames, ofname,
-	    opts.hdr_ext, opts.hdx_ext, opts.seq_ext, opts.opt_d);
+    if (!opts.opt_t) {
+	ofnames_init(&ofnames, ofname,
+		opts.hdr_ext, opts.hdx_ext, opts.seq_ext, opts.opt_d);
+    } else {
+	ofnames_init(&ofnames, "/dev/null", "", "", "", 0);
+    }
     ofiles_open(&ofiles, &ofnames, 0);
 
     parsefa_param_t param = {opts.cmap, opts.opt_S, opts.opt_I};
@@ -174,6 +180,7 @@ static void show_help(void)
 	"  -h, --help               display this message\n"
 	"  -V, --version            print version number, and exit\n"
 	"  -v, --verbose            verbose output\n"
+	"  -t, --test               test mode. no output\n"
 	"  -I, --ignore-case        ignore case\n"
 	"  -S, --split-size=<size>  split size of sequence file\n"
 	"                             (default: 2GB (max), 0 for large index)\n"
@@ -186,7 +193,7 @@ static void show_help(void)
 }
 
 /* main */
-int main(int argc, char **argv)
+int main(int argc, char *argv[])
 {
     cmap_t cm;
 
@@ -201,6 +208,7 @@ int main(int argc, char **argv)
 	    {"help",	    no_argument,	NULL, 'h'},
 	    {"version",	    no_argument,	NULL, 'V'},
 	    {"verbose",	    no_argument,	NULL, 'v'},
+	    {"test",	    no_argument,	NULL, 't'},
 	    {"ignore-case", no_argument,	NULL, 'I'},
 	    {"split-size",  required_argument,	NULL, 'S'},
 	    {"map",	    required_argument,	NULL, 'M'},
@@ -208,7 +216,7 @@ int main(int argc, char **argv)
 	    {"digits",	    required_argument,  NULL, 'd'},
 	    {0, 0, 0, 0}
 	};
-	opt = getopt_long(argc, argv, "hVvIS:M:b:d:", long_opts, &opt_index);
+	opt = getopt_long(argc, argv, "hVvtIS:M:b:d:", long_opts, &opt_index);
 	if (opt == -1)
 	    break;
 
@@ -216,6 +224,7 @@ int main(int argc, char **argv)
 	    case 'h': opts.opt_h = 1; break;
 	    case 'V': opts.opt_V = 1; break;
 	    case 'v': ++opts.opt_v; break;
+	    case 't': opts.opt_t = 1; break;
 	    case 'I': opts.opt_I = 1; break;
 	    case 'S': opts.opt_S = atoi(optarg); break;
 	    case 'M': opts.opt_M = xstrdup(optarg); break;
