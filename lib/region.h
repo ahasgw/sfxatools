@@ -1,5 +1,5 @@
 /***********************************************************************
- * $Id: region.h,v 1.4 2005/10/31 03:03:45 aki Exp $
+ * $Id: region.h,v 1.5 2006/01/12 09:59:01 aki Exp $
  *
  * region header file
  * Copyright (C) 2005 RIKEN. All rights reserved.
@@ -67,6 +67,7 @@ typedef struct range32_type {
     unsigned int	tail: 1;
 } range32_t;
 
+#if SIZEOF_OFF_T >= 8
 typedef struct range64_type {
     int64_t		beg;
     int64_t		end;
@@ -74,6 +75,7 @@ typedef struct range64_type {
     unsigned int	head: 1;
     unsigned int	tail: 1;
 } range64_t;
+#endif /* SIZEOF_OFF_T >= 8 */
 
 typedef struct region_type {
     const sfxa_t	*sa;
