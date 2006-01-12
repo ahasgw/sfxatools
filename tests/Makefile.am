@@ -1,4 +1,4 @@
-## $Id: Makefile.am,v 1.8 2005/10/31 03:03:46 aki Exp $
+## $Id: Makefile.am,v 1.9 2006/01/12 10:11:04 aki Exp $
 ##
 ## Makefile for the tests directory of sfxatools.
 ## Copyright (C) 2005 RIKEN. All rights reserved.

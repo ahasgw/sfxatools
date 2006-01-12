@@ -37,7 +37,7 @@ PRE_UNINSTALL = :
 POST_UNINSTALL = :
 bin_PROGRAMS = fa2hdsq$(EXEEXT) bl2dump$(EXEEXT) annotidx$(EXEEXT) \
 	psps$(EXEEXT) nsps$(EXEEXT)
-@IS_SIZEOF_OFF_T_EQ_8_TRUE@am__append_1 = parsefa.o64
+@IS_SIZEOF_OFF_T_EQ_8_TRUE@am__append_1 = parsefa.64.o
 subdir = bio
 DIST_COMMON = $(srcdir)/Makefile.am $(srcdir)/Makefile.in
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
@@ -126,7 +126,7 @@ bl2dump_DEPENDENCIES = $(top_builddir)/util/libutil.a \
 am_fa2hdsq_OBJECTS = fa2hdsq.$(OBJEXT) ofiles.$(OBJEXT) \
 	parsefa.$(OBJEXT)
 fa2hdsq_OBJECTS = $(am_fa2hdsq_OBJECTS)
-@IS_SIZEOF_OFF_T_EQ_8_TRUE@am__DEPENDENCIES_1 = parsefa.o64
+@IS_SIZEOF_OFF_T_EQ_8_TRUE@am__DEPENDENCIES_1 = parsefa.64.o
 fa2hdsq_DEPENDENCIES = $(am__DEPENDENCIES_1) \
 	$(top_builddir)/util/libutil.a $(top_builddir)/libgnu/libgnu.a
 am_nsps_OBJECTS = nsps.$(OBJEXT) na_pat.$(OBJEXT)
@@ -165,6 +165,7 @@ ALLOCA_H = @ALLOCA_H@
 AMDEP_FALSE = @AMDEP_FALSE@
 AMDEP_TRUE = @AMDEP_TRUE@
 AMTAR = @AMTAR@
+AR = @AR@
 AUTOCONF = @AUTOCONF@
 AUTOHEADER = @AUTOHEADER@
 AUTOM4TE = @AUTOM4TE@
@@ -198,6 +199,7 @@ INSTALL_STRIP_PROGRAM = @INSTALL_STRIP_PROGRAM@
 IS_SIZEOF_OFF_T_EQ_8 = @IS_SIZEOF_OFF_T_EQ_8@
 IS_SIZEOF_OFF_T_EQ_8_FALSE = @IS_SIZEOF_OFF_T_EQ_8_FALSE@
 IS_SIZEOF_OFF_T_EQ_8_TRUE = @IS_SIZEOF_OFF_T_EQ_8_TRUE@
+LD = @LD@
 LDFLAGS = @LDFLAGS@
 LIBOBJS = @LIBOBJS@
 LIBS = @LIBS@
@@ -253,7 +255,7 @@ sysconfdir = @sysconfdir@
 target_alias = @target_alias@
 MAINTAINERCLEANFILES = Makefile.in
 EXTRA_DIST = NCBIstdaa.map NCBI2na.map
-SUFFIXES = .o64
+SUFFIXES = .64.o
 pkgdata_DATA = $(top_srcdir)/bio/NCBIstdaa.map \
 	$(top_srcdir)/bio/NCBI2na.map
 AM_CPPFLAGS = -I$(top_srcdir)/lib -I$(top_srcdir)/util -I$(top_srcdir)/libgnu
@@ -276,7 +278,7 @@ nsps_LDADD = $(top_builddir)/lib/libsfxa.a \
 all: all-am
 
 .SUFFIXES:
-.SUFFIXES: .o64 .c .o .obj
+.SUFFIXES: .64.o .c .o .obj
 $(srcdir)/Makefile.in:  $(srcdir)/Makefile.am  $(am__configure_deps)
 	@for dep in $?; do \
 	  case '$(am__configure_deps)' in \
@@ -563,7 +565,7 @@ uninstall-am: uninstall-binPROGRAMS uninstall-info-am \
 	tags uninstall uninstall-am uninstall-binPROGRAMS \
 	uninstall-info-am uninstall-pkgdataDATA
 
-.c.o64:
+.c.64.o:
 @am__fastdepCC_TRUE@	if $(COMPILE) -DSIZEOF_INTXX_T=8 -MT $@ -MD -MP -MF "$(DEPDIR)/$*.Tpo" -c -o $@ $<; \
 @am__fastdepCC_TRUE@	then mv -f "$(DEPDIR)/$*.Tpo" "$(DEPDIR)/$*.Po"; else rm -f "$(DEPDIR)/$*.Tpo"; exit 1; fi
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	source='$<' object='$@' libtool=no @AMDEPBACKSLASH@
@@ -571,7 +573,7 @@ uninstall-am: uninstall-binPROGRAMS uninstall-info-am \
 @am__fastdepCC_FALSE@	$(COMPILE) -DSIZEOF_INTXX_T=8 -c -o $@ $<
 
 @IS_SIZEOF_OFF_T_EQ_8_TRUE@clean-local:
-@IS_SIZEOF_OFF_T_EQ_8_TRUE@	-rm -f *.o64
+@IS_SIZEOF_OFF_T_EQ_8_TRUE@	-rm -f *.64.o
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.
 .NOEXPORT:

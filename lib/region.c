@@ -1,5 +1,5 @@
 /***********************************************************************
- * $Id: region.c,v 1.4 2005/10/31 03:03:45 aki Exp $
+ * $Id: region.c,v 1.5 2006/01/12 10:11:03 aki Exp $
  *
  * region
  * Copyright (C) 2005 RIKEN. All rights reserved.
