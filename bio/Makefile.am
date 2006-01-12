@@ -1,4 +1,4 @@
-## $Id: Makefile.am,v 1.6 2005/10/31 03:03:43 aki Exp $
+## $Id: Makefile.am,v 1.7 2006/01/12 10:05:56 aki Exp $
 ##
 ## Makefile for the bio directory of biotuils.
 ## Copyright (C) 2004 RIKEN. All rights reserved.
@@ -24,8 +24,8 @@ MAINTAINERCLEANFILES = Makefile.in
 EXTRA_DIST = NCBIstdaa.map NCBI2na.map
 
 ## suffix rule for building 64bit version (compile with -DSIZE_OF_INITXX_T=8)
-SUFFIXES = .o64
-.c.o64:
+SUFFIXES = .64.o
+.c.64.o:
 @am__fastdepCC_TRUE@	if $(COMPILE) -DSIZEOF_INTXX_T=8 -MT $@ -MD -MP -MF "$(DEPDIR)/$*.Tpo" -c -o $@ $<; \
 @am__fastdepCC_TRUE@	then mv -f "$(DEPDIR)/$*.Tpo" "$(DEPDIR)/$*.Po"; else rm -f "$(DEPDIR)/$*.Tpo"; exit 1; fi
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	source='$<' object='$@' libtool=no @AMDEPBACKSLASH@
@@ -44,7 +44,7 @@ bin_PROGRAMS += fa2hdsq
 fa2hdsq_SOURCES = fa2hdsq.c ofiles.c ofiles.h parsefa.c parsefa.h
 fa2hdsq_LDADD = 
 if IS_SIZEOF_OFF_T_EQ_8
-fa2hdsq_LDADD += parsefa.o64
+fa2hdsq_LDADD += parsefa.64.o
 endif
 fa2hdsq_LDADD += $(top_builddir)/util/libutil.a
 fa2hdsq_LDADD += $(top_builddir)/libgnu/libgnu.a
@@ -85,5 +85,5 @@ pkgdata_DATA += $(top_srcdir)/bio/NCBI2na.map
 
 if IS_SIZEOF_OFF_T_EQ_8
 clean-local:
-	-rm -f *.o64
+	-rm -f *.64.o
 endif
