@@ -1,4 +1,4 @@
-## $Id: Makefile.am,v 1.3 2005/08/17 10:27:29 aki Exp $
+## $Id: Makefile.am,v 1.4 2006/01/12 10:05:56 aki Exp $
 ##
 ## Makefile for lib directory of sfxatools.
 ## Copyright (C) 2004, 2005 RIKEN. All rights reserved.
@@ -23,8 +23,8 @@
 MAINTAINERCLEANFILES = Makefile.in
 
 ## suffix rule for building 64bit version (compile with -DSIZE_OF_INITXX_T=8)
-SUFFIXES = .o64
-.c.o64:
+SUFFIXES = .64.o
+.c.64.o:
 @am__fastdepCC_TRUE@	if $(COMPILE) -DSIZEOF_INTXX_T=8 -MT $@ -MD -MP -MF "$(DEPDIR)/$*.Tpo" -c -o $@ $<; \
 @am__fastdepCC_TRUE@	then mv -f "$(DEPDIR)/$*.Tpo" "$(DEPDIR)/$*.Po"; else rm -f "$(DEPDIR)/$*.Tpo"; exit 1; fi
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	source='$<' object='$@' libtool=no @AMDEPBACKSLASH@
@@ -45,13 +45,13 @@ libsfxa_a_SOURCES = \
 	sort.c sort.h
 libsfxa_a_LIBADD = 
 if IS_SIZEOF_OFF_T_EQ_8
-libsfxa_a_LIBADD += lcp.o64
-libsfxa_a_LIBADD += output.o64
-libsfxa_a_LIBADD += search.o64
-libsfxa_a_LIBADD += sort.o64
+libsfxa_a_LIBADD += lcp.64.o
+libsfxa_a_LIBADD += output.64.o
+libsfxa_a_LIBADD += search.64.o
+libsfxa_a_LIBADD += sort.64.o
 endif
 
 if IS_SIZEOF_OFF_T_EQ_8
 clean-local:
-	-rm -f *.o64
+	-rm -f *.64.o
 endif
