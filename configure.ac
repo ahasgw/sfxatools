@@ -1,4 +1,4 @@
-# $Id: configure.ac,v 1.15 2006/01/12 10:07:49 aki Exp $
+# $Id: configure.ac,v 1.16 2006/01/12 10:52:07 aki Exp $
 # vi: set tabstop=8 shiftwidth=8 noexpandtab:
 #
 # Makefile for the toplevel directory of sfxatools.
@@ -20,7 +20,7 @@
 # Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
 
 AC_PREREQ(2.59)
-AC_INIT([SfxaTools], [0.2.3d6], [aki@gsc.riken.jp], [sfxatools])
+AC_INIT([SfxaTools], [0.2.3], [aki@gsc.riken.jp], [sfxatools])
 AC_CONFIG_AUX_DIR(config)
 AC_CONFIG_SRCDIR([config.h.in])
 AC_CONFIG_TESTDIR(tests)
