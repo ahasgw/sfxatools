@@ -1,5 +1,5 @@
 /***********************************************************************
- * $Id: psps.c,v 1.6 2005/12/15 13:31:53 aki Exp $
+ * $Id: psps.c,v 1.7 2006/01/12 09:55:05 aki Exp $
  *
  * psps
  * Copyright (C) 2005 RIKEN. All rights reserved.
@@ -33,8 +33,8 @@
 #include <errno.h>
 #include <limits.h>
 #include <string.h>
-#include <time.h>
 #include <sys/stat.h>
+#include <sys/time.h>
 #include <sys/types.h>
 #if HAVE_UNISTD_H
 # include <unistd.h>
@@ -74,6 +74,9 @@
 #  define OFF_T_MAX INT64_MAX
 # endif
 #endif
+
+#define DIFFTIMEVAL(e,b) \
+    (((e).tv_sec - (b).tv_sec) + 1E-6 * ((e).tv_usec - (b).tv_usec))
 
 /*======================================================================
  * type definitions
@@ -147,16 +150,12 @@ static void search(sfxa_t *sfxa, const cmap_t *cm, char *pat)
 {
     int ret = 0;
     mbuf_t re;
-    time_t beg_tm = 0, end_tm = 0;
+    struct timeval beg_tv;
+    struct timeval end_tv;
 
     if (opts.opt_v) {
 	msg(MSGLVL_INFO, "searching PA pattern '%s'...", pat);
-	beg_tm = time(NULL);
-    }
-
-    if (sfxa_open(sfxa) != 0) {
-	msg(MSGLVL_ERR, "Cannot open suffix array:");
-	exit(EXIT_FAILURE);
+	gettimeofday(&beg_tv, NULL);
     }
 
     if (mbuf_init(&re, NULL, strlen(pat) + 1) != 0) {
@@ -198,11 +197,9 @@ static void search(sfxa_t *sfxa, const cmap_t *cm, char *pat)
 
     mbuf_free(&re);
 
-    sfxa_close(sfxa);
-
     if (opts.opt_v) {
-	end_tm = time(NULL);
-	msg(MSGLVL_INFO, "...done. (%.1f sec.)", difftime(end_tm, beg_tm));
+	gettimeofday(&end_tv, NULL);
+	msg(MSGLVL_INFO, "...done. (%.3f sec.)", DIFFTIMEVAL(end_tv, beg_tv));
     }
 }
 
@@ -428,6 +425,10 @@ int main(int argc, char *argv[])
 	    msg(MSGLVL_ERR, "Cannot open suffix array:");
 	    exit(EXIT_FAILURE);
 	}
+	if (sfxa_open(&sa) != 0) {
+	    msg(MSGLVL_ERR, "Cannot open suffix array:");
+	    exit(EXIT_FAILURE);
+	}
     }
 
     /* redirect input file stream */
@@ -477,6 +478,7 @@ int main(int argc, char *argv[])
     }
 
     /* finalize suffix array */
+    sfxa_close(&sa);
     sfxa_free(&sa);
 
     /* finalize */
