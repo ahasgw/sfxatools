@@ -34,8 +34,8 @@ POST_INSTALL = :
 NORMAL_UNINSTALL = :
 PRE_UNINSTALL = :
 POST_UNINSTALL = :
-@IS_SIZEOF_OFF_T_EQ_8_TRUE@am__append_1 = lcp.o64 output.o64 \
-@IS_SIZEOF_OFF_T_EQ_8_TRUE@	search.o64 sort.o64
+@IS_SIZEOF_OFF_T_EQ_8_TRUE@am__append_1 = lcp.64.o output.64.o \
+@IS_SIZEOF_OFF_T_EQ_8_TRUE@	search.64.o sort.64.o
 subdir = lib
 DIST_COMMON = $(srcdir)/Makefile.am $(srcdir)/Makefile.in
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
@@ -111,11 +111,10 @@ mkinstalldirs = $(install_sh) -d
 CONFIG_HEADER = $(top_builddir)/config.h
 CONFIG_CLEAN_FILES =
 LIBRARIES = $(noinst_LIBRARIES)
-AR = ar
 ARFLAGS = cru
 libsfxa_a_AR = $(AR) $(ARFLAGS)
-@IS_SIZEOF_OFF_T_EQ_8_TRUE@am__DEPENDENCIES_1 = lcp.o64 output.o64 \
-@IS_SIZEOF_OFF_T_EQ_8_TRUE@	search.o64 sort.o64
+@IS_SIZEOF_OFF_T_EQ_8_TRUE@am__DEPENDENCIES_1 = lcp.64.o output.64.o \
+@IS_SIZEOF_OFF_T_EQ_8_TRUE@	search.64.o sort.64.o
 libsfxa_a_DEPENDENCIES = $(am__DEPENDENCIES_1)
 am_libsfxa_a_OBJECTS = lcp.$(OBJEXT) output.$(OBJEXT) regexp.$(OBJEXT) \
 	region.$(OBJEXT) search.$(OBJEXT) sfxa.$(OBJEXT) \
@@ -139,6 +138,7 @@ ALLOCA_H = @ALLOCA_H@
 AMDEP_FALSE = @AMDEP_FALSE@
 AMDEP_TRUE = @AMDEP_TRUE@
 AMTAR = @AMTAR@
+AR = @AR@
 AUTOCONF = @AUTOCONF@
 AUTOHEADER = @AUTOHEADER@
 AUTOM4TE = @AUTOM4TE@
@@ -172,6 +172,7 @@ INSTALL_STRIP_PROGRAM = @INSTALL_STRIP_PROGRAM@
 IS_SIZEOF_OFF_T_EQ_8 = @IS_SIZEOF_OFF_T_EQ_8@
 IS_SIZEOF_OFF_T_EQ_8_FALSE = @IS_SIZEOF_OFF_T_EQ_8_FALSE@
 IS_SIZEOF_OFF_T_EQ_8_TRUE = @IS_SIZEOF_OFF_T_EQ_8_TRUE@
+LD = @LD@
 LDFLAGS = @LDFLAGS@
 LIBOBJS = @LIBOBJS@
 LIBS = @LIBS@
@@ -226,7 +227,7 @@ sharedstatedir = @sharedstatedir@
 sysconfdir = @sysconfdir@
 target_alias = @target_alias@
 MAINTAINERCLEANFILES = Makefile.in
-SUFFIXES = .o64
+SUFFIXES = .64.o
 AM_CPPFLAGS = -I$(top_srcdir)/util -I$(top_srcdir)/libgnu
 AM_CFLAGS = -DNDEBUG
 noinst_LIBRARIES = libsfxa.a
@@ -243,7 +244,7 @@ libsfxa_a_LIBADD = $(am__append_1)
 all: all-am
 
 .SUFFIXES:
-.SUFFIXES: .o64 .c .o .obj
+.SUFFIXES: .64.o .c .o .obj
 $(srcdir)/Makefile.in:  $(srcdir)/Makefile.am  $(am__configure_deps)
 	@for dep in $?; do \
 	  case '$(am__configure_deps)' in \
@@ -476,7 +477,7 @@ uninstall-am: uninstall-info-am
 	mostlyclean-generic pdf pdf-am ps ps-am tags uninstall \
 	uninstall-am uninstall-info-am
 
-.c.o64:
+.c.64.o:
 @am__fastdepCC_TRUE@	if $(COMPILE) -DSIZEOF_INTXX_T=8 -MT $@ -MD -MP -MF "$(DEPDIR)/$*.Tpo" -c -o $@ $<; \
 @am__fastdepCC_TRUE@	then mv -f "$(DEPDIR)/$*.Tpo" "$(DEPDIR)/$*.Po"; else rm -f "$(DEPDIR)/$*.Tpo"; exit 1; fi
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	source='$<' object='$@' libtool=no @AMDEPBACKSLASH@
@@ -484,7 +485,7 @@ uninstall-am: uninstall-info-am
 @am__fastdepCC_FALSE@	$(COMPILE) -DSIZEOF_INTXX_T=8 -c -o $@ $<
 
 @IS_SIZEOF_OFF_T_EQ_8_TRUE@clean-local:
-@IS_SIZEOF_OFF_T_EQ_8_TRUE@	-rm -f *.o64
+@IS_SIZEOF_OFF_T_EQ_8_TRUE@	-rm -f *.64.o
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.
 .NOEXPORT:
