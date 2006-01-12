@@ -1,5 +1,5 @@
 /***********************************************************************
- * $Id: nsps.c,v 1.2 2005/12/15 13:46:56 aki Exp $
+ * $Id: nsps.c,v 1.3 2006/01/12 09:57:16 aki Exp $
  *
  * nsps
  * Copyright (C) 2005 RIKEN. All rights reserved.
@@ -33,8 +33,8 @@
 #include <errno.h>
 #include <limits.h>
 #include <string.h>
-#include <time.h>
 #include <sys/stat.h>
+#include <sys/time.h>
 #include <sys/types.h>
 #if HAVE_UNISTD_H
 # include <unistd.h>
@@ -74,6 +74,9 @@
 #  define OFF_T_MAX INT64_MAX
 # endif
 #endif
+
+#define DIFFTIMEVAL(e,b) \
+    (((e).tv_sec - (b).tv_sec) + 1E-6 * ((e).tv_usec - (b).tv_usec))
 
 /*======================================================================
  * type definitions
@@ -148,11 +151,15 @@ inline static int get_max_digit(unsigned long long n)
 static void search(sfxa_t *sfxa, const cmap_t *cm, char *pat)
 {
     int ret = 0;
+#if 0
+    struct timeval beg_tv;
+    struct timeval end_tv;
 
-    if (sfxa_open(sfxa) != 0) {
-	msg(MSGLVL_ERR, "Cannot open suffix array:");
-	exit(EXIT_FAILURE);
+    if (opts.opt_v) {
+	msg(MSGLVL_INFO, "searching pattern '%s'...", pat);
+	gettimeofday(&beg_tv, NULL);
     }
+#endif
 
     if (opts.opt_M) {
 	unsigned char *pattern;
@@ -173,7 +180,12 @@ static void search(sfxa_t *sfxa, const cmap_t *cm, char *pat)
 	exit(EXIT_FAILURE);
     }
 
-    sfxa_close(sfxa);
+#if 0
+    if (opts.opt_v) {
+	gettimeofday(&end_tv, NULL);
+	msg(MSGLVL_INFO, "...done. (%.3f sec.)", DIFFTIMEVAL(end_tv, beg_tv));
+    }
+#endif
 }
 
 
@@ -181,7 +193,8 @@ static void search(sfxa_t *sfxa, const cmap_t *cm, char *pat)
 static int search_pattern(const sfxa_t *sfxa, const char *pattern, int patlen)
 {
     int ret = 0;
-    time_t beg_tm = 0, end_tm = 0;
+    struct timeval beg_tv;
+    struct timeval end_tv;
     regexp_t regexp;
     regexp_opt_t rx_opt;
     region_t result;
@@ -197,7 +210,7 @@ static int search_pattern(const sfxa_t *sfxa, const char *pattern, int patlen)
 	} else {
 	    if (opts.opt_v) {
 		msg(MSGLVL_INFO, "searching pattern '%s'...", pattern);
-		beg_tm = time(NULL);
+		gettimeofday(&beg_tv, NULL);
 	    }
 
 	    ret = region_search_regexp(&result, &regexp, alphabet, opts.opt_R);
@@ -214,9 +227,9 @@ static int search_pattern(const sfxa_t *sfxa, const char *pattern, int patlen)
 		}
 
 		if (opts.opt_v) {
-		    end_tm = time(NULL);
-		    msg(MSGLVL_INFO,
-			    "...done. (%.1f sec.)", difftime(end_tm, beg_tm));
+		    gettimeofday(&end_tv, NULL);
+		    msg(MSGLVL_INFO, "...done. (%.3f sec.)",
+			    DIFFTIMEVAL(end_tv, beg_tv));
 		}
 	    }
 	    regexp_free(&regexp);
@@ -256,7 +269,7 @@ regexp_stack_print(stdout, regexp.code, regexp.code_len);
 		msg(MSGLVL_INFO,
 			"searching reverse complement pattern of '%s'...",
 			pattern);
-		beg_tm = time(NULL);
+		gettimeofday(&beg_tv, NULL);
 	    }
 	    if (opts.opt_v > 1)
 		msg(MSGLVL_INFO, "searching RE pattern '%s'...", s);
@@ -276,9 +289,9 @@ regexp_stack_print(stdout, regexp.code, regexp.code_len);
 		}
 
 		if (opts.opt_v) {
-		    end_tm = time(NULL);
-		    msg(MSGLVL_INFO,
-			    "...done. (%.1f sec.)", difftime(end_tm, beg_tm));
+		    gettimeofday(&end_tv, NULL);
+		    msg(MSGLVL_INFO, "...done. (%.3f sec.)",
+			    DIFFTIMEVAL(end_tv, beg_tv));
 		}
 	    }
 	    free(s);
@@ -475,6 +488,10 @@ int main(int argc, char *argv[])
 	char *ftxt = argv[optind++];
 	char *fidx = argv[optind++];
 	if (sfxa_init(&sa, ftxt, fidx, NULL) != 0) {
+	    msg(MSGLVL_ERR, "Cannot initialize suffix array:");
+	    exit(EXIT_FAILURE);
+	}
+	if (sfxa_open(&sa) != 0) {
 	    msg(MSGLVL_ERR, "Cannot open suffix array:");
 	    exit(EXIT_FAILURE);
 	}
@@ -527,6 +544,7 @@ int main(int argc, char *argv[])
     }
 
     /* finalize suffix array */
+    sfxa_close(&sa);
     sfxa_free(&sa);
 
     /* finalize */
