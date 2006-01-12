@@ -1,5 +1,5 @@
 /***********************************************************************
- * $Id: ofiles.c,v 1.2 2005/07/05 07:33:25 aki Exp $
+ * $Id: ofiles.c,v 1.3 2006/01/12 09:53:33 aki Exp $
  *
  * ofiles.c
  * Copyright (C) 2005 RIKEN. All rights reserved.

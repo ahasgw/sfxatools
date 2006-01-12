@@ -1,5 +1,5 @@
 /***********************************************************************
- * $Id: fa2hdsq.c,v 1.6 2005/12/15 13:28:47 aki Exp $
+ * $Id: fa2hdsq.c,v 1.7 2006/01/12 09:53:33 aki Exp $
  *
  * Fasta to header/sequence separator
  * Copyright (C) 2005 RIKEN. All rights reserved.
@@ -130,7 +130,7 @@ static void process_file(const char *file)
 	ofnames_init(&ofnames, ofname,
 		opts.hdr_ext, opts.hdx_ext, opts.seq_ext, opts.opt_d);
     } else {
-	ofnames_init(&ofnames, "/dev/null", "", "", "", 0);
+	ofnames_init(&ofnames, "/dev/null", "", "", "", -1);
     }
     ofiles_open(&ofiles, &ofnames, 0);
 

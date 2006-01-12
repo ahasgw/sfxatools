@@ -1,5 +1,5 @@
 /***********************************************************************
- * $Id: bldpath.c,v 1.3 2005/12/15 13:34:11 aki Exp $
+ * $Id: bldpath.c,v 1.4 2006/01/12 09:53:33 aki Exp $
  *
  * bldpath.c
  * Copyright (C) 2005 RIKEN. All rights reserved.
@@ -47,7 +47,7 @@ char *bldpathtmpl(const char *fmt, const char *path, const char *ext, int col)
     assert(fmt != NULL);
     assert(path != NULL);
     assert(ext != NULL);
-    if (col == 0) {
+    if (col < 0) {
 	if (sizeof "/dev/null" > PATH_MAX)
 	    return NULL;
 	strncpy(tmpl, "/dev/null", sizeof "/dev/null");
