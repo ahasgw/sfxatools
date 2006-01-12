@@ -1,5 +1,5 @@
 /***********************************************************************
- * $Id: search.c,v 1.9 2005/10/31 03:03:45 aki Exp $
+ * $Id: search.c,v 1.10 2006/01/12 10:01:50 aki Exp $
  *
  * search
  * Copyright (C) 2005 RIKEN. All rights reserved.
@@ -128,7 +128,7 @@ static uint32_t increment_counter(u32stk_t *stk);
 static int bf_searchXX_1(const mbuf_t *ranges_in, mbuf_t *ranges_out,
 	void *arg, const char ch, head_tail_t ht);
 static int bf_searchXX(const mbuf_t *ranges_in, mbuf_t *ranges_out,
-	void *arg, const mbuf_t *chs, head_tail_t ht);
+	void *arg, const mbuf_t *chs);
 static int search_interval(const char ch, searchXX_arg_t *arg, rangeXX_t *res);
 
 #ifndef NDEBUG
@@ -336,7 +336,7 @@ print_ptrstk(stdout, &d->regions, "chs() enter");
 	    ? bf_searchXX_1((mbuf_t*)ptrstk_back(&d->regions), result, &d->arg,
 		    ch, ht)
 	    : bf_searchXX((mbuf_t*)ptrstk_back(&d->regions), result, &d->arg,
-		    &d->chs, none);
+		    &d->chs);
 	if (ret != 0)
 	    return errno;
 
@@ -578,7 +578,7 @@ static int bf_searchXX_1(const mbuf_t *ranges_in, mbuf_t *ranges_out,
 }
 
 static int bf_searchXX(const mbuf_t *ranges_in, mbuf_t *ranges_out,
-	void *arg, const mbuf_t *chs, head_tail_t ht)
+	void *arg, const mbuf_t *chs)
 {
 #if 0
     const rangeXX_t *r_beg = (const rangeXX_t*)mbuf_ptr(ranges_in);
@@ -595,8 +595,6 @@ static int bf_searchXX(const mbuf_t *ranges_in, mbuf_t *ranges_out,
 	    rangeXX_t r = *rp;
 	    r.beg = next_beg;
 	    if (search_interval(*cp, (searchXX_arg_t *)arg, &r)) {
-		r.head |= (ht == head);
-		r.tail |= (ht == tail);
 		if (mbuf_push_back(ranges_out, &r, sizeof r) != sizeof r)
 		    return errno;
 		next_beg = r.end + 1;
@@ -625,8 +623,6 @@ static int bf_searchXX(const mbuf_t *ranges_in, mbuf_t *ranges_out,
 		r.beg = next_beg;
 		r.end = next_end;
 		if (search_interval(*cp_beg, (searchXX_arg_t *)arg, &r)) {
-		    r.head |= (ht == head);
-		    r.tail |= (ht == tail);
 		    if (mbuf_push_back(ranges_out, &r, sizeof r) != sizeof r)
 			return errno;
 		    next_beg = r.end + 1;
@@ -641,8 +637,6 @@ static int bf_searchXX(const mbuf_t *ranges_in, mbuf_t *ranges_out,
 		r.beg = next_beg;
 		r.end = next_end;
 		if (search_interval(*cp_end, (searchXX_arg_t *)arg, &r)) {
-		    r.head |= (ht == head);
-		    r.tail |= (ht == tail);
 		    if (mbuf_push_back(ranges_out, &r, sizeof r) != sizeof r)
 			return errno;
 		    next_end = r.beg - 1;
