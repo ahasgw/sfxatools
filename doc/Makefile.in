@@ -222,7 +222,6 @@ sbindir = @sbindir@
 sharedstatedir = @sharedstatedir@
 sysconfdir = @sysconfdir@
 target_alias = @target_alias@
-CLEANFILES = mksfxa.1 mklcpa.1 sfxasrch.1 fa2hdsq.1 annotidx.1 bl2dump.1 psps.1 nsps.1
 DISTCLEANFILES = sfxatools.info
 MAINTAINERCLEANFILES = Makefile.in
 EXTRA_DIST = $(man_MANS)
@@ -484,7 +483,6 @@ install-strip:
 mostlyclean-generic:
 
 clean-generic:
-	-test -z "$(CLEANFILES)" || rm -f $(CLEANFILES)
 
 distclean-generic:
 	-test -z "$(CONFIG_CLEAN_FILES)" || rm -f $(CONFIG_CLEAN_FILES)
@@ -496,7 +494,7 @@ maintainer-clean-generic:
 	-test -z "$(MAINTAINERCLEANFILES)" || rm -f $(MAINTAINERCLEANFILES)
 clean: clean-am
 
-clean-am: clean-generic mostlyclean-am
+clean-am: clean-generic clean-local mostlyclean-am
 
 distclean: distclean-am
 	-rm -f Makefile
@@ -575,12 +573,12 @@ uninstall-am: uninstall-info-am uninstall-man
 
 uninstall-man: uninstall-man1
 
-.PHONY: all all-am check check-am clean clean-generic dist-info \
-	distclean distclean-generic distdir dvi dvi-am html html-am \
-	info info-am install install-am install-data install-data-am \
-	install-exec install-exec-am install-info install-info-am \
-	install-man install-man1 install-strip installcheck \
-	installcheck-am installdirs maintainer-clean \
+.PHONY: all all-am check check-am clean clean-generic clean-local \
+	dist-info distclean distclean-generic distdir dvi dvi-am html \
+	html-am info info-am install install-am install-data \
+	install-data-am install-exec install-exec-am install-info \
+	install-info-am install-man install-man1 install-strip \
+	installcheck installcheck-am installdirs maintainer-clean \
 	maintainer-clean-aminfo maintainer-clean-generic \
 	maintainer-clean-vti mostlyclean mostlyclean-aminfo \
 	mostlyclean-generic mostlyclean-vti pdf pdf-am ps ps-am \
@@ -588,37 +586,32 @@ uninstall-man: uninstall-man1
 	uninstall-man1
 
 mksfxa.1 : $(top_builddir)/src/mksfxa
-	if test x"$(HELP2MAN)" != x; then \
-	  $(HELP2MAN) $(HELP2MANFLAGS) $< > $@; \
-	fi
+	if test "x$(HELP2MAN)" != x; \
+	then $(HELP2MAN) $(HELP2MANFLAGS) $< > $@; fi
 mklcpa.1 : $(top_builddir)/src/mklcpa
-	if test x"$(HELP2MAN)" != x; then \
-	  $(HELP2MAN) $(HELP2MANFLAGS) $< > $@; \
-	fi
+	if test "x$(HELP2MAN)" != x; \
+	then $(HELP2MAN) $(HELP2MANFLAGS) $< > $@; fi
 sfxasrch.1 : $(top_builddir)/src/sfxasrch
-	if test x"$(HELP2MAN)" != x; then \
-	  $(HELP2MAN) $(HELP2MANFLAGS) $< > $@; \
-	fi
+	if test "x$(HELP2MAN)" != x; \
+	then $(HELP2MAN) $(HELP2MANFLAGS) $< > $@; fi
 fa2hdsq.1 : $(top_builddir)/bio/fa2hdsq
-	if test x"$(HELP2MAN)" != x; then \
-	  $(HELP2MAN) $(HELP2MANFLAGS) $< > $@; \
-	fi
+	if test "x$(HELP2MAN)" != x; \
+	then $(HELP2MAN) $(HELP2MANFLAGS) $< > $@; fi
 annotidx.1 : $(top_builddir)/bio/annotidx
-	if test x"$(HELP2MAN)" != x; then \
-	  $(HELP2MAN) $(HELP2MANFLAGS) $< > $@; \
-	fi
+	if test "x$(HELP2MAN)" != x; \
+	then $(HELP2MAN) $(HELP2MANFLAGS) $< > $@; fi
 bl2dump.1 : $(top_builddir)/bio/bl2dump
-	if test x"$(HELP2MAN)" != x; then \
-	  $(HELP2MAN) $(HELP2MANFLAGS) $< > $@; \
-	fi
+	if test "x$(HELP2MAN)" != x; \
+	then $(HELP2MAN) $(HELP2MANFLAGS) $< > $@; fi
 psps.1 : $(top_builddir)/bio/psps
-	if test x"$(HELP2MAN)" != x; then \
-	  $(HELP2MAN) $(HELP2MANFLAGS) $< > $@; \
-	fi
+	if test "x$(HELP2MAN)" != x; \
+	then $(HELP2MAN) $(HELP2MANFLAGS) $< > $@; fi
 nsps.1 : $(top_builddir)/bio/nsps
-	if test x"$(HELP2MAN)" != x; then \
-	  $(HELP2MAN) $(HELP2MANFLAGS) $< > $@; \
-	fi
+	if test "x$(HELP2MAN)" != x; \
+	then $(HELP2MAN) $(HELP2MANFLAGS) $< > $@; fi
+
+clean-local:
+	if test "x$(HELP2MAN)" != x; then rm $(man_MANS); fi
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.
 .NOEXPORT:
