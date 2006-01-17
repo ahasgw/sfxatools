@@ -1,4 +1,4 @@
-## $Id: Makefile.am,v 1.8 2005/10/31 03:03:44 aki Exp $
+## $Id: Makefile.am,v 1.9 2006/01/17 10:31:27 aki Exp $
 ##
 ## Makefile for the doc directory of sfxatools.
 ## Copyright (C) 2005 RIKEN. All rights reserved.
@@ -20,7 +20,6 @@
 
 ## Process this file with automake to produce Makefile.in
 
-CLEANFILES = mksfxa.1 mklcpa.1 sfxasrch.1 fa2hdsq.1 annotidx.1 bl2dump.1 psps.1 nsps.1
 DISTCLEANFILES = sfxatools.info
 MAINTAINERCLEANFILES = Makefile.in
 EXTRA_DIST = $(man_MANS)
@@ -34,48 +33,43 @@ HELP2MANFLAGS = -p sfxatools
 
 man_MANS += mksfxa.1
 mksfxa.1 : $(top_builddir)/src/mksfxa
-	if test x"$(HELP2MAN)" != x; then \
-	  $(HELP2MAN) $(HELP2MANFLAGS) $< > $@; \
-	fi
+	if test "x$(HELP2MAN)" != x; \
+	then $(HELP2MAN) $(HELP2MANFLAGS) $< > $@; fi
 
 man_MANS += mklcpa.1
 mklcpa.1 : $(top_builddir)/src/mklcpa
-	if test x"$(HELP2MAN)" != x; then \
-	  $(HELP2MAN) $(HELP2MANFLAGS) $< > $@; \
-	fi
+	if test "x$(HELP2MAN)" != x; \
+	then $(HELP2MAN) $(HELP2MANFLAGS) $< > $@; fi
 
 man_MANS += sfxasrch.1
 sfxasrch.1 : $(top_builddir)/src/sfxasrch
-	if test x"$(HELP2MAN)" != x; then \
-	  $(HELP2MAN) $(HELP2MANFLAGS) $< > $@; \
-	fi
+	if test "x$(HELP2MAN)" != x; \
+	then $(HELP2MAN) $(HELP2MANFLAGS) $< > $@; fi
 
 man_MANS += fa2hdsq.1
 fa2hdsq.1 : $(top_builddir)/bio/fa2hdsq
-	if test x"$(HELP2MAN)" != x; then \
-	  $(HELP2MAN) $(HELP2MANFLAGS) $< > $@; \
-	fi
+	if test "x$(HELP2MAN)" != x; \
+	then $(HELP2MAN) $(HELP2MANFLAGS) $< > $@; fi
 
 man_MANS += annotidx.1
 annotidx.1 : $(top_builddir)/bio/annotidx
-	if test x"$(HELP2MAN)" != x; then \
-	  $(HELP2MAN) $(HELP2MANFLAGS) $< > $@; \
-	fi
+	if test "x$(HELP2MAN)" != x; \
+	then $(HELP2MAN) $(HELP2MANFLAGS) $< > $@; fi
 
 man_MANS += bl2dump.1
 bl2dump.1 : $(top_builddir)/bio/bl2dump
-	if test x"$(HELP2MAN)" != x; then \
-	  $(HELP2MAN) $(HELP2MANFLAGS) $< > $@; \
-	fi
+	if test "x$(HELP2MAN)" != x; \
+	then $(HELP2MAN) $(HELP2MANFLAGS) $< > $@; fi
 
 man_MANS += psps.1
 psps.1 : $(top_builddir)/bio/psps
-	if test x"$(HELP2MAN)" != x; then \
-	  $(HELP2MAN) $(HELP2MANFLAGS) $< > $@; \
-	fi
+	if test "x$(HELP2MAN)" != x; \
+	then $(HELP2MAN) $(HELP2MANFLAGS) $< > $@; fi
 
 man_MANS += nsps.1
 nsps.1 : $(top_builddir)/bio/nsps
-	if test x"$(HELP2MAN)" != x; then \
-	  $(HELP2MAN) $(HELP2MANFLAGS) $< > $@; \
-	fi
+	if test "x$(HELP2MAN)" != x; \
+	then $(HELP2MAN) $(HELP2MANFLAGS) $< > $@; fi
+
+clean-local:
+	if test "x$(HELP2MAN)" != x; then rm $(man_MANS); fi
