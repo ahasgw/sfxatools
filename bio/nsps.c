@@ -1,5 +1,5 @@
 /***********************************************************************
- * $Id: nsps.c,v 1.3 2006/01/12 09:57:16 aki Exp $
+ * $Id: nsps.c,v 1.4 2006/04/06 10:57:59 aki Exp $
  *
  * nsps
  * Copyright (C) 2005 RIKEN. All rights reserved.
@@ -200,13 +200,22 @@ static int search_pattern(const sfxa_t *sfxa, const char *pattern, int patlen)
     region_t result;
 
     {
+	char *expd = NULL;
+
 	if ((ret = region_init(&result, sfxa)) != 0)
 	    return ret;
 
+	if ((ret = na_pat_expand(pattern, &expd)) != 0) {
+	    region_free(&result);
+	    return ret;
+	}
+
 	rx_opt.max_repeat = REGEXP_MAX_REPEAT;
-	if ((ret = regexp_init(&regexp, pattern, &rx_opt)) != 0) {
+	if ((ret = regexp_init(&regexp, expd, &rx_opt)) != 0) {
+#if 1
 	    msg(MSGLVL_ERR, "Error at '%c' (%u)",
-		    pattern[regexp.error_at], regexp.error_at + 1);
+		    expd[regexp.error_at], regexp.error_at + 1);
+#endif
 	} else {
 	    if (opts.opt_v) {
 		msg(MSGLVL_INFO, "searching pattern '%s'...", pattern);
@@ -234,13 +243,13 @@ static int search_pattern(const sfxa_t *sfxa, const char *pattern, int patlen)
 	    }
 	    regexp_free(&regexp);
 	}
+	free(expd);
 	region_free(&result);
     }
 
     /* duplicated code. this should be refactored. */
     if (ret == 0 && opts.opt_r) {
 	char *cmpl = NULL;
-	int cmpl_patlen = 0;
 
 	if ((ret = region_init(&result, sfxa)) != 0)
 	    return ret;
@@ -249,7 +258,6 @@ static int search_pattern(const sfxa_t *sfxa, const char *pattern, int patlen)
 	    region_free(&result);
 	    return ret;
 	}
-	cmpl_patlen = strlen(cmpl);
 
 	rx_opt.max_repeat = REGEXP_MAX_REPEAT;
 	if ((ret = regexp_init(&regexp, cmpl, &rx_opt)) != 0) {

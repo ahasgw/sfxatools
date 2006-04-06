@@ -1,5 +1,5 @@
 /***********************************************************************
- * $Id: na_pat.c,v 1.1 2005/10/31 03:03:43 aki Exp $
+ * $Id: na_pat.c,v 1.2 2006/04/06 10:57:59 aki Exp $
  *
  * na_pat.c
  * Copyright (C) 2005 RIKEN. All rights reserved.
@@ -67,6 +67,57 @@ static int push_chars(mbuf_t *buf, const char *syms, int inclass);
  * function definitions
  *======================================================================*/
 
+int na_pat_expand(const char *pat, char **pat_expand)
+{
+    int ret = 0;
+    int inclass = 0;
+    mbuf_t buf;
+
+    *pat_expand = NULL;
+
+    if ((ret = mbuf_init(&buf, NULL, 0)) != 0)
+	return ret;
+
+    for (; !ret && *pat; ++pat) {
+	switch (*pat) {
+	    case 'A':	PUSH('A');	break;
+	    case 'B':	PUSHN("CGTUB");	break;
+	    case 'C':	PUSH('C');	break;
+	    case 'D':	PUSHN("AGTUD");	break;
+	    case 'G':	PUSH('G');	break;
+	    case 'H':	PUSHN("ACTUH");	break;
+	    case 'K':	PUSHN("GTUK");	break;
+	    case 'M':	PUSHN("ACM");	break;
+	    case 'N':	PUSHN("ACGTURYMKWSBDHVN");  break;
+	    case 'R':	PUSHN("AGR");	break;
+	    case 'S':	PUSHN("CGS");	break;
+	    case 'T':	PUSHN("TU");	break;
+	    case 'U':	PUSHN("TU");	break;
+	    case 'V':	PUSHN("ACGV");	break;
+	    case 'W':	PUSHN("ATUW");	break;
+	    case 'Y':	PUSHN("CTUY");	break;
+	    case '[':	PUSH(*pat); inclass = 1;    break;
+	    case ']':	PUSH(*pat); inclass = 0;    break;
+	    default:	PUSH(*pat);	break;
+	}
+    }
+    PUSH('\0');
+
+    if (ret)
+	goto bail0;
+
+    if ((*pat_expand = (char*)malloc(mbuf_size(&buf))) == NULL) {
+	ret = errno;
+	goto bail0;
+    }
+
+    memcpy(*pat_expand, mbuf_ptr(&buf), mbuf_size(&buf));
+
+bail0:
+    mbuf_free(&buf);
+    return ret;
+}
+
 int na_pat_complement(const char *pat, char **pat_complement)
 {
     int ret = 0;
@@ -80,7 +131,7 @@ int na_pat_complement(const char *pat, char **pat_complement)
 
     for (; !ret && *pat; ++pat) {
 	switch (*pat) {
-	    case 'A':	PUSH('T');	break;
+	    case 'A':	PUSHN("TU");	break;
 	    case 'B':	PUSHN("ACGV");	break;
 	    case 'C':	PUSH('G');	break;
 	    case 'D':	PUSHN("ACTUH");	break;
