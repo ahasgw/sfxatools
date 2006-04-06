@@ -1,5 +1,5 @@
 /***********************************************************************
- * $Id: na_pat.h,v 1.1 2005/10/31 03:03:43 aki Exp $
+ * $Id: na_pat.h,v 1.2 2006/04/06 10:57:59 aki Exp $
  *
  * na_pat header file
  * Copyright (C) 2005 RIKEN. All rights reserved.
@@ -39,6 +39,7 @@ extern "C" {
  * function declarations
  *======================================================================*/
 
+int na_pat_expand(const char *pat, char **pat_complement);
 int na_pat_complement(const char *pat, char **pat_complement);
 
 #ifdef __cplusplus
