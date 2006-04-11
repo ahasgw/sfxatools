@@ -1,5 +1,5 @@
 /***********************************************************************
- * $Id: na_pat.c,v 1.2 2006/04/06 10:57:59 aki Exp $
+ * $Id: na_pat.c,v 1.3 2006/04/11 09:22:11 aki Exp $
  *
  * na_pat.c
  * Copyright (C) 2005 RIKEN. All rights reserved.
@@ -81,21 +81,21 @@ int na_pat_expand(const char *pat, char **pat_expand)
     for (; !ret && *pat; ++pat) {
 	switch (*pat) {
 	    case 'A':	PUSH('A');	break;
-	    case 'B':	PUSHN("CGTUB");	break;
+	    case 'B':	PUSHN("CGTB");	break;
 	    case 'C':	PUSH('C');	break;
-	    case 'D':	PUSHN("AGTUD");	break;
+	    case 'D':	PUSHN("AGTD");	break;
 	    case 'G':	PUSH('G');	break;
-	    case 'H':	PUSHN("ACTUH");	break;
-	    case 'K':	PUSHN("GTUK");	break;
+	    case 'H':	PUSHN("ACTH");	break;
+	    case 'K':	PUSHN("GTK");	break;
 	    case 'M':	PUSHN("ACM");	break;
-	    case 'N':	PUSHN("ACGTURYMKWSBDHVN");  break;
+	    case 'N':	PUSHN("ACGTRYMKWSBDHVN");  break;
 	    case 'R':	PUSHN("AGR");	break;
 	    case 'S':	PUSHN("CGS");	break;
-	    case 'T':	PUSHN("TU");	break;
-	    case 'U':	PUSHN("TU");	break;
+	    case 'T':	PUSH('T');	break;
+	    case 'U':	PUSH('T');	break;
 	    case 'V':	PUSHN("ACGV");	break;
-	    case 'W':	PUSHN("ATUW");	break;
-	    case 'Y':	PUSHN("CTUY");	break;
+	    case 'W':	PUSHN("ATW");	break;
+	    case 'Y':	PUSHN("CTY");	break;
 	    case '[':	PUSH(*pat); inclass = 1;    break;
 	    case ']':	PUSH(*pat); inclass = 0;    break;
 	    default:	PUSH(*pat);	break;
@@ -131,21 +131,21 @@ int na_pat_complement(const char *pat, char **pat_complement)
 
     for (; !ret && *pat; ++pat) {
 	switch (*pat) {
-	    case 'A':	PUSHN("TU");	break;
+	    case 'A':	PUSH('T');	break;
 	    case 'B':	PUSHN("ACGV");	break;
 	    case 'C':	PUSH('G');	break;
-	    case 'D':	PUSHN("ACTUH");	break;
+	    case 'D':	PUSHN("ACTH");	break;
 	    case 'G':	PUSH('C');	break;
-	    case 'H':	PUSHN("AGTUD");	break;
+	    case 'H':	PUSHN("AGTD");	break;
 	    case 'K':	PUSHN("ACM");	break;
-	    case 'M':	PUSHN("GTUK");	break;
-	    case 'N':	PUSHN("ACGTURYMKWSBDHVN");  break;
-	    case 'R':	PUSHN("CTUY");	break;
+	    case 'M':	PUSHN("GTK");	break;
+	    case 'N':	PUSHN("ACGTRYMKWSBDHVN");  break;
+	    case 'R':	PUSHN("CTY");	break;
 	    case 'S':	PUSHN("CGS");	break;
 	    case 'T':	PUSH('A');	break;
 	    case 'U':	PUSH('A');	break;
-	    case 'V':	PUSHN("CGTUB");	break;
-	    case 'W':	PUSHN("ATUW");	break;
+	    case 'V':	PUSHN("CGTB");	break;
+	    case 'W':	PUSHN("ATW");	break;
 	    case 'Y':	PUSHN("AGY");	break;
 	    case '[':	PUSH(*pat); inclass = 1;    break;
 	    case ']':	PUSH(*pat); inclass = 0;    break;
