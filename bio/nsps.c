@@ -1,5 +1,5 @@
 /***********************************************************************
- * $Id: nsps.c,v 1.4 2006/04/06 10:57:59 aki Exp $
+ * $Id: nsps.c,v 1.5 2006/04/11 09:22:12 aki Exp $
  *
  * nsps
  * Copyright (C) 2005 RIKEN. All rights reserved.
@@ -125,7 +125,7 @@ static opts_t opts = {
     }
 };
 
-static const char alphabet[] = "ABCDGHKMNRSTUVWY";
+static const char alphabet[] = "ABCDGHKMNRSTVWY";
 
 /*======================================================================
  * prototypes
