@@ -1,5 +1,5 @@
 /***********************************************************************
- * $Id: region.c,v 1.5 2006/01/12 10:11:03 aki Exp $
+ * $Id: region.c,v 1.6 2006/04/13 11:03:03 aki Exp $
  *
  * region
  * Copyright (C) 2005 RIKEN. All rights reserved.
@@ -244,38 +244,40 @@ int region_print(const region_t *re, void *param)
 	arg.adj = 0;
 	arg.param = param;
 
-	mbuf_t *mbp = re->ranges;
-	const range32_t *r = (const range32_t *)mbuf_ptr(mbp);
-	const range32_t *r_end = r + mbuf_size(mbp) / sizeof(range32_t);
-	for (; r < r_end; ++r)
 	{
-	    int32_t pos;
+	    mbuf_t *mbp = re->ranges;
+	    const range32_t *r = (const range32_t *)mbuf_ptr(mbp);
+	    const range32_t *r_end = r + mbuf_size(mbp) / sizeof(range32_t);
+	    for (; r < r_end; ++r)
+	    {
+		int32_t pos;
 #if 0
-	    for (pos = r->beg; pos <= r->end; ++pos) {
-		(*pf32)(pos, &arg);
-	    }
-#else
-	    if (r->head) {
-		arg.adj = 1;
-		for (pos = r->beg; pos <= r->end; ++pos) {
-		    if (pos > 0) {
-			(*pf32)(pos, &arg);
-		    }
-		}
-	    } else if (r->tail) {
-		arg.adj = 0;
-		for (pos = r->beg; pos <= r->end; ++pos) {
-		    if (arg.idx[pos] > 0) {
-			(*pf32)(pos, &arg);
-		    }
-		}
-	    } else {
-		arg.adj = 0;
 		for (pos = r->beg; pos <= r->end; ++pos) {
 		    (*pf32)(pos, &arg);
 		}
-	    }
+#else
+		if (r->head) {
+		    arg.adj = 1;
+		    for (pos = r->beg; pos <= r->end; ++pos) {
+			if (pos > 0) {
+			    (*pf32)(pos, &arg);
+			}
+		    }
+		} else if (r->tail) {
+		    arg.adj = 0;
+		    for (pos = r->beg; pos <= r->end; ++pos) {
+			if (arg.idx[pos] > 0) {
+			    (*pf32)(pos, &arg);
+			}
+		    }
+		} else {
+		    arg.adj = 0;
+		    for (pos = r->beg; pos <= r->end; ++pos) {
+			(*pf32)(pos, &arg);
+		    }
+		}
 #endif
+	    }
 	}
 #if SIZEOF_OFF_T >= 8
     } else {	/* SFXA_IDXBITS_64 */
@@ -287,38 +289,40 @@ int region_print(const region_t *re, void *param)
 	arg.adj = 0;
 	arg.param = param;
 
-	mbuf_t *mbp = re->ranges;
-	const range64_t *r = (const range64_t *)mbuf_ptr(mbp);
-	const range64_t *r_end = r + mbuf_size(mbp) / sizeof(range64_t);
-	for (; r < r_end; ++r)
 	{
-	    int64_t pos;
+	    mbuf_t *mbp = re->ranges;
+	    const range64_t *r = (const range64_t *)mbuf_ptr(mbp);
+	    const range64_t *r_end = r + mbuf_size(mbp) / sizeof(range64_t);
+	    for (; r < r_end; ++r)
+	    {
+		int64_t pos;
 #if 0
-	    for (pos = r->beg; pos <= r->end; ++pos) {
-		(*pf64)(pos, &arg);
-	    }
-#else
-	    if (r->head) {
-		arg.adj = 1;
-		for (pos = r->beg; pos <= r->end; ++pos) {
-		    if (pos > 0) {
-			(*pf64)(pos, &arg);
-		    }
-		}
-	    } else if (r->tail) {
-		arg.adj = 0;
-		for (pos = r->beg; pos <= r->end; ++pos) {
-		    if (arg.idx[pos] > 0) {
-			(*pf64)(pos, &arg);
-		    }
-		}
-	    } else {
-		arg.adj = 0;
 		for (pos = r->beg; pos <= r->end; ++pos) {
 		    (*pf64)(pos, &arg);
 		}
-	    }
+#else
+		if (r->head) {
+		    arg.adj = 1;
+		    for (pos = r->beg; pos <= r->end; ++pos) {
+			if (pos > 0) {
+			    (*pf64)(pos, &arg);
+			}
+		    }
+		} else if (r->tail) {
+		    arg.adj = 0;
+		    for (pos = r->beg; pos <= r->end; ++pos) {
+			if (arg.idx[pos] > 0) {
+			    (*pf64)(pos, &arg);
+			}
+		    }
+		} else {
+		    arg.adj = 0;
+		    for (pos = r->beg; pos <= r->end; ++pos) {
+			(*pf64)(pos, &arg);
+		    }
+		}
 #endif
+	    }
 	}
 #endif /* SIZEOF_OFF_T >= 8 */
     }
@@ -342,14 +346,16 @@ int region_dump(const region_t *re, void *param)
 	arg.adj = 0;
 	arg.param = param;
 
-	mbuf_t *mbp = re->ranges;
-	const range32_t *r = (const range32_t *)mbuf_ptr(mbp);
-	const range32_t *r_end = r + mbuf_size(mbp) / sizeof(range32_t);
-	for (; r < r_end; ++r)
 	{
-	    int32_t pos;
-	    for (pos = r->beg; pos <= r->end; ++pos) {
-		(*pf32)(pos, &arg);
+	    mbuf_t *mbp = re->ranges;
+	    const range32_t *r = (const range32_t *)mbuf_ptr(mbp);
+	    const range32_t *r_end = r + mbuf_size(mbp) / sizeof(range32_t);
+	    for (; r < r_end; ++r)
+	    {
+		int32_t pos;
+		for (pos = r->beg; pos <= r->end; ++pos) {
+		    (*pf32)(pos, &arg);
+		}
 	    }
 	}
 #if SIZEOF_OFF_T >= 8
@@ -362,14 +368,16 @@ int region_dump(const region_t *re, void *param)
 	arg.adj = 0;
 	arg.param = param;
 
-	mbuf_t *mbp = re->ranges;
-	const range64_t *r = (const range64_t *)mbuf_ptr(mbp);
-	const range64_t *r_end = r + mbuf_size(mbp) / sizeof(range64_t);
-	for (; r < r_end; ++r)
 	{
-	    int64_t pos;
-	    for (pos = r->beg; pos <= r->end; ++pos) {
-		(*pf64)(pos, &arg);
+	    mbuf_t *mbp = re->ranges;
+	    const range64_t *r = (const range64_t *)mbuf_ptr(mbp);
+	    const range64_t *r_end = r + mbuf_size(mbp) / sizeof(range64_t);
+	    for (; r < r_end; ++r)
+	    {
+		int64_t pos;
+		for (pos = r->beg; pos <= r->end; ++pos) {
+		    (*pf64)(pos, &arg);
+		}
 	    }
 	}
 #endif /* SIZEOF_OFF_T >= 8 */

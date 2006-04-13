@@ -1,5 +1,5 @@
 /***********************************************************************
- * $Id: search.c,v 1.10 2006/01/12 10:01:50 aki Exp $
+ * $Id: search.c,v 1.11 2006/04/13 11:03:03 aki Exp $
  *
  * search
  * Copyright (C) 2005 RIKEN. All rights reserved.
@@ -154,13 +154,13 @@ int searchXX(region_t *re, const char *pattern, size_t patlen, const char *opt_a
 
     if (patlen > 0) {
 	searchXX_arg_t arg;
+	mbuf_t ranges_tmp;
+	size_t ofst;
+
 	/* setup args */
 	arg.txt = (const char *)sfxa_txt_ptr(re->sa);
 	arg.idx = (const intXX_t *)sfxa_idx_ptr(re->sa);
 	arg.len = (intXX_t)sfxa_txt_len(re->sa);
-
-	mbuf_t  ranges_tmp;
-	size_t ofst;
 
 	/* initialize mbuf */
 	if ((ret = mbuf_init(&ranges_tmp, NULL, 0)) != 0)

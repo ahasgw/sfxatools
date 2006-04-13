@@ -1,5 +1,5 @@
 /***********************************************************************
- * $Id: fa2hdsq.c,v 1.7 2006/01/12 09:53:33 aki Exp $
+ * $Id: fa2hdsq.c,v 1.8 2006/04/13 11:03:03 aki Exp $
  *
  * Fasta to header/sequence separator
  * Copyright (C) 2005 RIKEN. All rights reserved.
@@ -118,6 +118,7 @@ static void process_file(const char *file)
     const char *ofname = (opts.opt_b ? base_name(opts.opt_b) : base_name(ifname));
     ofnames_t ofnames;
     ofiles_t ofiles;
+    parsefa_param_t param = {opts.cmap, opts.opt_S, opts.opt_I};
 
     if (opts.opt_v) msg(MSGLVL_INFO, "processing '%s'...", ifname);
 
@@ -133,8 +134,6 @@ static void process_file(const char *file)
 	ofnames_init(&ofnames, "/dev/null", "", "", "", -1);
     }
     ofiles_open(&ofiles, &ofnames, 0);
-
-    parsefa_param_t param = {opts.cmap, opts.opt_S, opts.opt_I};
 
     /* parse fasta */
 #if SIZEOF_OFF_T < 8
