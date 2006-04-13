@@ -1,5 +1,5 @@
 /***********************************************************************
- * $Id: mmfile.c,v 1.4 2005/08/01 09:04:50 aki Exp $
+ * $Id: mmfile.c,v 1.5 2006/04/13 07:48:04 aki Exp $
  *
  * Memory mapped file
  * Copyright (C) 2005 RIKEN. All rights reserved.
@@ -133,6 +133,8 @@ int mmfile_map_shared_rd(mmfile_t *mf)
     ptr = mmap(NULL, (size_t)st.st_size, PROT_READ, MAP_SHARED, fd, 0);
     if (ptr == MAP_FAILED)
 	return errno;		    /* Is the close(fd) required? */
+    if (ptr == NULL)
+	return errno = EINVAL;
 
     mf->ptr = ptr;
     mf->sz = st.st_size;
@@ -171,6 +173,8 @@ int mmfile_map_shared_rw(mmfile_t *mf, off_t trunc_len)
     ptr = mmap(NULL, (size_t)len, PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
     if (ptr == MAP_FAILED)
 	return errno;		    /* Is the close(fd) required? */
+    if (ptr == NULL)
+	return errno = EINVAL;
 
     mf->ptr = ptr;
     mf->sz = len;
@@ -198,6 +202,8 @@ int mmfile_map_private_rd(mmfile_t *mf)
     ptr = mmap(NULL, (size_t)st.st_size, PROT_READ, MAP_PRIVATE, fd, 0);
     if (ptr == MAP_FAILED)
 	return errno;		    /* Is the close(fd) required? */
+    if (ptr == NULL)
+	return errno = EINVAL;
 
     mf->ptr = ptr;
     mf->sz = st.st_size;
@@ -225,6 +231,8 @@ int mmfile_map_private_rw(mmfile_t *mf)
     ptr = mmap(NULL, (size_t)st.st_size, PROT_READ | PROT_WRITE, MAP_PRIVATE, fd, 0);
     if (ptr == MAP_FAILED)
 	return errno;		    /* Is the close(fd) required? */
+    if (ptr == NULL)
+	return errno = EINVAL;
 
     mf->ptr = ptr;
     mf->sz = st.st_size;
