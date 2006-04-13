@@ -1,5 +1,5 @@
 /***********************************************************************
- * $Id: bl2dump.c,v 1.6 2005/12/15 13:46:56 aki Exp $
+ * $Id: bl2dump.c,v 1.7 2006/04/13 11:03:02 aki Exp $
  *
  * Blast2 database dump
  * Copyright (C) 2005 RIKEN. All rights reserved.
@@ -152,13 +152,14 @@ inline static uint64_t read_uint64el(unsigned char *b)
 static int get_cnt(const unsigned char **p)
 {
     int cnt = **p;
+    int len;
 
     if (cnt <= 127) {
 	++*p;
 	return cnt;
     }
 
-    int len = cnt - 128;
+    len = cnt - 128;
     for (cnt = 0, ++*p; len > 0; ++*p, --len)
 	cnt = ((cnt << 8) + (int)**p);
     return cnt;
@@ -167,6 +168,7 @@ static int get_cnt(const unsigned char **p)
 /* read index file */
 static void read_indfile(void * const top, ofs_t *ofs)
 {
+    ptrdiff_t off;
     union {
 	void *v;
 	char *c;
@@ -185,7 +187,7 @@ static void read_indfile(void * const top, ofs_t *ofs)
     info.date = strndup(ptr.c, info.datelen), ptr.c += info.datelen;
 
     /* align to 4 bytes boundary */
-    ptrdiff_t off = ptr.c - (char *)top;
+    off = ptr.c - (char *)top;
     if (off & 0x03) {
 	off += 0x03UL, off &= ~0x03UL, ptr.c = (char *)top + off;
     }
@@ -225,9 +227,10 @@ static void print_protein(const char * const hdr, const char * const seq, ofs_t 
 	uint32_t d = ntohl(*ofs->def++);
 	uint32_t s = ntohl(*ofs->seq++), nexts = ntohl(*ofs->seq);
 	const unsigned char *dstr = (const unsigned char *)hdr + d;
-	dstr += 7;
-	int dlen = get_cnt(&dstr);
 	uint32_t slen = nexts - s;
+	int dlen;
+	dstr += 7;
+	dlen = get_cnt(&dstr);
 
 	if (opts.opt_v)
 	    printf("## === [%u] def:(%d@%u) seq:(%u@%u) ===\n",
@@ -261,10 +264,11 @@ static void print_nucleotide(const char * const hdr, const char * const seq, ofs
 	uint32_t s = ntohl(*ofs->seq++), nexts = ntohl(*ofs->seq);
 	uint32_t a = ntohl(*ofs->amb++);
 	const unsigned char *dstr = (const unsigned char *)hdr + d;
-	dstr += 7;
-	int dlen = get_cnt(&dstr);
 	uint32_t alen = nexts - a;
 	uint32_t slen = a - s;
+	int dlen;
+	dstr += 7;
+	dlen = get_cnt(&dstr);
 
 	if (opts.opt_v)
 	    printf("## === [%u] def:(%d@%u) seq:(%u@%u) amb:(%u@%u) ===\n",
@@ -354,6 +358,7 @@ static void process(const char *idxpath)
     mmfile_t *mf_hdr = NULL;
     mmfile_t *mf_seq = NULL;
     ofs_t ofs = {NULL, NULL, NULL};
+    const char *hdr, *seq;
 
     /* ind file */
     mf_idx = mfrdopen(idxpath);		    /* open index file */
@@ -364,13 +369,13 @@ static void process(const char *idxpath)
     hdrpath[strlen(idxpath) - EXTLEN] = '\0';
     strcat(hdrpath, (info.dumpflag ? ".phr" : ".nhr"));
     mf_hdr = mfrdopen(hdrpath);
-    const char *hdr = (const char *)mmfile_ptr(mf_hdr);
+    hdr = (const char *)mmfile_ptr(mf_hdr);
 
     /* make sequence file paths, then open */
     seqpath[strlen(idxpath) - EXTLEN] = '\0';
     strcat(seqpath, (info.dumpflag ? ".psq" : ".nsq"));
     mf_seq = mfrdopen(seqpath);
-    const char *seq = (const char *)mmfile_ptr(mf_seq);
+    seq = (const char *)mmfile_ptr(mf_seq);
 
     /* print offset info */
     if (info.dumpflag) {
