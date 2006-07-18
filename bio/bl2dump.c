@@ -1,5 +1,5 @@
 /***********************************************************************
- * $Id: bl2dump.c,v 1.7 2006/04/13 11:03:02 aki Exp $
+ * $Id: bl2dump.c,v 1.8 2006/07/18 12:19:02 aki Exp $
  *
  * Blast2 database dump
  * Copyright (C) 2005 RIKEN. All rights reserved.
@@ -38,6 +38,7 @@
 #include <dirname.h>
 #include <getopt.h>
 #include <progname.h>
+#include <strndup.h>
 #include <xalloc.h>
 
 #include "cmap.h"

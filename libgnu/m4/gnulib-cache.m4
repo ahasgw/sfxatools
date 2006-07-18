@@ -14,10 +14,10 @@
 
 
 # Specification in the form of a command-line invocation:
-#   gnulib-tool --import --dir=.. --lib=libgnu --source-base=libgnu --m4-base=libgnu/m4 --aux-dir=config --macro-prefix=gl assert atexit c-bs-a calloc dirname dummy error exit exitfail free ftruncate getline getopt getsubopt gettext gettimeofday malloc memchr memcmp memcpy memmove memset mktime progname realloc restrict snprintf ssize_t stdbool stdint strcspn strerror strpbrk strstr strtod strtoimax strtol strtoll strtoul strtoull strtoumax ullong_max vsnprintf xalloc xalloc-die
+#   gnulib-tool --import --dir=.. --lib=libgnu --source-base=libgnu --m4-base=libgnu/m4 --aux-dir=config --macro-prefix=gl assert atexit c-bs-a calloc dirname dummy error exit exitfail free ftruncate getline getopt getsubopt gettext gettimeofday malloc memchr memcmp memcpy memmove memset mktime progname realloc restrict snprintf ssize_t stdbool stdint strcspn strerror strndup strpbrk strstr strtod strtoimax strtol strtoll strtoul strtoull strtoumax ullong_max vsnprintf xalloc xalloc-die
 
 # Specification in the form of a few gnulib-tool.m4 macro invocations:
-gl_MODULES([assert atexit c-bs-a calloc dirname dummy error exit exitfail free ftruncate getline getopt getsubopt gettext gettimeofday malloc memchr memcmp memcpy memmove memset mktime progname realloc restrict snprintf ssize_t stdbool stdint strcspn strerror strpbrk strstr strtod strtoimax strtol strtoll strtoul strtoull strtoumax ullong_max vsnprintf xalloc xalloc-die])
+gl_MODULES([assert atexit c-bs-a calloc dirname dummy error exit exitfail free ftruncate getline getopt getsubopt gettext gettimeofday malloc memchr memcmp memcpy memmove memset mktime progname realloc restrict snprintf ssize_t stdbool stdint strcspn strerror strndup strpbrk strstr strtod strtoimax strtol strtoll strtoul strtoull strtoumax ullong_max vsnprintf xalloc xalloc-die])
 gl_AVOID([])
 gl_SOURCE_BASE([libgnu])
 gl_M4_BASE([libgnu/m4])

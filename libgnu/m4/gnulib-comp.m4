@@ -18,6 +18,7 @@
 # any checks for libraries, header files, types and library functions.
 AC_DEFUN([gl_EARLY],
 [
+  AC_REQUIRE([AC_PROG_RANLIB])
   AC_REQUIRE([AC_GNU_SOURCE])
   AC_REQUIRE([gl_USE_SYSTEM_EXTENSIONS])
 ])
@@ -26,7 +27,7 @@ AC_DEFUN([gl_EARLY],
 # "Check for header files, types and library functions".
 AC_DEFUN([gl_INIT],
 [
-AM_CONDITIONAL([GL_COND_LIBTOOL], [false])
+  AM_CONDITIONAL([GL_COND_LIBTOOL], [false])
   gl_FUNC_ALLOCA
   gl_ASSERT
   gl_FUNC_ATEXIT
@@ -43,6 +44,7 @@ AM_CONDITIONAL([GL_COND_LIBTOOL], [false])
   gl_GETOPT
   gl_FUNC_GETSUBOPT
   dnl you must add AM_GNU_GETTEXT([external]) or similar to configure.ac.
+  AM_GNU_GETTEXT_VERSION([0.14.5])
   AC_FUNC_GETTIMEOFDAY_CLOBBER
   AC_FUNC_MALLOC
   gl_MBCHAR
@@ -64,6 +66,8 @@ AM_CONDITIONAL([GL_COND_LIBTOOL], [false])
   gl_FUNC_STRCHRNUL
   gl_FUNC_STRCSPN
   gl_FUNC_STRERROR
+  gl_FUNC_STRNDUP
+  gl_FUNC_STRNLEN
   gl_FUNC_STRPBRK
   gl_FUNC_STRSTR
   gl_FUNC_STRTOD
@@ -75,6 +79,7 @@ AM_CONDITIONAL([GL_COND_LIBTOOL], [false])
   gl_FUNC_STRTOUMAX
   gl_TIME_R
   gl_ULLONG_MAX
+  gl_HEADER_UNISTD
   gl_FUNC_VASNPRINTF
   gl_FUNC_VSNPRINTF
   gl_XALLOC
@@ -140,6 +145,10 @@ AC_DEFUN([gl_FILE_LIST], [
   lib/strcspn.c
   lib/strerror.c
   lib/stripslash.c
+  lib/strndup.c
+  lib/strndup.h
+  lib/strnlen.c
+  lib/strnlen.h
   lib/strnlen1.c
   lib/strnlen1.h
   lib/strpbrk.c
@@ -227,6 +236,8 @@ AC_DEFUN([gl_FILE_LIST], [
   m4/strcspn.m4
   m4/strerror.m4
   m4/strerror_r.m4
+  m4/strndup.m4
+  m4/strnlen.m4
   m4/strpbrk.m4
   m4/strstr.m4
   m4/strtod.m4
@@ -240,6 +251,7 @@ AC_DEFUN([gl_FILE_LIST], [
   m4/uintmax_t.m4
   m4/ullong_max.m4
   m4/ulonglong.m4
+  m4/unistd_h.m4
   m4/vasnprintf.m4
   m4/vsnprintf.m4
   m4/wchar_t.m4
