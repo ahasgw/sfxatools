@@ -1,3 +1,11 @@
+2006-07-20  Aki Hasegawa  <aki@gsc.riken.jp>
+
+	* sfxatools (0.2.5): minor bug fix release.
+
+2006-04-11  Aki Hasegawa  <aki@gsc.riken.jp>
+
+	* sfxatools (0.2.4): fixed nsps command.
+
 2006-01-12  Aki Hasegawa  <aki@gsc.riken.jp>
 
 	* sfxatools (0.2.3): minor bug fix release.
