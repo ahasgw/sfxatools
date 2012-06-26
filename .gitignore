@@ -1,0 +1,10 @@
+*.[oa]
+*.deps
+*.swp
+*.Po
+*.log
+*.spec
+*.cache
+*.o64
+*~
+0*
