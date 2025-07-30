@@ -1,9 +1,5 @@
 /***********************************************************************
- * $Id: na_pat.c,v 1.3 2006/04/11 09:22:11 aki Exp $
- *
- * na_pat.c
- * Copyright (C) 2005 RIKEN. All rights reserved.
- * Written by Aki Hasegawa <aki@gsc.riken.jp>.
+ * Copyright (C) 2005, 2006 RIKEN. All rights reserved.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -26,6 +22,7 @@
 #endif
 
 #include <errno.h>
+#include <stdlib.h>
 #include <string.h>
 
 #include "na_pat.h"

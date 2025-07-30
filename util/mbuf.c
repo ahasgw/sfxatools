@@ -1,9 +1,5 @@
 /***********************************************************************
- * $Id: mbuf.c,v 1.3 2005/08/17 10:11:45 aki Exp $
- *
- * Memory buffer utility.
- * Copyright (C) 2004 RIKEN. All rights reserved.
- * Written by Aki Hasegawa <aki@gsc.riken.jp>.
+ * Copyright (C) 2004, 2005 RIKEN. All rights reserved.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by

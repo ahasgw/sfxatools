@@ -1,49 +1,76 @@
-/* strerror.c --- ANSI C compatible system error routine
+/* strerror.c --- POSIX compatible system error routine
 
-   Copyright (C) 1986, 1988, 1989, 1991, 2002, 2003 Free Software
-   Foundation, Inc.
+   Copyright (C) 2007-2025 Free Software Foundation, Inc.
 
-   This program is free software; you can redistribute it and/or modify
-   it under the terms of the GNU General Public License as published by
-   the Free Software Foundation; either version 2, or (at your option)
-   any later version.
+   This file is free software: you can redistribute it and/or modify
+   it under the terms of the GNU Lesser General Public License as
+   published by the Free Software Foundation; either version 2.1 of the
+   License, or (at your option) any later version.
 
-   This program is distributed in the hope that it will be useful,
+   This file is distributed in the hope that it will be useful,
    but WITHOUT ANY WARRANTY; without even the implied warranty of
    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-   GNU General Public License for more details.
+   GNU Lesser General Public License for more details.
 
-   You should have received a copy of the GNU General Public License
-   along with this program; if not, write to the Free Software Foundation,
-   Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.  */
+   You should have received a copy of the GNU Lesser General Public License
+   along with this program.  If not, see <https://www.gnu.org/licenses/>.  */
 
-#ifdef HAVE_CONFIG_H
-# include <config.h>
+#include <config.h>
+
+/* Specification.  */
+#include <string.h>
+
+#include <errno.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+#include "intprops.h"
+#include "strerror-override.h"
+
+/* Use the system functions, not the gnulib overrides in this file.  */
+#undef sprintf
+
+/* macOS 12's "warning: 'sprintf' is deprecated" is pointless,
+   as sprintf is used safely here.  */
+#if defined __APPLE__ && defined __MACH__ && _GL_GNUC_PREREQ (4, 2)
+# pragma GCC diagnostic ignored "-Wdeprecated-declarations"
 #endif
-
-#include <limits.h>
-
-/* Don't include <stdio.h>, since it may or may not declare
-   sys_errlist and its declarations may collide with ours.  Just
-   declare the stuff that we need directly.  Standard hosted C89
-   implementations define strerror and they don't need this strerror
-   function, so take some liberties with the standard to cater to
-   ancient or limited freestanding implementations.  */
-int sprintf (char *, char const *, ...);
-extern int sys_nerr;
-extern char *sys_errlist[];
 
 char *
 strerror (int n)
+#undef strerror
 {
-  static char const fmt[] = "Unknown error (%d)";
-  static char mesg[sizeof fmt + sizeof n * CHAR_BIT / 3];
+  static char buf[STACKBUF_LEN];
+  size_t len;
 
-  if (n < 0 || n >= sys_nerr)
+  /* Cast away const, due to the historical signature of strerror;
+     callers should not be modifying the string.  */
+  const char *msg = strerror_override (n);
+  if (msg)
+    return (char *) msg;
+
+  msg = strerror (n);
+
+  /* Our strerror_r implementation might use the system's strerror
+     buffer, so all other clients of strerror have to see the error
+     copied into a buffer that we manage.  This is not thread-safe,
+     even if the system strerror is, but portable programs shouldn't
+     be using strerror if they care about thread-safety.  */
+  if (!msg || !*msg)
     {
-      sprintf (mesg, fmt, n);
-      return mesg;
+      static char const fmt[] = "Unknown error %d";
+      static_assert (sizeof buf >= sizeof (fmt) + INT_STRLEN_BOUND (n));
+      sprintf (buf, fmt, n);
+      errno = EINVAL;
+      return buf;
     }
-  else
-    return sys_errlist[n];
+
+  /* Fix STACKBUF_LEN if this ever aborts.  */
+  len = strlen (msg);
+  if (sizeof buf <= len)
+    abort ();
+
+  memcpy (buf, msg, len + 1);
+  return buf;
 }

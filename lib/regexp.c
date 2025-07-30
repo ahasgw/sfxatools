@@ -1,9 +1,5 @@
 /***********************************************************************
- * $Id: regexp.c,v 1.5 2005/12/15 13:58:59 aki Exp $
- *
- * regexp
  * Copyright (C) 2005 RIKEN. All rights reserved.
- * Written by Aki Hasegawa <aki@gsc.riken.jp>.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by

@@ -1,9 +1,5 @@
 /***********************************************************************
- * $Id: mklcpa.c,v 1.8 2005/12/15 13:47:03 aki Exp $
- *
- * mklcpa
  * Copyright (C) 2005 RIKEN. All rights reserved.
- * Written by Aki Hasegawa <aki@gsc.riken.jp>.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by

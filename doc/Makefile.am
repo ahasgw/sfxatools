@@ -1,8 +1,4 @@
-## $Id: Makefile.am,v 1.9 2006/01/17 10:31:27 aki Exp $
-##
-## Makefile for the doc directory of sfxatools.
-## Copyright (C) 2005 RIKEN. All rights reserved.
-## Written by Aki Hasegawa <aki@gsc.riken.jp>.
+## Copyright (C) 2005, 2006 RIKEN. All rights reserved.
 ##
 ## This program is free software; you can redistribute it and/or modify
 ## it under the terms of the GNU General Public License as published by

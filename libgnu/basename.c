@@ -1,12 +1,12 @@
 /* basename.c -- return the last element in a file name
 
-   Copyright (C) 1990, 1998, 1999, 2000, 2001, 2003, 2004, 2005 Free
-   Software Foundation, Inc.
+   Copyright (C) 1990, 1998-2001, 2003-2006, 2009-2025 Free Software
+   Foundation, Inc.
 
-   This program is free software; you can redistribute it and/or modify
+   This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
-   the Free Software Foundation; either version 2, or (at your option)
-   any later version.
+   the Free Software Foundation, either version 3 of the License, or
+   (at your option) any later version.
 
    This program is distributed in the hope that it will be useful,
    but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -14,66 +14,51 @@
    GNU General Public License for more details.
 
    You should have received a copy of the GNU General Public License
-   along with this program; if not, write to the Free Software Foundation,
-   Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.  */
+   along with this program.  If not, see <https://www.gnu.org/licenses/>.  */
 
-#ifdef HAVE_CONFIG_H
-# include <config.h>
-#endif
+#include <config.h>
 
 #include "dirname.h"
+
 #include <string.h>
-
-/* In general, we can't use the builtin `basename' function if available,
-   since it has different meanings in different environments.
-   In some environments the builtin `basename' modifies its argument.
-
-   Return the address of the last file name component of NAME.  If
-   NAME has no file name components because it is all slashes, return
-   NAME if it is empty, the address of its last slash otherwise.  */
+#include "xalloc.h"
 
 char *
 base_name (char const *name)
 {
-  char const *base = name + FILE_SYSTEM_PREFIX_LEN (name);
-  char const *p;
-
-  for (p = base; *p; p++)
+  char const *base = last_component (name);
+  idx_t length;
+  int dotslash_len;
+  if (*base)
     {
-      if (ISSLASH (*p))
-	{
-	  /* Treat multiple adjacent slashes like a single slash.  */
-	  do p++;
-	  while (ISSLASH (*p));
+      length = base_len (base);
 
-	  /* If the file name ends in slash, use the trailing slash as
-	     the basename if no non-slashes have been found.  */
-	  if (! *p)
-	    {
-	      if (ISSLASH (*base))
-		base = p - 1;
-	      break;
-	    }
+      /* Collapse a sequence of trailing slashes into one.  */
+      length += ISSLASH (base[length]);
 
-	  /* *P is a non-slash preceded by a slash.  */
-	  base = p;
-	}
+      /* On systems with drive letters, "a/b:c" must return "./b:c" rather
+         than "b:c" to avoid confusion with a drive letter.  On systems
+         with pure POSIX semantics, this is not an issue.  */
+      dotslash_len = FILE_SYSTEM_PREFIX_LEN (base) != 0 ? 2 : 0;
+    }
+  else
+    {
+      /* There is no last component, so NAME is a file system root or
+         the empty string.  */
+      base = name;
+      length = base_len (base);
+      dotslash_len = 0;
     }
 
-  return (char *) base;
-}
+  char *p = ximalloc (dotslash_len + length + 1);
+  if (dotslash_len)
+    {
+      p[0] = '.';
+      p[1] = '/';
+    }
 
-/* Return the length of of the basename NAME.  Typically NAME is the
-   value returned by base_name.  Act like strlen (NAME), except omit
-   redundant trailing slashes.  */
-
-size_t
-base_len (char const *name)
-{
-  size_t len;
-
-  for (len = strlen (name);  1 < len && ISSLASH (name[len - 1]);  len--)
-    continue;
-
-  return len;
+  /* Finally, copy the basename.  */
+  memcpy (p + dotslash_len, base, length);
+  p[dotslash_len + length] = '\0';
+  return p;
 }

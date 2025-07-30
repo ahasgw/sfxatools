@@ -1,9 +1,5 @@
 /***********************************************************************
- * $Id: ofiles.h,v 1.2 2005/07/05 07:33:25 aki Exp $
- *
- * ofiles header file
  * Copyright (C) 2005 RIKEN. All rights reserved.
- * Written by Aki Hasegawa <aki@gsc.riken.jp>.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by

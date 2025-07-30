@@ -1,9 +1,5 @@
 /***********************************************************************
- * $Id: parsefa.c,v 1.5 2005/08/17 10:11:40 aki Exp $
- *
- * parsefa
  * Copyright (C) 2005 RIKEN. All rights reserved.
- * Written by Aki Hasegawa <aki@gsc.riken.jp>.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -37,7 +33,6 @@
 # include <unistd.h>
 #endif
 
-#include <getline.h>
 #include <getopt.h>
 #include <progname.h>
 #include <string.h>

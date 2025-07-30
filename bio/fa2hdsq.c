@@ -1,9 +1,5 @@
 /***********************************************************************
- * $Id: fa2hdsq.c,v 1.8 2006/04/13 11:03:03 aki Exp $
- *
- * Fasta to header/sequence separator
- * Copyright (C) 2005 RIKEN. All rights reserved.
- * Written by Aki Hasegawa <aki@gsc.riken.jp>.
+ * Copyright (C) 2005, 2006 RIKEN. All rights reserved.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by

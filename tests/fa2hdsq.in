@@ -1,10 +1,6 @@
 #! @SHELL@
 #
-# $Id: fa2hdsq.in,v 1.1 2005/06/11 07:07:03 aki Exp $
-#
-# fa2hdsq
 # Copyright (C) 2005 RIKEN. All rights reserved.
-# Written by Aki Hasegawa <aki@gsc.riken.jp>.
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by

@@ -1,9 +1,5 @@
 /***********************************************************************
- * $Id: annotidx.c,v 1.5 2005/12/15 13:46:56 aki Exp $
- *
- * Annotate index.
  * Copyright (C) 2004,2005 RIKEN. All rights reserved.
- * Written by Aki Hasegawa <aki@gsc.riken.jp>.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -33,7 +29,6 @@
 #include <errno.h>
 
 #include <dirname.h>
-#include <getline.h>
 #include <getopt.h>
 #include <progname.h>
 #include <xalloc.h>

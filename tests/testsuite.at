@@ -1,8 +1,4 @@
-# $Id: testsuite.at,v 1.7 2005/10/31 03:03:46 aki Exp $
-#
-# Test suite for sfxatools.
-# Copyright (C) 2004 RIKEN. All rights reserved.
-# Written by Aki Hasegawa <aki@gsc.riken.jp>.
+# Copyright (C) 2004, 2005 RIKEN. All rights reserved.
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by

@@ -1,9 +1,5 @@
 /***********************************************************************
- * $Id: search.h,v 1.4 2005/10/31 03:03:45 aki Exp $
- *
- * search header file
  * Copyright (C) 2005 RIKEN. All rights reserved.
- * Written by Aki Hasegawa <aki@gsc.riken.jp>.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by

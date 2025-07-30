@@ -1,9 +1,5 @@
 /***********************************************************************
- * $Id: bl2dump.c,v 1.8 2006/07/18 12:19:02 aki Exp $
- *
- * Blast2 database dump
- * Copyright (C) 2005 RIKEN. All rights reserved.
- * Written by Aki Hasegawa <aki@gsc.riken.jp>.
+ * Copyright (C) 2005, 2006 RIKEN. All rights reserved.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -38,7 +34,6 @@
 #include <dirname.h>
 #include <getopt.h>
 #include <progname.h>
-#include <strndup.h>
 #include <xalloc.h>
 
 #include "cmap.h"
@@ -503,7 +498,7 @@ static void show_version(void)
 static void show_help(void)
 {
     static char fmt[] =
-	"This is bl2dump, Blast2 database dump rogram.\n"
+	"This is bl2dump, Blast2 database dump program.\n"
 	"\n"
 	"Usage: %s [options] <(.pin|.nin)_file>\n"
 	"Options:\n"

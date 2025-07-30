@@ -1,9 +1,5 @@
 /***********************************************************************
- * $Id: cmap.c,v 1.3 2005/07/05 07:33:27 aki Exp $
- *
- * cmap
  * Copyright (C) 2005 RIKEN. All rights reserved.
- * Written by Aki Hasegawa <aki@gsc.riken.jp>.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -30,8 +26,6 @@
 #include <stddef.h>
 #include <errno.h>
 #include <string.h>
-
-#include <getline.h>
 
 #include "cmap.h"
 

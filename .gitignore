@@ -1,10 +1,80 @@
-*.[oa]
-*.deps
-*.swp
-*.Po
-*.log
-*.spec
-*.cache
-*.o64
+# ========================
+# Autotools: build system
+# ========================
+/aclocal.m4
+/autom4te.cache/
+/config.log
+/config.status
+/configure
+/config.h
+/config.h.in
+/config.h.in~
+/stamp-h1
+
+Makefile
+Makefile.in
+**/Makefile
+**/Makefile.in
+
+# ========================
+# Libtool/compile artifacts
+# ========================
+*.o
+*.lo
+*.la
+*.a
+.libs/
+.deps/
+
+# ========================
+# Compiled binaries
+# ========================
+bio/annotidx
+bio/bl2dump
+bio/fa2hdsq
+bio/nsps
+bio/psps
+src/mksfxa
+src/sfxasrch
+src/mklcpa
+tests/annotidx
+tests/bl2dump
+tests/fa2hdsq
+tests/nsps
+tests/psps
+tests/mksfxa
+tests/sfxasrch
+tests/mklcpa
+
+# ========================
+# Test logs and artifacts
+# ========================
+tests/*.log
+tests/testsuite
+tests/testsuite.dir
+tests/atconfig
+tests/*.status
+
+# ========================
+# Editor and OS backup files
+# ========================
 *~
-0*
+*.bak
+*.tmp
+*.swp
+.DS_Store
+
+# ========================
+# Optional: gnulib auto-import
+# ========================
+#libgnu/
+
+# ========================
+# Custom ignores
+# ========================
+*.rej
+*.orig
+*.o64
+
+*.spec
+*.Po

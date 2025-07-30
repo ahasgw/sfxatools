@@ -1,8 +1,5 @@
-## $Id: Makefile.am,v 1.4 2005/10/31 03:03:43 aki Exp $
-##
 ## Makefile for the toplevel directory of sfxatools.
-## Copyright (C) 2005 RIKEN. All rights reserved.
-## Written by Aki Hasegawa <aki@gsc.riken.jp>.
+## Copyright (C) 2005, 2006 RIKEN. All rights reserved.
 ##
 ## This program is free software; you can redistribute it and/or modify
 ## it under the terms of the GNU General Public License as published by
@@ -19,8 +16,8 @@
 ## Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
 
 MAINTAINERCLEANFILES = Makefile.in aclocal.m4 configure \
-		config.h.in config.h.in~ stamp-h.in \
-		configure.scan autoscan.log
+		       config.h.in config.h.in~ stamp-h.in \
+		       configure.scan autoscan.log
 
 EXTRA_DIST = bootstrap.sh BUGS THANKS TODO sfxatools.spec
 

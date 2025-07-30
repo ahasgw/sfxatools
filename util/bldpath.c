@@ -1,9 +1,5 @@
 /***********************************************************************
- * $Id: bldpath.c,v 1.4 2006/01/12 09:53:33 aki Exp $
- *
- * bldpath.c
- * Copyright (C) 2005 RIKEN. All rights reserved.
- * Written by Aki Hasegawa <aki@gsc.riken.jp>.
+ * Copyright (C) 2005, 2006 RIKEN. All rights reserved.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by

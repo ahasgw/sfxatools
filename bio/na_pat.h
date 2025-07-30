@@ -1,9 +1,5 @@
 /***********************************************************************
- * $Id: na_pat.h,v 1.2 2006/04/06 10:57:59 aki Exp $
- *
- * na_pat header file
- * Copyright (C) 2005 RIKEN. All rights reserved.
- * Written by Aki Hasegawa <aki@gsc.riken.jp>.
+ * Copyright (C) 2005, 2006 RIKEN. All rights reserved.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by

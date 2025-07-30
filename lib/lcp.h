@@ -1,9 +1,5 @@
 /***********************************************************************
- * $Id: lcp.h,v 1.1 2005/08/17 10:11:42 aki Exp $
- *
- * lcp header file
  * Copyright (C) 2005 RIKEN. All rights reserved.
- * Written by Aki Hasegawa <aki@gsc.riken.jp>.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by

@@ -1,9 +1,5 @@
 /***********************************************************************
- * $Id: nsps.c,v 1.5 2006/04/11 09:22:12 aki Exp $
- *
- * nsps
- * Copyright (C) 2005 RIKEN. All rights reserved.
- * Written by Aki Hasegawa <aki@gsc.riken.jp>.
+ * Copyright (C) 2005, 2006 RIKEN. All rights reserved.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -42,7 +38,6 @@
 
 #include <dirname.h>
 #include <getopt.h>
-#include <getsubopt.h>
 #include <progname.h>
 #include <xalloc.h>
 

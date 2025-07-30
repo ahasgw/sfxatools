@@ -1,28 +1,35 @@
 /* Error handler for noninteractive utilities
-   Copyright (C) 1990-1998, 2000-2003, 2004 Free Software Foundation, Inc.
+   Copyright (C) 1990-2025 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
 
-   This program is free software; you can redistribute it and/or modify
-   it under the terms of the GNU General Public License as published by
-   the Free Software Foundation; either version 2, or (at your option)
-   any later version.
+   The GNU C Library is free software; you can redistribute it and/or
+   modify it under the terms of the GNU Lesser General Public
+   License as published by the Free Software Foundation; either
+   version 2.1 of the License, or (at your option) any later version.
 
-   This program is distributed in the hope that it will be useful,
+   The GNU C Library is distributed in the hope that it will be useful,
    but WITHOUT ANY WARRANTY; without even the implied warranty of
-   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-   GNU General Public License for more details.
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+   Lesser General Public License for more details.
 
-   You should have received a copy of the GNU General Public License along
-   with this program; if not, write to the Free Software Foundation,
-   Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.  */
+   You should have received a copy of the GNU Lesser General Public
+   License along with the GNU C Library; if not, see
+   <https://www.gnu.org/licenses/>.  */
 
 /* Written by David MacKenzie <djm@gnu.ai.mit.edu>.  */
 
-#ifdef HAVE_CONFIG_H
+#if !_LIBC
 # include <config.h>
+# define _GL_NO_INLINE_ERROR
+# define __error_internal(status, err, fmt, args, flags) \
+                  verror (status, err, fmt, args)
+# define __error_at_line_internal(status, err, file, line, fmt, args, flags) \
+                  verror_at_line (status, err, file, line, fmt, args)
+# define error_tail(status, err, fmt, args, flags) \
+        error_tail (status, err, fmt, args)
 #endif
 
-#include "error.h"
+#include <error.h>
 
 #include <stdarg.h>
 #include <stdio.h>
@@ -31,11 +38,18 @@
 
 #if !_LIBC && ENABLE_NLS
 # include "gettext.h"
+# define _(msgid) dgettext ("gnulib", msgid)
 #endif
 
 #ifdef _LIBC
+# include <libintl.h>
+# include <stdbool.h>
+# include <stdint.h>
 # include <wchar.h>
 # define mbsrtowcs __mbsrtowcs
+# define USE_UNLOCKED_IO 0
+# define _GL_ATTRIBUTE_FORMAT_PRINTF_STANDARD(a, b)
+# define _GL_ARG_NONNULL(a)
 #endif
 
 #if USE_UNLOCKED_IO
@@ -51,7 +65,7 @@
    function without parameters instead.  */
 void (*error_print_progname) (void);
 
-/* This variable is incremented each time `error' is called.  */
+/* This variable is incremented each time 'error' is called.  */
 unsigned int error_message_count;
 
 #ifdef _LIBC
@@ -59,122 +73,170 @@ unsigned int error_message_count;
 
 # define program_name program_invocation_name
 # include <errno.h>
+# include <limits.h>
 # include <libio/libioP.h>
 
-/* In GNU libc we want do not want to use the common name `error' directly.
+/* In GNU libc we want do not want to use the common name 'error' directly.
    Instead make it a weak alias.  */
 extern void __error (int status, int errnum, const char *message, ...)
      __attribute__ ((__format__ (__printf__, 3, 4)));
 extern void __error_at_line (int status, int errnum, const char *file_name,
-			     unsigned int line_number, const char *message,
-			     ...)
-     __attribute__ ((__format__ (__printf__, 5, 6)));;
+                             unsigned int line_number, const char *message,
+                             ...)
+     __attribute__ ((__format__ (__printf__, 5, 6)));
 # define error __error
 # define error_at_line __error_at_line
 
 # include <libio/iolibio.h>
-# define fflush(s) INTUSE(_IO_fflush) (s)
+# define fflush(s) _IO_fflush (s)
 # undef putc
-# define putc(c, fp) INTUSE(_IO_putc) (c, fp)
+# define putc(c, fp) _IO_putc (c, fp)
 
-# include <bits/libc-lock.h>
+# include <libc-lock.h>
 
 #else /* not _LIBC */
 
-# if !HAVE_DECL_STRERROR_R && STRERROR_R_CHAR_P
+# include <fcntl.h>
+# include <unistd.h>
+
+# if defined _WIN32 && ! defined __CYGWIN__
+/* Get declarations of the native Windows API functions.  */
+#  define WIN32_LEAN_AND_MEAN
+#  include <windows.h>
+/* Get _get_osfhandle.  */
+#  if GNULIB_MSVC_NOTHROW
+#   include "msvc-nothrow.h"
+#  else
+#   include <io.h>
+#  endif
+# endif
+
+/* The gnulib override of fcntl is not needed in this file.  */
+# undef fcntl
+
+# if !(GNULIB_STRERROR_R_POSIX || HAVE_DECL_STRERROR_R)
 #  ifndef HAVE_DECL_STRERROR_R
 "this configure-time declaration test was not run"
 #  endif
-char *strerror_r ();
+#  if STRERROR_R_CHAR_P
+char *strerror_r (int errnum, char *buf, size_t buflen);
+#  else
+int strerror_r (int errnum, char *buf, size_t buflen);
+#  endif
 # endif
 
-# ifndef SIZE_MAX
-#  define SIZE_MAX ((size_t) -1)
-# endif
+# define program_name getprogname ()
 
-/* The calling program should define program_name and set it to the
-   name of the executing program.  */
-extern char *program_name;
-
-# if HAVE_STRERROR_R || defined strerror_r
+# if GNULIB_STRERROR_R_POSIX || HAVE_STRERROR_R || defined strerror_r
 #  define __strerror_r strerror_r
+# endif /* GNULIB_STRERROR_R_POSIX || HAVE_STRERROR_R || defined strerror_r */
+
+# if GNULIB_defined_verror
+#  undef verror
 # endif
-#endif	/* not _LIBC */
+# if GNULIB_defined_verror_at_line
+#  undef verror_at_line
+# endif
+#endif  /* not _LIBC */
+
+#if !_LIBC
+/* Return non-zero if FD is open.  */
+static int
+is_open (int fd)
+{
+# if defined _WIN32 && ! defined __CYGWIN__
+  /* On native Windows: The initial state of unassigned standard file
+     descriptors is that they are open but point to an INVALID_HANDLE_VALUE.
+     There is no fcntl, and the gnulib replacement fcntl does not support
+     F_GETFL.  */
+  return (HANDLE) _get_osfhandle (fd) != INVALID_HANDLE_VALUE;
+# else
+#  ifndef F_GETFL
+#   error Please port fcntl to your platform
+#  endif
+  return 0 <= fcntl (fd, F_GETFL);
+# endif
+}
+#endif
+
+static void
+flush_stdout (void)
+{
+#if !_LIBC
+  int stdout_fd;
+
+# if GNULIB_FREOPEN_SAFER || GNULIB_XSTDOPEN
+  /* Gnulib's freopen-safer and/or xstdopen modules normally ensure that
+       fileno (stdout) == 1
+     whenever stdout is open.  */
+  stdout_fd = STDOUT_FILENO;
+# else
+  /* POSIX states that fileno (stdout) after fclose is unspecified.  But in
+     practice it is not a problem, because stdout is statically allocated and
+     the fd of a FILE stream is stored as a field in its allocated memory.  */
+  stdout_fd = fileno (stdout);
+# endif
+  /* POSIX states that fflush (stdout) after fclose is unspecified; it
+     is safe in glibc, but not on all other platforms.  fflush (NULL)
+     is always defined, but too draconian.  */
+  if (0 <= stdout_fd && is_open (stdout_fd))
+#endif
+    fflush (stdout);
+}
 
 static void
 print_errno_message (int errnum)
 {
-  char const *s = NULL;
+  char const *s;
 
-#if defined HAVE_STRERROR_R || _LIBC
+#if _LIBC || GNULIB_STRERROR_R_POSIX || defined HAVE_STRERROR_R
   char errbuf[1024];
-# if STRERROR_R_CHAR_P || _LIBC
+# if _LIBC || (!GNULIB_STRERROR_R_POSIX && STRERROR_R_CHAR_P)
   s = __strerror_r (errnum, errbuf, sizeof errbuf);
 # else
   if (__strerror_r (errnum, errbuf, sizeof errbuf) == 0)
     s = errbuf;
+  else
+    s = NULL;
 # endif
+#else
+  s = strerror (errnum);
 #endif
 
 #if !_LIBC
-  if (! s && ! (s = strerror (errnum)))
+  if (! s)
     s = _("Unknown system error");
 #endif
 
 #if _LIBC
-  if (_IO_fwide (stderr, 0) > 0)
-    {
-      __fwprintf (stderr, L": %s", s);
-      return;
-    }
-#endif
-
+  __fxprintf (NULL, ": %s", s);
+#else
   fprintf (stderr, ": %s", s);
+#endif
 }
 
-static void
-error_tail (int status, int errnum, const char *message, va_list args)
+static void _GL_ATTRIBUTE_FORMAT_PRINTF_STANDARD (3, 0) _GL_ARG_NONNULL ((3))
+error_tail (int status, int errnum, const char *message, va_list args,
+            unsigned int mode_flags)
 {
 #if _LIBC
-  if (_IO_fwide (stderr, 0) > 0)
-    {
-# define ALLOCA_LIMIT 2000
-      size_t len = strlen (message) + 1;
-      const wchar_t *wmessage = L"out of memory";
-      wchar_t *wbuf = (len < ALLOCA_LIMIT
-		       ? alloca (len * sizeof *wbuf)
-		       : len <= SIZE_MAX / sizeof *wbuf
-		       ? malloc (len * sizeof *wbuf)
-		       : NULL);
-
-      if (wbuf)
-	{
-	  size_t res;
-	  mbstate_t st;
-	  const char *tmp = message;
-	  memset (&st, '\0', sizeof (st));
-	  res = mbsrtowcs (wbuf, &tmp, len, &st);
-	  wmessage = res == (size_t) -1 ? L"???" : wbuf;
-	}
-
-      __vfwprintf (stderr, wmessage, args);
-      if (! (len < ALLOCA_LIMIT))
-	free (wbuf);
-    }
-  else
+  int ret = __vfxprintf (stderr, message, args, mode_flags);
+  if (ret < 0 && errno == ENOMEM && _IO_fwide (stderr, 0) > 0)
+    /* Leave a trace in case the heap allocation of the message string
+       failed.  */
+    fputws_unlocked (L"out of memory\n", stderr);
+#else
+  vfprintf (stderr, message, args);
 #endif
-    vfprintf (stderr, message, args);
-  va_end (args);
 
   ++error_message_count;
   if (errnum)
     print_errno_message (errnum);
 #if _LIBC
-  if (_IO_fwide (stderr, 0) > 0)
-    putwc (L'\n', stderr);
-  else
+  __fxprintf (NULL, "\n");
+#else
+  putc ('\n', stderr);
 #endif
-    putc ('\n', stderr);
   fflush (stderr);
   if (status)
     exit (status);
@@ -186,19 +248,17 @@ error_tail (int status, int errnum, const char *message, va_list args)
    If ERRNUM is nonzero, print its corresponding system error message.
    Exit with status STATUS if it is nonzero.  */
 void
-error (int status, int errnum, const char *message, ...)
+__error_internal (int status, int errnum, const char *message,
+                  va_list args, unsigned int mode_flags)
 {
-  va_list args;
-
-#if defined _LIBC && defined __libc_ptf_call
+#if defined _LIBC
   /* We do not want this call to be cut short by a thread
      cancellation.  Therefore disable cancellation for now.  */
   int state = PTHREAD_CANCEL_ENABLE;
-  __libc_ptf_call (pthread_setcancelstate, (PTHREAD_CANCEL_DISABLE, &state),
-		   0);
+  __pthread_setcancelstate (PTHREAD_CANCEL_DISABLE, &state);
 #endif
 
-  fflush (stdout);
+  flush_stdout ();
 #ifdef _LIBC
   _IO_flockfile (stderr);
 #endif
@@ -207,22 +267,27 @@ error (int status, int errnum, const char *message, ...)
   else
     {
 #if _LIBC
-      if (_IO_fwide (stderr, 0) > 0)
-	__fwprintf (stderr, L"%s: ", program_name);
-      else
+      __fxprintf (NULL, "%s: ", program_name);
+#else
+      fprintf (stderr, "%s: ", program_name);
 #endif
-	fprintf (stderr, "%s: ", program_name);
     }
 
-  va_start (args, message);
-  error_tail (status, errnum, message, args);
+  error_tail (status, errnum, message, args, mode_flags);
 
 #ifdef _LIBC
   _IO_funlockfile (stderr);
-# ifdef __libc_ptf_call
-  __libc_ptf_call (pthread_setcancelstate, (state, NULL), 0);
-# endif
+  __pthread_setcancelstate (state, NULL);
 #endif
+}
+
+void
+error (int status, int errnum, const char *message, ...)
+{
+  va_list ap;
+  va_start (ap, message);
+  __error_internal (status, errnum, message, ap, 0);
+  va_end (ap);
 }
 
 /* Sometimes we want to have at most one error per line.  This
@@ -230,35 +295,36 @@ error (int status, int errnum, const char *message, ...)
 int error_one_per_line;
 
 void
-error_at_line (int status, int errnum, const char *file_name,
-	       unsigned int line_number, const char *message, ...)
+__error_at_line_internal (int status, int errnum, const char *file_name,
+                          unsigned int line_number, const char *message,
+                          va_list args, unsigned int mode_flags)
 {
-  va_list args;
-
   if (error_one_per_line)
     {
       static const char *old_file_name;
       static unsigned int old_line_number;
 
       if (old_line_number == line_number
-	  && (file_name == old_file_name
-	      || strcmp (old_file_name, file_name) == 0))
-	/* Simply return and print nothing.  */
-	return;
+          && (file_name == old_file_name
+              || (old_file_name != NULL
+                  && file_name != NULL
+                  && strcmp (old_file_name, file_name) == 0)))
+
+        /* Simply return and print nothing.  */
+        return;
 
       old_file_name = file_name;
       old_line_number = line_number;
     }
 
-#if defined _LIBC && defined __libc_ptf_call
+#if defined _LIBC
   /* We do not want this call to be cut short by a thread
      cancellation.  Therefore disable cancellation for now.  */
   int state = PTHREAD_CANCEL_ENABLE;
-  __libc_ptf_call (pthread_setcancelstate, (PTHREAD_CANCEL_DISABLE, &state),
-		   0);
+  __pthread_setcancelstate (PTHREAD_CANCEL_DISABLE, &state);
 #endif
 
-  fflush (stdout);
+  flush_stdout ();
 #ifdef _LIBC
   _IO_flockfile (stderr);
 #endif
@@ -267,32 +333,37 @@ error_at_line (int status, int errnum, const char *file_name,
   else
     {
 #if _LIBC
-      if (_IO_fwide (stderr, 0) > 0)
-	__fwprintf (stderr, L"%s: ", program_name);
-      else
+      __fxprintf (NULL, "%s:", program_name);
+#else
+      fprintf (stderr, "%s:", program_name);
 #endif
-	fprintf (stderr, "%s:", program_name);
     }
 
-  if (file_name != NULL)
-    {
 #if _LIBC
-      if (_IO_fwide (stderr, 0) > 0)
-	__fwprintf (stderr, L"%s:%d: ", file_name, line_number);
-      else
+  __fxprintf (NULL, file_name != NULL ? "%s:%u: " : " ",
+              file_name, line_number);
+#else
+  fprintf (stderr, file_name != NULL ? "%s:%u: " : " ",
+           file_name, line_number);
 #endif
-	fprintf (stderr, "%s:%d: ", file_name, line_number);
-    }
 
-  va_start (args, message);
-  error_tail (status, errnum, message, args);
+  error_tail (status, errnum, message, args, mode_flags);
 
 #ifdef _LIBC
   _IO_funlockfile (stderr);
-# ifdef __libc_ptf_call
-  __libc_ptf_call (pthread_setcancelstate, (state, NULL), 0);
-# endif
+  __pthread_setcancelstate (state, NULL);
 #endif
+}
+
+void
+error_at_line (int status, int errnum, const char *file_name,
+               unsigned int line_number, const char *message, ...)
+{
+  va_list ap;
+  va_start (ap, message);
+  __error_at_line_internal (status, errnum, file_name, line_number,
+                            message, ap, 0);
+  va_end (ap);
 }
 
 #ifdef _LIBC

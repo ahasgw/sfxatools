@@ -1,80 +1,71 @@
-#serial 7
-
-# Copyright (C) 2001, 2002, 2003, 2005 Free Software Foundation, Inc.
-# This file is free software; the Free Software Foundation
-# gives unlimited permission to copy and/or distribute it,
-# with or without modifications, as long as this notice is preserved.
+# gettimeofday.m4
+# serial 30
+dnl Copyright (C) 2001-2003, 2005, 2007, 2009-2025 Free Software Foundation,
+dnl Inc.
+dnl This file is free software; the Free Software Foundation
+dnl gives unlimited permission to copy and/or distribute it,
+dnl with or without modifications, as long as this notice is preserved.
+dnl This file is offered as-is, without any warranty.
 
 dnl From Jim Meyering.
-dnl
-dnl See if gettimeofday clobbers the static buffer that localtime uses
-dnl for its return value.  The gettimeofday function from Mac OS X 10.0.4
-dnl (i.e., Darwin 1.3.7) has this problem.
-dnl
-dnl If it does, then arrange to use gettimeofday and localtime only via
-dnl the wrapper functions that work around the problem.
 
-AC_DEFUN([AC_FUNC_GETTIMEOFDAY_CLOBBER],
+AC_DEFUN([gl_FUNC_GETTIMEOFDAY],
 [
- AC_REQUIRE([AC_HEADER_TIME])
- AC_CACHE_CHECK([whether gettimeofday clobbers localtime buffer],
-  jm_cv_func_gettimeofday_clobber,
-  [AC_TRY_RUN([
-#include <stdio.h>
-#include <string.h>
+  AC_REQUIRE([gl_SYS_TIME_H_DEFAULTS])
+  AC_REQUIRE([AC_C_RESTRICT])
+  AC_REQUIRE([AC_CANONICAL_HOST])
+  AC_REQUIRE([gl_SYS_TIME_H])
+  AC_CHECK_FUNCS_ONCE([gettimeofday])
 
-#if TIME_WITH_SYS_TIME
-# include <sys/time.h>
-# include <time.h>
-#else
-# if HAVE_SYS_TIME_H
-#  include <sys/time.h>
-# else
-#  include <time.h>
-# endif
-#endif
-
-#include <stdlib.h>
-
-int
-main ()
-{
-  time_t t = 0;
-  struct tm *lt;
-  struct tm saved_lt;
-  struct timeval tv;
-  lt = localtime (&t);
-  saved_lt = *lt;
-  gettimeofday (&tv, NULL);
-  if (memcmp (lt, &saved_lt, sizeof (struct tm)) != 0)
-    exit (1);
-
-  exit (0);
-}
-	  ],
-	 jm_cv_func_gettimeofday_clobber=no,
-	 jm_cv_func_gettimeofday_clobber=yes,
-	 dnl When crosscompiling, assume it is broken.
-	 jm_cv_func_gettimeofday_clobber=yes)
-  ])
-  if test $jm_cv_func_gettimeofday_clobber = yes; then
-    gl_GETTIMEOFDAY_REPLACE_LOCALTIME
-
-    AC_DEFINE(gettimeofday, rpl_gettimeofday,
-      [Define to rpl_gettimeofday if the replacement function should be used.])
-    gl_PREREQ_GETTIMEOFDAY
+  gl_gettimeofday_timezone=void
+  if test $ac_cv_func_gettimeofday != yes; then
+    HAVE_GETTIMEOFDAY=0
+  else
+    AC_CACHE_CHECK([for gettimeofday with POSIX signature],
+      [gl_cv_func_gettimeofday_posix_signature],
+      [AC_COMPILE_IFELSE(
+         [AC_LANG_PROGRAM(
+            [[#include <sys/time.h>
+              struct timeval c;
+              int gettimeofday (struct timeval *restrict, void *restrict);
+            ]],
+            [[/* glibc uses struct timezone * rather than the POSIX void *
+                 if _GNU_SOURCE is defined.  However, since the only portable
+                 use of gettimeofday uses NULL as the second parameter, and
+                 since the glibc definition is actually more typesafe, it is
+                 not worth wrapping this to get a compliant signature.  */
+              int (*f) (struct timeval *restrict, void *restrict)
+                = gettimeofday;
+              int x = f (&c, 0);
+              return !(x | c.tv_sec | c.tv_usec);
+            ]])],
+          [gl_cv_func_gettimeofday_posix_signature=yes],
+          [AC_COMPILE_IFELSE(
+            [AC_LANG_PROGRAM(
+              [[#include <sys/time.h>
+int gettimeofday (struct timeval *restrict, struct timezone *restrict);
+              ]])],
+            [gl_cv_func_gettimeofday_posix_signature=almost],
+            [gl_cv_func_gettimeofday_posix_signature=no])])])
+    if test $gl_cv_func_gettimeofday_posix_signature = almost; then
+      gl_gettimeofday_timezone='struct timezone'
+    elif test $gl_cv_func_gettimeofday_posix_signature != yes; then
+      REPLACE_GETTIMEOFDAY=1
+    fi
+    dnl If we override 'struct timeval', we also have to override gettimeofday.
+    if test $REPLACE_STRUCT_TIMEVAL = 1; then
+      REPLACE_GETTIMEOFDAY=1
+    fi
+    dnl On mingw, the original gettimeofday has only a precision of 15.6
+    dnl milliseconds. So override it.
+    case "$host_os" in
+      mingw* | windows*) REPLACE_GETTIMEOFDAY=1 ;;
+    esac
   fi
-])
-
-AC_DEFUN([gl_GETTIMEOFDAY_REPLACE_LOCALTIME], [
-  AC_LIBOBJ(gettimeofday)
-  AC_DEFINE(gmtime, rpl_gmtime,
-    [Define to rpl_gmtime if the replacement function should be used.])
-  AC_DEFINE(localtime, rpl_localtime,
-    [Define to rpl_localtime if the replacement function should be used.])
+  AC_DEFINE_UNQUOTED([GETTIMEOFDAY_TIMEZONE], [$gl_gettimeofday_timezone],
+    [Define this to 'void' or 'struct timezone' to match the system's
+     declaration of the second argument to gettimeofday.])
 ])
 
 # Prerequisites of lib/gettimeofday.c.
-AC_DEFUN([gl_PREREQ_GETTIMEOFDAY], [
-  AC_REQUIRE([AC_HEADER_TIME])
-])
+AC_DEFUN([gl_PREREQ_GETTIMEOFDAY], [:])

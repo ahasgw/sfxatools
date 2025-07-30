@@ -1,9 +1,5 @@
 /***********************************************************************
- * $Id: strdupcat.h,v 1.2 2005/07/05 07:33:28 aki Exp $
- *
- * Header file for strdupcat functions
- * Copyright (C) 2004 RIKEN. All rights reserved.
- * Written by Aki Hasegawa <aki@gsc.riken.jp>.
+ * Copyright (C) 2004, 2005 RIKEN. All rights reserved.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by

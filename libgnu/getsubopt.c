@@ -1,21 +1,25 @@
-/* Parse comma separate list into words.
-   Copyright (C) 1996, 1997, 1999, 2004 Free Software Foundation, Inc.
+/* Parse comma separated list into words.
+   Copyright (C) 1996-1997, 1999, 2004, 2007, 2009-2025 Free Software
+   Foundation, Inc.
    This file is part of the GNU C Library.
    Contributed by Ulrich Drepper <drepper@cygnus.com>, 1996.
 
-   This program is free software; you can redistribute it and/or modify
-   it under the terms of the GNU General Public License as published by
-   the Free Software Foundation; either version 2, or (at your option)
-   any later version.
+   This file is free software: you can redistribute it and/or modify
+   it under the terms of the GNU Lesser General Public License as
+   published by the Free Software Foundation, either version 3 of the
+   License, or (at your option) any later version.
 
-   This program is distributed in the hope that it will be useful,
+   This file is distributed in the hope that it will be useful,
    but WITHOUT ANY WARRANTY; without even the implied warranty of
    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-   GNU General Public License for more details.
+   GNU Lesser General Public License for more details.
 
-   You should have received a copy of the GNU General Public License along
-   with this program; if not, write to the Free Software Foundation,
-   Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.  */
+   You should have received a copy of the GNU Lesser General Public License
+   along with this program.  If not, see <https://www.gnu.org/licenses/>.  */
+
+#if !_LIBC
+# include <config.h>
+#endif
 
 #include <stdlib.h>
 #include <string.h>
@@ -24,7 +28,6 @@
 /* This code is written for inclusion in gnu-libc, and uses names in
    the namespace reserved for libc.  If we're compiling in gnulib,
    define those names to be the normal ones instead.  */
-# include "strchrnul.h"
 # undef __strchrnul
 # define __strchrnul strchrnul
 #endif
@@ -56,16 +59,16 @@ getsubopt (char **optionp, char *const *tokens, char **valuep)
      one of the TOKENS.  */
   for (cnt = 0; tokens[cnt] != NULL; ++cnt)
     if (strncmp (*optionp, tokens[cnt], vstart - *optionp) == 0
-	&& tokens[cnt][vstart - *optionp] == '\0')
+        && tokens[cnt][vstart - *optionp] == '\0')
       {
-	/* We found the current option in TOKENS.  */
-	*valuep = vstart != endp ? vstart + 1 : NULL;
+        /* We found the current option in TOKENS.  */
+        *valuep = vstart != endp ? vstart + 1 : NULL;
 
-	if (*endp != '\0')
-	  *endp++ = '\0';
-	*optionp = endp;
+        if (*endp != '\0')
+          *endp++ = '\0';
+        *optionp = endp;
 
-	return cnt;
+        return cnt;
       }
 
   /* The current suboption does not match any option.  */

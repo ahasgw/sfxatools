@@ -1,45 +1,36 @@
 /* Convert string representation of a number into an intmax_t value.
 
-   Copyright (C) 1999, 2001, 2002, 2003, 2004 Free Software
-   Foundation, Inc.
+   Copyright (C) 1999, 2001-2004, 2006, 2009-2025 Free Software Foundation,
+   Inc.
 
-   This program is free software; you can redistribute it and/or modify
-   it under the terms of the GNU General Public License as published by
-   the Free Software Foundation; either version 2, or (at your option)
-   any later version.
+   This file is free software: you can redistribute it and/or modify
+   it under the terms of the GNU Lesser General Public License as
+   published by the Free Software Foundation, either version 3 of the
+   License, or (at your option) any later version.
 
-   This program is distributed in the hope that it will be useful,
+   This file is distributed in the hope that it will be useful,
    but WITHOUT ANY WARRANTY; without even the implied warranty of
    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-   GNU General Public License for more details.
+   GNU Lesser General Public License for more details.
 
-   You should have received a copy of the GNU General Public License
-   along with this program; if not, write to the Free Software Foundation,
-   Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.  */
+   You should have received a copy of the GNU Lesser General Public License
+   along with this program.  If not, see <https://www.gnu.org/licenses/>.  */
 
 /* Written by Paul Eggert. */
 
-#ifdef HAVE_CONFIG_H
-# include <config.h>
-#endif
+#include <config.h>
 
-#if HAVE_INTTYPES_H
-# include <inttypes.h>
-#endif
-#if HAVE_STDINT_H
-# include <stdint.h>
-#endif
+/* Verify interface.  */
+#include <inttypes.h>
 
 #include <stdlib.h>
-
-#include "verify.h"
 
 #ifdef UNSIGNED
 # ifndef HAVE_DECL_STRTOULL
 "this configure-time declaration test was not run"
 # endif
-# if !HAVE_DECL_STRTOULL && HAVE_UNSIGNED_LONG_LONG
-unsigned long long strtoull (char const *, char **, int);
+# if !HAVE_DECL_STRTOULL
+unsigned long long int strtoull (char const *, char **, int);
 # endif
 
 #else
@@ -47,34 +38,33 @@ unsigned long long strtoull (char const *, char **, int);
 # ifndef HAVE_DECL_STRTOLL
 "this configure-time declaration test was not run"
 # endif
-# if !HAVE_DECL_STRTOLL && HAVE_UNSIGNED_LONG_LONG
-long long strtoll (char const *, char **, int);
+# if !HAVE_DECL_STRTOLL
+long long int strtoll (char const *, char **, int);
 # endif
 #endif
 
 #ifdef UNSIGNED
-# undef HAVE_LONG_LONG
-# define HAVE_LONG_LONG HAVE_UNSIGNED_LONG_LONG
-# define INT uintmax_t
-# define strtoimax strtoumax
-# define strtol strtoul
-# define strtoll strtoull
+# define Int uintmax_t
+# define Strtoimax strtoumax
+# define Strtol strtoul
+# define Strtoll strtoull
+# define Unsigned unsigned
 #else
-# define INT intmax_t
+# define Int intmax_t
+# define Strtoimax strtoimax
+# define Strtol strtol
+# define Strtoll strtoll
+# define Unsigned
 #endif
 
-INT
-strtoimax (char const *ptr, char **endptr, int base)
+Int
+Strtoimax (char const *ptr, char **endptr, int base)
 {
-#if HAVE_LONG_LONG
-  verify (sizeof (INT) == sizeof (long int)
-	  || sizeof (INT) == sizeof (long long int));
+  static_assert (sizeof (Int) == sizeof (Unsigned long int)
+                 || sizeof (Int) == sizeof (Unsigned long long int));
 
-  if (sizeof (INT) != sizeof (long int))
-    return strtoll (ptr, endptr, base);
-#else
-  verify (sizeof (INT) == sizeof (long int));
-#endif
+  if (sizeof (Int) != sizeof (Unsigned long int))
+    return Strtoll (ptr, endptr, base);
 
-  return strtol (ptr, endptr, base);
+  return Strtol (ptr, endptr, base);
 }

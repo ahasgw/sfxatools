@@ -1,9 +1,5 @@
 /***********************************************************************
- * $Id: msg.h,v 1.4 2005/12/15 13:37:51 aki Exp $
- *
- * Header file for messaging functions
- * Copyright (C) 2004 RIKEN. All rights reserved.
- * Written by Aki Hasegawa <aki@gsc.riken.jp>.
+ * Copyright (C) 2004, 2005 RIKEN. All rights reserved.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by

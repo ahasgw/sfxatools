@@ -1,39 +1,53 @@
-# Check whether free (NULL) is supposed to work.
+# free.m4
+# serial 6
+dnl Copyright (C) 2003-2005, 2009-2025 Free Software Foundation, Inc.
+dnl This file is free software; the Free Software Foundation
+dnl gives unlimited permission to copy and/or distribute it,
+dnl with or without modifications, as long as this notice is preserved.
+dnl This file is offered as-is, without any warranty.
 
-# Copyright (C) 2003, 2004, 2005 Free Software Foundation, Inc.
-# This file is free software; the Free Software Foundation
-# gives unlimited permission to copy and/or distribute it,
-# with or without modifications, as long as this notice is preserved.
-
-# Written by Paul Eggert.
-
-# We can't test for free (NULL) even at runtime, since it might
-# happen to "work" for our test program, but not in general.  So, be
-# conservative and use feature tests for relatively modern hosts,
-# where free (NULL) is known to work.  This costs a bit of
-# performance on some older hosts, but we can fix that later if
-# needed.
+# Written by Paul Eggert and Bruno Haible.
 
 AC_DEFUN([gl_FUNC_FREE],
 [
-  AC_CACHE_CHECK([whether free (NULL) is known to work],
-    [gl_cv_func_free],
+  AC_REQUIRE([gl_STDLIB_H_DEFAULTS])
+
+  dnl In the next release of POSIX, free must preserve errno.
+  dnl https://www.austingroupbugs.net/view.php?id=385
+  dnl https://sourceware.org/bugzilla/show_bug.cgi?id=17924
+  dnl So far, we know of three platforms that do this:
+  dnl * glibc >= 2.33, thanks to the fix for this bug:
+  dnl   <https://sourceware.org/bugzilla/show_bug.cgi?id=17924>
+  dnl * OpenBSD >= 4.5, thanks to this commit:
+  dnl   <https://cvsweb.openbsd.org/cgi-bin/cvsweb/src/lib/libc/stdlib/malloc.c.diff?r1=1.100&r2=1.101&f=h>
+  dnl * Solaris, because its malloc() implementation is based on brk(),
+  dnl   not mmap(); hence its free() implementation makes no system calls.
+  dnl For other platforms, you can only be sure if they state it in their
+  dnl documentation, or by code inspection of the free() implementation in libc.
+  AC_CACHE_CHECK([whether free is known to preserve errno],
+    [gl_cv_func_free_preserves_errno],
     [AC_COMPILE_IFELSE(
        [AC_LANG_PROGRAM(
-	  [[@%:@include <unistd.h>]],
-	  [[@%:@if _POSIX_VERSION < 199009L && \
-	        (defined unix || defined _unix || defined _unix_ \
-	         || defined __unix || defined __unix__)
-	      @%:@error "'free (NULL)' is not known to work"
-	    @%:@endif]])],
-       [gl_cv_func_free=yes],
-       [gl_cv_func_free=no])])
+          [[#include <stdlib.h>
+          ]],
+          [[#if 2 < __GLIBC__ + (33 <= __GLIBC_MINOR__)
+            #elif defined __OpenBSD__
+            #elif defined __sun
+            #else
+              #error "'free' is not known to preserve errno"
+            #endif
+          ]])],
+       [gl_cv_func_free_preserves_errno=yes],
+       [gl_cv_func_free_preserves_errno=no])
+    ])
 
-  if test $gl_cv_func_free = no; then
-    AC_LIBOBJ(free)
-    AC_DEFINE(free, rpl_free,
-      [Define to rpl_free if the replacement function should be used.])
-  fi
+  case $gl_cv_func_free_preserves_errno in
+   *yes)
+    AC_DEFINE([HAVE_FREE_POSIX], [1],
+      [Define if the 'free' function is guaranteed to preserve errno.])
+    ;;
+   *) REPLACE_FREE=1 ;;
+  esac
 ])
 
 # Prerequisites of lib/free.c.

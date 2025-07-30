@@ -1,9 +1,5 @@
 /***********************************************************************
- * $Id: ptrstk.h,v 1.3 2005/10/31 03:03:46 aki Exp $
- *
- * Header file for ptrstk
  * Copyright (C) 2005 RIKEN. All rights reserved.
- * Written by Aki Hasegawa <aki@gsc.riken.jp>.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
